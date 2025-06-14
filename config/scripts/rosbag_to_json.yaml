@@ -1,0 +1,29 @@
+recorded_data:
+  bag_dir: /media/storage/Downloads/agisim/bags
+  bag_names:
+    [
+      2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise,
+      2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise,
+      2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise,
+      2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise,
+    ]
+  # bag_names:
+  #   [
+  #     2025-05-07_gaz_falcon_mpc_model_id_inertia_matrix_only_thrust_dragtorque_rollingmoment_shiftedactualmotorvel,
+  #     2025-05-08_sim_falcon_mpc_model_id_drag_coefficients,
+  #   ]
+  topic_names:
+    [
+      /step_control,
+      /falcon/ground_truth/odometry,
+      /w,
+      /eta,
+    ]
+
+supported_topic_names:
+  [
+    /step_control,
+    /falcon/ground_truth/odometry,
+    /w,
+    /eta,
+  ]

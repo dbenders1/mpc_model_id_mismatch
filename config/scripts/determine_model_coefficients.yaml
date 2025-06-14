@@ -1,0 +1,61 @@
+constants:
+  g: 9.8124
+
+recorded_data:
+  # json_names: [2025-04-25_sim_falcon_mpc_model_id_motortau]
+  # json_names: [2025-04-25_sim_falcon_mpc_model_id_inertia_matrix]
+  # json_names: [2025-04-29_sim_falcon_mpc_model_id_drag_coefficients]
+  # json_names:
+  #   [
+  #     2025-04-29_sim_falcon_mpc_model_id_motortau_inertia_matrix_drag_coefficients,
+  #   ]
+  # json_names: [2025-04-29_gaz_falcon_mpc_model_id_motortau]
+  # json_names: [2025-05-06_gaz_falcon_mpc_model_id_inertia_matrix]
+  # json_names:
+  #   [
+  #     2025-05-07_gaz_falcon_mpc_model_id_inertia_matrix_shiftedactualmotorvel,
+  #   ]
+  # json_names:
+  #   [
+  #     2025-05-07_gaz_falcon_mpc_model_id_drag_coefficients_shiftedactualmotorvel,
+  #   ]
+  # json_names:
+  #   [
+  #     2025-05-07_gaz_falcon_mpc_model_id_inertia_matrix_only_thrust_dragtorque_airdrag_shiftedactualmotorvel,
+  #   ]
+  # json_names:
+  #   [
+  #     2025-05-07_gaz_falcon_mpc_model_id_drag_coefficients_only_thrust_dragtorque_airdrag_shiftedactualmotorvel,
+  #   ]
+  json_names:
+    [
+      2025-05-07_gaz_falcon_mpc_model_id_inertia_matrix_only_thrust_dragtorque_rollingmoment_shiftedactualmotorvel,
+    ]
+  # json_names:
+  #   [
+  #     2025-05-07_gaz_falcon_mpc_model_id_drag_coefficients_only_thrust_dragtorque_rollingmoment_shiftedactualmotorvel,
+  #   ]
+  # json_names:
+  #   [
+  #     2025-05-07_gaz_falcon_mpc_model_id_inertia_matrix_only_thrust_dragtorque_shiftedactualmotorvel,
+  #   ]
+  # json_names:
+  #   [
+  #     2025-05-07_gaz_falcon_mpc_model_id_drag_coefficients_only_thrust_dragtorque_shiftedactualmotorvel,
+  #   ]
+  # json_names:
+  #   [
+  #     2025-05-07_gaz_falcon_mpc_model_id_inertia_matrix_only_thrust_shiftedactualmotorvel,
+  #   ]
+  # json_names:
+  #   [
+  #     2025-05-07_gaz_falcon_mpc_model_id_drag_coefficients_only_thrust_shiftedactualmotorvel,
+  #   ]
+  # json_names: [2025-05-08_sim_falcon_mpc_model_id_inertia_matrix]
+  # json_names: [2025-05-08_sim_falcon_mpc_model_id_drag_coefficients]
+  overwrite_data_sel: false
+  processing:
+    ts: 0.002 # interpolation time
+
+model:
+  name: "falcon"

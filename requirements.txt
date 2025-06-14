@@ -1,0 +1,5 @@
+casadi==3.5.5
+matplotlib
+numpy
+scipy
+pyyaml

@@ -1,0 +1,70 @@
+# mass:               0.655                    # [kg]
+mass: 0.617 # [kg] # falcon7
+tbm_fr: [0.075, -0.075, 0.0] # [m]
+tbm_bl: [-0.075, 0.075, 0.0] # [m]
+tbm_br: [-0.075, -0.075, 0.0] # [m]
+tbm_fl: [0.075, 0.075, 0.0] # [m]
+# inertia:            [0.00164, 0.00184, 0.0030]     # [kgm^2]
+# inertia: [
+#     [0.00116838, -4.12225e-05, -1.19914e-06],
+#     [-4.12225e-05, 0.00138568, -3.42554e-07],
+#     [-1.19914e-06, -3.42554e-07, 0.00399294],
+#   ] # [kgm^2] identified Gazebo values - thrust, drag torque, air drag, and rolling moment
+# inertia: [
+#     [0.0011684, -4.12112e-05, -9.659e-07],
+#     [-4.12112e-05, 0.00138567, -3.35585e-07],
+#     [-9.659e-07, -3.35585e-07, 0.00381883],
+#   ] # [kgm^2] identified Gazebo values - thrust, drag torque, and air drag
+# inertia: [
+#     [0.00108295, -5.86556e-05, 1.19572e-07],
+#     [-5.86556e-05, 0.00125852, 1.74153e-07],
+#     [1.19572e-07, 1.74153e-07, 0.00321003],
+#   ] # [kgm^2] identified Gazebo values - thrust, drag torque, and rolling moment
+# inertia: [
+#     [0.00108305, -5.86184e-05, 2.22097e-07],
+#     [-5.86184e-05, 0.00126992, 1.30554e-07],
+#     [2.22097e-07, 1.30554e-07, 0.003218],
+#   ] # [kgm^2] identified Gazebo values - thrust and drag torque
+# inertia: [
+#     [0.00112769, -0.00034051, -1.40827e-05],
+#     [-0.00034051, 0.00131835, 4.40319e-06],
+#     [-1.40827e-05, 4.40319e-06, 0.0310977],
+#   ] # [kgm^2] identified Gazebo values - thrust
+inertia: [
+    [0.00108295, -5.86556e-05, 1.19572e-07],
+    [-5.86556e-05, 0.00125852, 1.74153e-07],
+    [1.19572e-07, 1.74153e-07, 0.00321003],
+  ] # [kgm^2] simplesim values
+# inertia: [0.00117, 0.00139, 0.00375] # [kgm^2] # identified Gazebo values using filter-based identification method - new Gazebo sync setup
+# inertia: [0.0013, 0.0015, 0.0039] # [kgm^2] # identified Gazebo values using filter-based identification method
+# inertia: [0.00194, 0.0022, 0.0033] # [kgm^2] # empirical test by fitting on Gazebo simulated data without IMU (and odom) noise, drag and rolling moment effect
+# inertia:            [0.0027296, 0.0029296, 0.00514896]     # [kgm^2] # based on theoretical inertia tensor computations
+motor_omega_min: 150.0 # [rad/s]
+motor_omega_max: 2800.0 # [rad/s]
+motor_tau: 0.033 # [s]
+# motor_tau: 0.037 # [s] identified Gazebo value using filter-based identification method
+# motor_tau: 0.5
+# motor_tau:          0                         # [s] # do not use first-order motor model
+motor_inertia_z: 9.3575e-6 # [kgm^2]
+omega_max: [10.0, 10.0, 4.0] # [rad/s]
+
+thrust_map: [1.562522e-6, 0.0, 0.0]
+kappa: 0.022 # [Nm/N]
+thrust_min: 0.0 # [N]
+thrust_max: 8.5 # [N] per motor
+rotors_config: "cross"
+
+aero_coeff_1: [0.0, 0.0, 0.0] # [0.26, 0.28, 0.42] # [N/(v/m)]
+aero_coeff_3: [0.0, 0.0, 0.0] # [N/(v/m)]
+aero_coeff_h: 0.0 # 0.01 [N/(v^2/m^2)]
+
+# kd: [[0.5202818831, 0, 0], [0, 0.5196634253, 0], [0, 0, 0]] # identified Gazebo values - thrust, drag torque, air drag, and rolling moment
+# kd: [[0.5202815763, 0, 0], [0, 0.5196630863, 0], [0, 0, 0]] # identified Gazebo values - thrust, drag torque, and air drag
+# kd: [[0, 0, 0], [0, 0, 0], [0, 0, 0]] # identified Gazebo values - thrust, drag torque, and rolling moment
+# kd: [[0, 0, 0], [0, 0, 0], [0, 0, 0]] # identified Gazebo values - thrust and drag torque
+# kd: [[0, 0, 0], [0, 0, 0], [0, 0, 0]] # identified Gazebo values - thrust
+kd: [[0, 0, 0], [0, 0, 0], [0, 0, 0]] # simplesim values
+# kd: [[0.5202816065, 0, 0], [0, 0.5196634253, 0], [0, 0, 0]] # identified Gazebo values using filter-based identification method - new Gazebo sync setup
+# kd: [0.0, 0.0, 0.0]
+# kd: [0.52, 0.52, 0.0] # identified Gazebo values using filter-based identification method
+# kd: [0.55, 0.52, 0.059] # empirical tuning using previous MHE formulation

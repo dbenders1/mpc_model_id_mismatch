@@ -1,0 +1,1695 @@
+import argparse
+import json
+import logging
+import time
+
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy.io
+import yaml
+
+from mpc_model_id_mismatch import helpers
+from pathlib import Path
+from os import path
+from scipy import interpolate, stats
+from scipy.linalg import block_diag
+
+# Logging functionality
+log = logging.getLogger(__name__)
+
+
+class ComputeModelMismatch:
+    def __init__(
+        self,
+        config,
+        json_dir,
+        json_name,
+        data_sel_dir,
+        data_sel_file_name,
+        exp_type,
+        model,
+        solver,
+    ) -> None:
+        # Process config
+        self.overwrite_data_sel = config["recorded_data"]["data_sel"]["overwrite"]
+        self.automatic_data_sel = config["recorded_data"]["data_sel"]["automatic"]
+        self.automatic_data_sel_first_offset_dist = config["recorded_data"]["data_sel"][
+            "automatic_first_offset_dist"
+        ]
+        self.automatic_data_sel_crossing_idc_to_sel = config["recorded_data"][
+            "data_sel"
+        ]["automatic_crossings_idc_to_sel"]
+        self.ts = config["recorded_data"]["processing"]["ts"]
+
+        self.model_name = config["model"]["name"]
+        self.quad_number = config["model"]["quad_number"]
+
+        self.mhe_n_iter = config["mhe"]["n_iter"]
+        self.mhe_n_times = config["mhe"]["n_times"]
+        self.M = config["mhe"]["M"]
+        self.stage_est = config["mhe"]["stage_est"]
+        self.eps = float(config["mhe"]["eps"])
+        self.cost_scaling = float(config["mhe"]["cost_scaling"])
+
+        self.do_print_disturbances_min = config["printing"]["disturbances"]["min"]
+        self.do_print_disturbances_max = config["printing"]["disturbances"]["max"]
+        self.do_print_disturbances_bias = config["printing"]["disturbances"]["bias"]
+        self.do_print_meas_noises_min = config["printing"]["meas_noises"]["min"]
+        self.do_print_meas_noises_max = config["printing"]["meas_noises"]["max"]
+
+        self.do_plot_raw_interp_inputs = config["plotting"]["raw_interp_inputs"]
+        self.do_plot_raw_interp_outputs = config["plotting"]["raw_interp_outputs"]
+        self.do_plot_raw_interp_disturbances = config["plotting"][
+            "raw_interp_disturbances"
+        ]
+        self.do_plot_raw_interp_meas_noises = config["plotting"][
+            "raw_interp_meas_noises"
+        ]
+
+        # Process other arguments
+        self.json_dir = json_dir
+        self.json_name = json_name
+        self.data_sel_dir = data_sel_dir
+        self.data_sel_file_name = data_sel_file_name
+        self.exp_type = exp_type
+
+        # Variables to indicate whether ground truth data is available
+        self.disturbances_gt_known = False
+        self.measurement_noises_gt_known = False
+
+        # Set model
+        self.model = model
+        self.n_inputs = self.model.get_n_inputs()
+        self.n_states = self.model.get_n_states()
+        self.n_outputs = self.model.get_n_outputs()
+        self.n_hidden_states = self.model.get_n_hidden_states()
+        self.output_idc = self.model.get_output_idc()
+        self.hidden_state_idc = self.model.get_hidden_state_idc()
+        self.n_disturbances = self.model.get_n_disturbances()
+        self.disturbance_idc = self.model.get_disturbance_idc()
+        self.E = self.model.get_disturbance_prop_matrix()
+        self.n_measurement_noises = self.model.get_n_measurement_noises()
+        self.F_transpose = self.model.get_measurement_noise_sel_matrix()
+
+        # Set solver
+        self.solver = solver
+
+    def process_recorded_data(self):
+        # READ BAG DATA
+        # -------------------------------------------------------------------------------
+        # if self.exp_type == "sim":
+        #     # Agisim
+        #     # bag_reader_agi = bagreaders.BagReaderAgi(
+        #     #     self.bag_dir + self.bag_file_name, f"/{self.model_name}"
+        #     # )
+        #     # self.inputs_times, self.inputs = bag_reader_agi.read_command_thrusts()
+        #     # self.inputs_times = np.round(
+        #     #     self.inputs_times + self.ts, 5
+        #     # )  # NOTE: applied input command is given time in the past, so compensate for it. Also take care of using exactly a limited number of decimals to ensure that the interpolation works properly
+        #     # self.inputs = self.model.thrusts_to_motor_speeds(
+        #     #     self.inputs
+        #     # )  # NOTE: convert thrusts to motor speeds for consistent input definition
+        #     # self.outputs_times, p, q, v, wb, _, wm = bag_reader_agi.read_state()
+        #     # self.outputs = np.concatenate((p, q, v, wb, wm), axis=0)
+
+        #     # Simplesim
+        #     bag_reader_agi = bagreaders.BagReaderAgi(
+        #         self.bag_dir + self.bag_file_name, f"/{self.model_name}"
+        #     )
+        #     # # self.inputs_times, self.inputs = bag_reader_agi.read_command_motor_speeds()
+        #     # self.inputs_times, self.inputs = bag_reader_agi.read_step_control_simplesim(
+        #     #     skip_first=True
+        #     # )
+        #     # # self.outputs_times, p, eul, v, wb, wm = (
+        #     # #     bag_reader_agi.read_y_nom_eul_simplesim()
+        #     # # )
+        #     # # self.outputs_times, p, q, v, wb, wm = (
+        #     # #     bag_reader_agi.read_y_nom_q_simplesim()
+        #     # # )
+        #     # # self.outputs_times, p, q, v, wb, wm = bag_reader_agi.read_y_w_simplesim()
+        #     # # self.outputs_times, p, q, v, wb, wm = bag_reader_agi.read_y_eta_simplesim()
+        #     # self.outputs_times, p, q, v, wb, wm = (
+        #     #     bag_reader_agi.read_y_w_eta_simplesim()
+        #     # )
+        #     # # self.outputs_times, p, q, v, wb, _, wm = bag_reader_agi.read_state()
+        #     # eul = np.zeros((3, q.shape[1]))
+        #     # for t in range(q.shape[1]):
+        #     #     eul[:, t] = helpers.quaternion_to_zyx_euler(q[:, t])
+        #     # self.outputs = np.concatenate((p, eul, v, wb, wm), axis=0)
+        #     # # self.outputs = np.concatenate((p, eul, wb, wm), axis=0)
+
+        #     self.inputs_times, wmc = bag_reader_agi.read_step_control(skip_first=True)
+        #     n_inputs_times = len(self.inputs_times)
+        #     self.inputs = np.zeros((4, n_inputs_times))
+        #     for i in range(n_inputs_times):
+        #         self.inputs[:, i] = self.model.motor_speeds_to_thrusts(wmc[:, i])
+        #     (
+        #         self.outputs_times,
+        #         p,
+        #         q,
+        #         v,
+        #         wb,
+        #     ) = bag_reader_agi.read_odometry()
+        #     eul = np.zeros((3, q.shape[1]))
+        #     for t in range(q.shape[1]):
+        #         eul[:, t] = helpers.quaternion_to_zyx_euler(q[:, t])
+        #     self.outputs = np.concatenate((p, eul, v, wb), axis=0)
+
+        #     self.disturbances_times, self.disturbances = bag_reader_agi.read_w()
+        #     if self.disturbances_times.size > 0:
+        #         self.disturbances_gt_known = True
+        #     self.measurement_noises_times, self.measurement_noises = (
+        #         bag_reader_agi.read_eta()
+        #     )
+        #     if self.measurement_noises_times.size > 0:
+        #         self.measurement_noises_gt_known = True
+        #     self.measurement_noises = self.measurement_noises[
+        #         [0, 1, 2, 3, 4, 5, 9, 10, 11], :
+        #     ]  # remove measurement noise on velocities
+        # elif self.exp_type == "gaz":
+        #     bag_reader_agi = bagreaders.BagReaderAgi(
+        #         self.bag_dir + self.bag_file_name, f"/{self.model_name}"
+        #     )
+        #     # self.inputs_times, ac = bag_reader_agi.read_ac()
+        #     # _, wbc = bag_reader_agi.read_wbc()
+        #     # self.inputs = np.concatenate((wbc, ac), axis=0)
+        #     # self.outputs_times, p, q, v, wb, ai, _ = bag_reader_agi.read_state()
+        #     # ai = ai + np.array([0, 0, self.g]).reshape(
+        #     #     (3, 1)
+        #     # )  # add gravitational acceleration to acceleration data
+        #     # ab = np.zeros((3, ai.shape[1]))
+        #     # for i in range(ai.shape[1]):
+        #     #     ab[:, i] = np.array(
+        #     #         helpers.rotate_quat_inverse(q[:, i].reshape((4, 1)), ai[:, i])
+        #     #     ).flatten()  # convert acceleration from inertial to body frame
+        #     # abz = ab[2, :].reshape(
+        #     #     (1, ab.shape[1])
+        #     # )  # take z component of acceleration in body frame
+        #     # self.outputs = np.concatenate((p, q, v, wb, abz), axis=0)
+
+        #     # self.inputs_times, self.inputs = bag_reader_agi.read_command_motor_speeds()
+        #     # self.outputs_times, p, q, v, wb, _, wm = bag_reader_agi.read_state()
+        #     # eul = np.zeros((3, q.shape[1]))
+        #     # for t in range(q.shape[1]):
+        #     #     eul[:, t] = helpers.quaternion_to_zyx_euler(
+        #     #         q[0, t], q[1, t], q[2, t], q[3, t], order="zyx"
+        #     #     )
+        #     # self.outputs = np.concatenate((p, eul, v, wb, wm), axis=0)
+
+        #     # bag_reader_agi = bagreaders.BagReaderAgi(
+        #     #     self.bag_dir + self.bag_file_name, f"/{self.model_name}"
+        #     # )
+        #     # self.inputs_times, self.inputs = bag_reader_agi.read_step_control(
+        #     #     skip_first=True
+        #     # )
+        #     # (
+        #     #     odometry_times,
+        #     #     p,
+        #     #     q,
+        #     #     v,
+        #     #     wb,
+        #     # ) = bag_reader_agi.read_odometry()
+        #     # odometry_times = odometry_times - self.ts
+        #     # wm_times, wm = bag_reader_agi.read_motor_speed()
+        #     # outputs_start_time = max(odometry_times[0], wm_times[0])
+        #     # outputs_end_time = min(odometry_times[-1], wm_times[-1])
+        #     # odometry_idc = np.where(
+        #     #     (odometry_times >= outputs_start_time)
+        #     #     & (odometry_times <= outputs_end_time)
+        #     # )[0]
+        #     # wm_idc = np.where(
+        #     #     (wm_times >= outputs_start_time) & (wm_times <= outputs_end_time)
+        #     # )[0]
+        #     # self.outputs_times = odometry_times[odometry_idc]
+        #     # p = p[:, odometry_idc]
+        #     # q = q[:, odometry_idc]
+        #     # v = v[:, odometry_idc]
+        #     # wb = wb[:, odometry_idc]
+        #     # wm_times = wm_times[wm_idc]
+        #     # wm = wm[:, wm_idc]
+        #     # eul = np.zeros((3, q.shape[1]))
+        #     # for t in range(q.shape[1]):
+        #     #     eul[:, t] = helpers.quaternion_to_zyx_euler(q[:, t])
+        #     # self.outputs = np.concatenate((p, eul, v, wb, wm), axis=0)
+
+        #     self.inputs_times, wmc = bag_reader_agi.read_step_control(skip_first=True)
+        #     n_inputs_times = len(self.inputs_times)
+        #     self.inputs = np.zeros((4, n_inputs_times))
+        #     for i in range(n_inputs_times):
+        #         self.inputs[:, i] = self.model.motor_speeds_to_thrusts(wmc[:, i])
+        #     # self.inputs_times, wmc = bag_reader_agi.read_motor_speed()
+        #     # self.inputs_times = self.inputs_times - self.ts
+        #     # n_inputs_times = len(self.inputs_times)
+        #     # self.inputs = np.zeros((4, n_inputs_times))
+        #     # for i in range(n_inputs_times):
+        #     #     self.inputs[:, i] = self.model.motor_speeds_to_thrusts(wmc[:, i])
+        #     (
+        #         self.outputs_times,
+        #         p,
+        #         q,
+        #         v,
+        #         wb,
+        #     ) = bag_reader_agi.read_odometry()
+        #     eul = np.zeros((3, q.shape[1]))
+        #     for t in range(q.shape[1]):
+        #         eul[:, t] = helpers.quaternion_to_zyx_euler(q[:, t])
+        #     self.outputs = np.concatenate((p, eul, v, wb), axis=0)
+
+        #     self.measurement_noises_times, self.measurement_noises = (
+        #         bag_reader_agi.read_eta()
+        #     )
+        #     if self.measurement_noises_times.size > 0:
+        #         self.measurement_noises_gt_known = True
+        # elif self.exp_type == "exp":
+        #     log.fatal(
+        #         f"Experiment data reading not supported yet! Exiting."
+        #     )
+        #     # bag_reader_agi = bagreaders.BagReaderAgi(
+        #     #     self.bag_dir + self.bag_file_name,
+        #     #     f"/{self.model_name}{self.quad_number}",
+        #     # )
+        #     # self.inputs_times, self.inputs = bag_reader_agi.read_command_thrusts()
+        #     # self.inputs = self.model.thrusts_to_motor_speeds(
+        #     #     self.inputs
+        #     # )  # NOTE: convert thrusts to motor speeds for consistent input definition
+        #     # self.outputs_times, p, q, v, wb, _, wm = bag_reader_agi.read_state()
+        #     # self.outputs = np.concatenate((p, q, v, wb, wm), axis=0)
+        # else:
+        #     log.fatal(
+        #         f"Inputs reading not supported for experiment type {self.exp_type}! Exiting."
+        #     )
+        #     exit(1)
+        # self.P_ekf_times, self.P_ekf = bag_reader_agi.read_ekf_p()
+
+        # New setup using json files
+        # Store data in json file in dict
+        with open(f"{self.json_dir}/{self.json_name}.json", "r") as openfile:
+            json_data = json.load(openfile)
+        self.inputs_times = np.array(json_data["/step_control"]["t"])
+        wmc = np.array(json_data["/step_control"]["u"])
+        n_inputs_times = len(self.inputs_times)
+        self.inputs = np.zeros((4, n_inputs_times))
+        for i in range(n_inputs_times):
+            self.inputs[:, i] = self.model.motor_speeds_to_thrusts(wmc[:, i])
+        self.outputs_times = np.array(json_data["/falcon/ground_truth/odometry"]["t"])
+        p = np.array(json_data["/falcon/ground_truth/odometry"]["p"])
+        q = np.array(json_data["/falcon/ground_truth/odometry"]["q"])
+        v = np.array(json_data["/falcon/ground_truth/odometry"]["v"])
+        wb = np.array(json_data["/falcon/ground_truth/odometry"]["wb"])
+        eul = np.zeros((3, q.shape[1]))
+        for t in range(q.shape[1]):
+            eul[:, t] = helpers.quaternion_to_zyx_euler(q[:, t])
+        self.outputs = np.concatenate((p, eul, v, wb), axis=0)
+
+        self.disturbances_times = np.array(json_data["/w"]["t"])
+        self.disturbances = np.array(json_data["/w"]["w"])
+        if self.disturbances_times.size > 0:
+            self.disturbances_gt_known = True
+        self.measurement_noises_times = np.array(json_data["/eta"]["t"])
+        self.measurement_noises = np.array(json_data["/eta"]["eta"])
+        if self.measurement_noises_times.size > 0:
+            self.measurement_noises_gt_known = True
+        # -------------------------------------------------------------------------------
+
+        # SELECT DATA
+        # -------------------------------------------------------------------------------
+        # Check for existing data selection entry corresponding to this json data file in the json file
+        data_sel_path = f"{self.data_sel_dir}/{self.data_sel_file_name}"
+        with open(data_sel_path, "r") as openfile:
+            select_data_dict = json.load(openfile)
+
+        if (self.json_name in select_data_dict) and not self.overwrite_data_sel:
+            sel = select_data_dict[self.json_name]
+        else:
+            if self.automatic_data_sel:
+                # Select data between the indices of the crossings at (0,0) indicated in the yaml file
+                # Apply moving average to smooth the output data and remove head and tail
+                window_size = 10
+                x_ma = np.convolve(
+                    self.outputs[0, :], np.ones(window_size) / window_size, mode="same"
+                )
+                x_ma = x_ma[window_size - 1 : -window_size + 1]
+                y_ma = np.convolve(
+                    self.outputs[1, :], np.ones(window_size) / window_size, mode="same"
+                )
+                y_ma = y_ma[window_size - 1 : -window_size + 1]
+
+                # Determine distances of all positions to (0,0)
+                distances = np.sqrt(x_ma**2 + y_ma**2)
+
+                # Select the distances from the first moment that we are far enough away from (0,0)
+                idx_offset = np.where(
+                    distances > self.automatic_data_sel_first_offset_dist
+                )[0][0]
+                distances = distances[idx_offset:]
+
+                # Determine the crossings: the points where the distance gradient changes sign from negative to positive
+                distances_gradient = np.gradient(distances, self.ts)
+
+                # In case of noisy measurements: select the first high positive gradient of the gradient since some time (above 4 standard deviations of distribution based on double gradient)
+                distances_gradient_gradient = np.gradient(distances_gradient, self.ts)
+
+                # Compute indices of positive outliers in distances_gradient_gradient
+                z_scores = np.abs(stats.zscore(distances_gradient_gradient))
+                outlier_indices = np.where(z_scores > 4)[0]
+
+                # Remove subsequent outlier indices
+                outlier_indices_diff = np.diff(outlier_indices)
+                crossing_idc = (
+                    idx_offset
+                    + outlier_indices[
+                        np.append(
+                            [0], np.where(outlier_indices_diff > 1 / self.ts)[0] + 1
+                        )
+                    ]
+                )
+
+                # Determine the selected points
+                min_n_crossings = self.automatic_data_sel_crossing_idc_to_sel[1] + 1
+                if np.isscalar(crossing_idc):
+                    crossing_idc = np.array([crossing_idc])
+                n_crossings = len(crossing_idc)
+                if n_crossings < min_n_crossings:
+                    print(
+                        f"WARNING: Automatic data selection: expected at least {min_n_crossings} detected crossings, but only found {n_crossings}. Exiting."
+                    )
+                    exit(1)
+                else:
+                    if n_crossings > min_n_crossings:
+                        print(
+                            f"INFO: Automatic data selection: expected at least {min_n_crossings} detected crossings, found {n_crossings}."
+                        )
+                    crossing_idx_0 = crossing_idc[
+                        self.automatic_data_sel_crossing_idc_to_sel[0]
+                    ]
+                    crossing_idx_1 = crossing_idc[
+                        self.automatic_data_sel_crossing_idc_to_sel[1]
+                    ]
+                    sel = [
+                        (
+                            self.outputs_times[crossing_idx_0],
+                            self.outputs[0, crossing_idx_0],
+                        ),
+                        (
+                            self.outputs_times[crossing_idx_1],
+                            self.outputs[0, crossing_idx_1],
+                        ),
+                    ]
+                    print(f"Automatically selected points: {sel}")
+            else:
+                fig, ax = plt.subplots(2, 1)
+                fig.suptitle(f"Select part of the interpolated data")
+                ax[0].plot(self.outputs_times, self.outputs[0, :], label="x")
+                ax[0].plot(self.outputs_times, self.outputs[1, :], label="y")
+                ax[0].plot(self.outputs_times, self.outputs[2, :], label="z")
+                ax[0].legend()
+                ax[0].set_ylabel("Amplitude (m)")
+                ax[1].plot(self.inputs_times, self.inputs[0, :], label="t0c")
+                ax[1].plot(self.inputs_times, self.inputs[1, :], label="t1c")
+                ax[1].plot(self.inputs_times, self.inputs[2, :], label="t2c")
+                ax[1].plot(self.inputs_times, self.inputs[3, :], label="t3c")
+                ax[1].set_ylabel("Amplitude (N)")
+                # ax[1].plot(self.inputs_times, self.inputs[0, :], label="wm0c")
+                # ax[1].plot(self.inputs_times, self.inputs[1, :], label="wm1c")
+                # ax[1].plot(self.inputs_times, self.inputs[2, :], label="wm2c")
+                # ax[1].plot(self.inputs_times, self.inputs[3, :], label="wm3c")
+                # ax[1].plot(self.outputs_times, self.outputs[12, :], label="wm0")
+                # ax[1].plot(self.outputs_times, self.outputs[13, :], label="wm1")
+                # ax[1].plot(self.outputs_times, self.outputs[14, :], label="wm2")
+                # ax[1].plot(self.outputs_times, self.outputs[15, :], label="wm3")
+                # ax[1].set_ylabel("Amplitude (rad/s)")
+                ax[1].legend()
+                ax[1].set_xlabel("Time (s)")
+                sel = plt.ginput(2, show_clicks=True)
+                print(f"Manually selected points: {sel}")
+                print("You can close the data selection figure now.")
+
+            plt.figure()
+            outputs_idc = np.where(
+                np.logical_and(
+                    self.outputs_times >= sel[0][0], self.outputs_times <= sel[1][0]
+                )
+            )[0]
+            plt.plot(
+                self.outputs_times[outputs_idc], self.outputs[0, outputs_idc], label="x"
+            )
+            plt.plot(
+                self.outputs_times[outputs_idc], self.outputs[1, outputs_idc], label="y"
+            )
+            plt.title("Selected data")
+            plt.xlabel("Time (s)")
+            plt.ylabel("Amplitude (m)")
+            plt.legend()
+            plt.show()
+
+            select_data_dict[self.json_name] = sel
+            with open(data_sel_path, "w") as outfile:
+                json.dump(select_data_dict, outfile)
+            print(f"Added sel for {self.json_name} to {self.data_sel_file_name}.")
+
+        # Select the data in the corresponding arrays
+        inputs_idc = np.where(
+            np.logical_and(
+                self.inputs_times >= sel[0][0], self.inputs_times <= sel[1][0]
+            )
+        )[0]
+        self.inputs_times = self.inputs_times[inputs_idc]
+        self.inputs = self.inputs[:, inputs_idc]
+
+        outputs_idc = np.where(
+            np.logical_and(
+                self.outputs_times >= sel[0][0], self.outputs_times <= sel[1][0]
+            )
+        )[0]
+        self.outputs_times = self.outputs_times[outputs_idc]
+        self.outputs = self.outputs[:, outputs_idc]
+
+        if self.disturbances_gt_known:
+            disturbances_idc = np.where(
+                np.logical_and(
+                    self.disturbances_times >= sel[0][0],
+                    self.disturbances_times <= sel[1][0],
+                )
+            )[0]
+            self.disturbances_times = self.disturbances_times[disturbances_idc]
+            self.disturbances = self.disturbances[:, disturbances_idc]
+
+        if self.measurement_noises_gt_known:
+            measurement_noises_idc = np.where(
+                np.logical_and(
+                    self.measurement_noises_times >= sel[0][0],
+                    self.measurement_noises_times <= sel[1][0],
+                )
+            )[0]
+            self.measurement_noises_times = self.measurement_noises_times[
+                measurement_noises_idc
+            ]
+            self.measurement_noises = self.measurement_noises[:, measurement_noises_idc]
+
+        # # Compare all self.inputs_times and self.outputs_times with each and print warning if there are any differences
+        # for i in range(len(self.inputs_times)):
+        #     if self.inputs_times[i] != self.outputs_times[i]:
+        #         print(
+        #             f"WARNING: inputs_times and outputs_times differ at index {i}: {self.inputs_times[i]} vs {self.outputs_times[i]}"
+        #         )
+        # # Compare the RK4 results with the recorded data
+        # y_diff = np.zeros((self.n_states, self.outputs.shape[1]))
+        # for i in range(1, y_diff.shape[1]):
+        #     y_diff[:, i] = (
+        #         self.outputs[:, i]
+        #         - np.array(
+        #             helpers.solve_rk4(
+        #                 self.model.state_update_ct,
+        #                 self.outputs[:, i - 1],
+        #                 self.inputs[:, i - 1],
+        #                 self.ts,
+        #             )
+        #         ).flatten()
+        #     )
+        # for i in range(1, y_diff.shape[1]):
+        #     if np.max(np.abs(y_diff[:, i])) > helpers.FLOAT_TOL:
+        #         print(
+        #             f"WARNING: RK4 and recorded data differ at timestep {i}: {y_diff[:, i]}"
+        #         )
+        # -------------------------------------------------------------------------------
+
+        # INTERPOLATE DATA
+        # -------------------------------------------------------------------------------
+        self.times_max_begin = max(self.outputs_times[0], self.inputs_times[0])
+        self.times_min_end = min(self.outputs_times[-1], self.inputs_times[-1])
+        self.times_int = np.arange(self.times_max_begin, self.times_min_end, self.ts)
+        if self.exp_type == "sim" or self.exp_type == "gaz":
+            self.times_int = np.round(
+                self.times_int, 5
+            )  # NOTE: same argument as before with inputs times
+
+        f = interpolate.interp1d(self.inputs_times, self.inputs, kind="previous")
+        self.inputs_int = f(self.times_int)
+        f = interpolate.interp1d(self.outputs_times, self.outputs)
+        self.outputs_int = f(self.times_int)
+
+        if self.disturbances_gt_known:
+            f = interpolate.interp1d(self.disturbances_times, self.disturbances)
+            self.disturbances_int = f(self.times_int)
+
+        if self.measurement_noises_gt_known:
+            f = interpolate.interp1d(
+                self.measurement_noises_times, self.measurement_noises
+            )
+            self.measurement_noises_int = f(self.times_int)
+
+        # Create time and P data corresponding to the interpolated times by selecting the closest data points
+        # self.P_ekf_int = np.array(
+        #     [self.P_ekf[np.abs(self.P_ekf_times - t).argmin()] for t in self.times_int]
+        # )
+
+        self.times_int = self.times_int - self.times_int[0]
+        self.n_times = len(self.times_int)
+        # -------------------------------------------------------------------------------
+
+    def compute_model_mismatch_mhe(self):
+        # Based on code here: https://gitlab.ethz.ch/ics/parametric-mhe/-/blob/main/parametric-mhe.ipynb
+
+        # Number of iterations
+        # Empirically determine if Q and R are converged by checking their eigenvalues
+        self.Q_cov_est_all = np.zeros(
+            (self.mhe_n_iter + 1, self.n_disturbances, self.n_disturbances)
+        )
+        self.R_cov_est_all = np.zeros(
+            (self.mhe_n_iter + 1, self.n_measurement_noises, self.n_measurement_noises)
+        )
+
+        # Number of MHE time steps
+        if self.mhe_n_times < 1:
+            self.mhe_n_times = self.n_times
+        elif self.mhe_n_times <= self.n_times - self.M:
+            self.mhe_n_times = self.M + self.mhe_n_times
+        else:
+            raise ValueError(
+                f"Number of MHE time steps ({self.mhe_n_times}) is larger than the maximum allowed number of time steps ({self.n_times - self.M})."
+            )
+
+        # Set static Agilicious EKF covariance matrices
+        Q_ekf = np.diag(
+            [1e-5, 1e-5, 1e-5, 10, 10, 10, 10, 10, 10, 10, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+        )
+
+        # NOTE: remove one of the attitude weights from Q_ekf and recorded self.P_ekf_int in case the attitude is represented by Euler angles
+        # Remove 6th row and column from Q_ekf
+        Q_ekf = np.delete(Q_ekf, [6], axis=0)
+        Q_ekf = np.delete(Q_ekf, [6], axis=1)
+        # self.P_ekf_int = np.delete(self.P_ekf_int, [6], axis=1)
+        # self.P_ekf_int = np.delete(self.P_ekf_int, [6], axis=2)
+
+        # NOTE: the EKF does not provide covariance values for the bias-corrected angular rates and linear z acceleration, so estimate these matrices manually
+        # NOTE: the bias-corrected angular rates are represented by 2 states each, since they are 2nd-order models
+        # Q_ekf_wb = np.diag([1, 1, 1, 1, 1, 1])
+        # Q_ekf_az = 1
+
+        # NOTE: the EKF does not provide covariance values for the bias-corrected angular rates and motor speeds, so estimate these matrices manually
+        omega_body_cov = 10
+        Q_ekf_omega_body = np.diag([omega_body_cov, omega_body_cov, omega_body_cov])
+        wm_cov = 10
+        Q_ekf_omega_mot = np.diag([wm_cov, wm_cov, wm_cov, wm_cov])
+
+        # Construct EKF covariance matrix for relevant states considered here: [wb;ab;wm]
+        # R_ekf = np.diag(
+        #     [1e-4, 1e-4, 1e-4, 1e2, 1e2, 1e2, wm_cov, wm_cov, wm_cov, wm_cov]
+        # )
+        # Construct EKF covariance matrix for relevant states considered here: [wb;ab]
+        R_ekf = np.diag([1e-4, 1e-4, 1e-4, 1e2, 1e2, 1e2])
+
+        # Convert self.P_ekf_int to continuous time
+        # self.P_ekf_int_ct = self.P_ekf_int / self.ts**2
+
+        # NOTE: the EKF does not provide covariance values for the bias-corrected linear z acceleration and angular rates
+        # Therefore, take [az_body;wb_body] = H * x_ekf + K * y_ekf, with R_ekf_wb_az = H * P * H' + K * R * K'
+        # H = np.concatenate(
+        #     (
+        #         np.concatenate(
+        #             (np.zeros((3, 10)), -np.diag([1, 1, 1]), np.zeros((3, 3))), axis=1
+        #         ),
+        #         np.concatenate((np.zeros((1, 15)), -np.eye(1)), axis=1),
+        #     ),
+        #     axis=0,
+        # )
+        # K = np.concatenate(
+        #     (
+        #         np.concatenate((np.eye(3), np.zeros((3, 7))), axis=1),
+        #         np.concatenate((np.zeros((1, 5)), np.eye(1), np.zeros((1, 4))), axis=1),
+        #     ),
+        #     axis=0,
+        # )
+        # NOTE: the EKF does not provide covariance values for the bias-corrected angular rates and motor speeds
+        # Therefore, take [omega_body;omega_motor] = H * x_ekf + K * y_ekf, with R_ekf_omega_body_mot = H * P * H' + K * R * K'
+        #  with R_ekf for motor velocities is set to a low value, since motor speeds measurements are very accurate
+        # H = np.concatenate(
+        #     (
+        #         np.concatenate(
+        #             (np.zeros((3, 9)), -np.eye(3), np.zeros((3, 3))), axis=1
+        #         ),
+        #         np.zeros((4, 15)),
+        #     ),
+        #     axis=0,
+        # )
+        # K = np.concatenate(
+        #     (
+        #         np.concatenate((np.eye(3), np.zeros((3, 7))), axis=1),
+        #         np.concatenate((np.zeros((4, 6)), np.eye(4)), axis=1),
+        #     ),
+        #     axis=0,
+        # )
+        # NOTE: the EKF does not provide covariance values for the bias-corrected angular rates
+        # Therefore, take omega_body = H * x_ekf + K * y_ekf, with R_ekf_omega_body = H * P * H' + K * R * K'
+        H = np.concatenate((np.zeros((3, 9)), -np.eye(3), np.zeros((3, 3))), axis=1)
+        K = np.concatenate((np.eye(3), np.zeros((3, 3))), axis=1)
+
+        # R_ekf_wb_az = np.array(
+        #     [
+        #         H @ self.P_ekf_int_ct[t] @ H.T + K @ R_ekf @ K.T
+        #         for t in range(self.n_times)
+        #     ]
+        # )
+        # R_ekf_omega_body_mot = np.array(
+        #     [
+        #         H @ self.P_ekf_int_ct[t] @ H.T + K @ R_ekf @ K.T
+        #         for t in range(self.n_times)
+        #     ]
+        # )
+        # R_ekf_omega_body = np.array(
+        #     [
+        #         H @ self.P_ekf_int_ct[t] @ H.T + K @ R_ekf @ K.T
+        #         for t in range(self.n_times)
+        #     ]
+        # )
+
+        # self.P_ekf_int_wb_az = np.array(
+        #     [
+        #         block_diag(self.P_ekf_int_ct[t, :10, :10], R_ekf_wb_az[t])
+        #         for t in range(self.n_times)
+        #     ]
+        # )
+        # self.P_ekf_int_omega = np.array(
+        #     [
+        #         block_diag(self.P_ekf_int_ct[t, :9, :9], R_ekf_omega_body_mot[t])
+        #         for t in range(self.n_times)
+        #     ]
+        # )
+        # self.P_ekf_int_omega = np.array(
+        #     [
+        #         block_diag(self.P_ekf_int_ct[t, :9, :9], R_ekf_omega_body[t])
+        #         for t in range(self.n_times)
+        #     ]
+        # )
+
+        # Derive static weighting (precision) matrices from Agilicious covariance matrices
+        # self.Q_cov_est_all[0, :, :] = block_diag(Q_ekf[7:10, 7:10], Q_ekf_wb, Q_ekf_az)
+        # self.Q_cov_est_all[0, :, :] = block_diag(
+        #     Q_ekf[:9, :9], Q_ekf_omega_body, Q_ekf_omega_mot
+        # )
+        # self.Q_cov_est_all[0, :, :] = block_diag(
+        #     Q_ekf[6:9, 6:9], Q_ekf_omega_body, Q_ekf_omega_mot
+        # )
+        # self.Q_cov_est_all[0, :, :] = 1e-6 * np.eye(self.n_disturbances)
+        # self.Q_cov_est_all[0, :, :] = np.eye(self.n_disturbances)
+        # self.Q_cov_est_all[0, :, :] = 1e3 * np.eye(self.n_disturbances)
+        # if self.disturbances_gt_known:
+        #     self.Q_cov_est_all[0, :, :] = np.cov(self.disturbances_int)
+        self.Q_cov_est_all[0, :, :] = np.diag(
+            np.concatenate(
+                [
+                    0.2**2 / 12 * np.ones((3,)),
+                    1 / 12 * np.ones((3,)),
+                ]
+            )
+        )
+        # self.Q_cov_est_all[0, :, :] = self.eps * np.eye(self.n_disturbances)
+        # with open("Q_est.json", "r") as openfile:
+        #     Q_est_dict = json.load(openfile)
+        #     self.Q_cov_est_all[0, :, :] = np.array(Q_est_dict["Q_cov_est_all"])[
+        #         -1, :, :
+        #     ]
+        # self.Q_cov_est_all[0, :, :] = np.diag(
+        #     np.concatenate(
+        #         [
+        #             0.2**2 / 12 * np.ones((3,)),
+        #             1 / 12 * np.ones((3,)),
+        #             1 / 3 * np.ones((4,)),
+        #         ]
+        #     )
+        # )
+
+        # if self.measurement_noises_gt_known:
+        #     self.R_cov_est_all[0, :, :] = np.cov(self.measurement_noises_int)
+        self.R_cov_est_all[0, :, :] = np.diag(
+            np.concatenate(
+                [
+                    0.001**2 / 12 * np.ones((3,)),
+                    0.01256**2 / 12 * np.ones((3,)),
+                    0.01**2 / 12 * np.ones((3,)),
+                    0.0152**2 / 12 * np.ones((3,)),
+                ]
+            )
+        )
+        # self.R_cov_est_all[0, :, :] = self.eps * np.eye(self.n_measurement_noises)
+        # with open("R_est.json", "r") as openfile:
+        #     R_est_dict = json.load(openfile)
+        #     self.R_cov_est_all[0, :, :] = np.array(R_est_dict["R_cov_est_all"])[
+        #         -1, :, :
+        #     ]
+        self.R_cov_arr = np.zeros(
+            (self.n_times, self.n_measurement_noises, self.n_measurement_noises)
+        )
+        # for t in range(self.n_times):
+        #     # self.R_cov_arr[t] = self.P_ekf_int_wb_az[t]
+        #     # self.R_cov_arr[t] = self.P_ekf_int_omega[t]
+        #     self.R_cov_arr[t] = self.P_ekf_int_omega[t][
+        #         [0, 1, 2, 3, 4, 5, 9, 10, 11], [0, 1, 2, 3, 4, 5, 9, 10, 11]
+        #     ]  # TODO: write in terms of C matrix
+        # self.R_cov_est_all[0, :, :] = self.R_cov_arr[0]
+
+        # Initialize parameters, cost and initial guess
+        p = np.zeros((self.n_inputs + self.n_outputs,))
+        yref = np.zeros((self.n_disturbances + self.n_measurement_noises,))
+        x_warmstart = np.zeros(
+            (self.mhe_n_iter, self.mhe_n_times, self.n_states, self.M + 1)
+        )
+        # x_warmstart[0, 0, self.output_idc, 0] = self.outputs_int[:, 0]
+        # x_warmstart[0, 0, self.hidden_state_idc, 0] = np.zeros((self.n_hidden_states,))
+        # for k in range(1, self.M + 1):
+        #     x_warmstart[0, 0, :, k] = np.array(
+        #         helpers.solve_rk4(
+        #             self.model.state_update_ct,
+        #             x_warmstart[0, 0, :, k - 1],
+        #             self.inputs_int[:, k - 1],
+        #             self.ts,
+        #         )
+        #     ).flatten()
+        # Set initial guess for the first time step in the first iteration
+        # Initial states equal the measured outputs => start from non-zero disturbance values
+        for k in range(self.M + 1):
+            x_warmstart[0, 0, self.output_idc, k] = self.outputs_int[:, k]
+            x_warmstart[0, 0, self.hidden_state_idc, k] = np.zeros(
+                (self.n_hidden_states,)
+            )
+        u_warmstart = np.zeros(
+            (self.mhe_n_iter, self.mhe_n_times, self.n_disturbances, self.M)
+        )
+
+        # Create storage for cost values
+        self.Q_mhe_all = np.zeros(
+            (self.mhe_n_iter, self.n_disturbances, self.n_disturbances)
+        )
+        self.R_mhe_all = np.zeros(
+            (self.mhe_n_iter, self.n_measurement_noises, self.n_measurement_noises)
+        )
+        self.costs_total = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
+        self.costs_term = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
+        if self.exp_type == "sim":
+            self.costs_total_gt = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
+
+        # Create storage for state and noise results
+        self.x_mhe_all = np.zeros(
+            (self.mhe_n_iter, self.mhe_n_times - self.M, self.n_states, self.M + 1)
+        )
+        self.w_mhe_all = np.zeros(
+            (self.mhe_n_iter, self.mhe_n_times - self.M, self.n_disturbances, self.M)
+        )
+        self.eta_mhe_all = np.zeros(
+            (
+                self.mhe_n_iter,
+                self.mhe_n_times - self.M,
+                self.n_measurement_noises,
+                self.M + 1,
+            )
+        )
+
+        # Iteratively find w_est, eta_est, Q and R
+        for i in range(self.mhe_n_iter):
+            print(f"\nIteration {i + 1}/{self.mhe_n_iter}")
+
+            # Compute Q and R weighting matrices
+            self.Q_mhe_all[i, :, :], self.R_mhe_all[i, :, :] = (
+                helpers.get_mhe_weighting_matrices(
+                    self.Q_cov_est_all[i, :, :], self.R_cov_est_all[i, :, :], self.eps
+                )
+            )
+
+            # Perform MHE from index self.M onwards
+            for t in range(self.M, self.mhe_n_times):
+                if t < self.mhe_n_times - 1:
+                    print(
+                        f"Time step {t - self.M + 1}/{self.mhe_n_times - self.M}",
+                        end="\r",
+                    )
+                else:
+                    print(f"Time step {t - self.M + 1}/{self.mhe_n_times - self.M}")
+
+                # Set up problem stages 0 - self.M-1
+                for k in range(self.M):
+                    # Update EKF state measurement precision matrix
+                    # if i == 0:
+                    #     self.R_mhe_all[i, :, :] = np.linalg.inv(self.R_cov_arr[t - self.M + k])
+
+                    # Update cost terms
+                    W = block_diag(self.Q_mhe_all[i, :, :], self.R_mhe_all[i, :, :])
+                    self.solver.cost_set(k, "W", W, api="new")
+                    self.solver.cost_set(k, "yref", yref)
+                    self.solver.cost_set(k, "scaling", self.cost_scaling)
+
+                    # Update parameters
+                    p = np.concatenate(
+                        (
+                            self.inputs_int[:, t - self.M + k],
+                            self.outputs_int[:, t - self.M + k],
+                        )
+                    )
+                    self.solver.set(k, "p", p)
+
+                    # Update initial guess
+                    self.solver.set(k, "x", x_warmstart[i, t - self.M, :, k])
+                    self.solver.set(k, "u", u_warmstart[i, t - self.M, :, k])
+
+                # Set up problem stage self.M
+                W = self.R_mhe_all[i, :, :]
+                self.solver.cost_set(self.M, "W", W, api="new")
+                self.solver.cost_set(self.M, "yref", yref[-self.n_measurement_noises :])
+                self.solver.cost_set(self.M, "scaling", self.cost_scaling)
+                p = np.concatenate(
+                    (
+                        self.inputs_int[:, t],
+                        self.outputs_int[:, t],
+                    )
+                )
+                self.solver.set(self.M, "p", p)
+                self.solver.set(self.M, "x", x_warmstart[i, t - self.M, :, self.M])
+
+                # Run solver
+                status = self.solver.solve()
+                if status != 0:
+                    raise Exception(
+                        f"Solver for estimating state at t={t} (index {t - self.M}) returned status {status}: {helpers.get_acados_status_message(status)}"
+                    )
+
+                # Store result:
+                # - estimated state of the current timestep
+                # - estimated disturbances of the current timestep
+                # - estimated measurement noises of the current timestep
+                # - total cost
+                # - terminal cost
+                # - ground truth cost (if available)
+                for k in range(self.M):
+                    self.x_mhe_all[i, t - self.M, :, k] = self.solver.get(k, "x")
+                    self.w_mhe_all[i, t - self.M, :, k] = self.solver.get(k, "u")
+                    self.eta_mhe_all[i, t - self.M, :, k] = self.F_transpose @ (
+                        self.outputs_int[:, t - self.M + k]
+                        - self.model.get_outputs(
+                            self.x_mhe_all[i, t - self.M, self.output_idc, k],
+                            self.inputs_int[:, t - self.M + k],
+                        )
+                    )
+                self.x_mhe_all[i, t - self.M, :, self.M] = self.solver.get(self.M, "x")
+                self.eta_mhe_all[i, t - self.M, :, self.M] = self.F_transpose @ (
+                    self.outputs_int[:, t]
+                    - self.model.get_outputs(
+                        self.x_mhe_all[i, t - self.M, self.output_idc, self.M],
+                        self.inputs_int[:, t],
+                    )
+                )
+                self.costs_total[i, t - self.M] = self.solver.get_cost()
+                self.costs_term[i, t - self.M] = helpers.get_cost_terminal(
+                    self.eta_mhe_all[i, t - self.M, :, self.M].reshape(
+                        self.n_measurement_noises, 1
+                    ),
+                    self.R_mhe_all[i, :, :],
+                )
+                if self.disturbances_gt_known and self.measurement_noises_gt_known:
+                    self.costs_total_gt[i, t - self.M] = helpers.get_cost_mhe(
+                        self.M,
+                        self.disturbances_int[:, t - self.M : t],
+                        self.measurement_noises_int[:, t - self.M : t + 1],
+                        self.Q_mhe_all[i, :, :],
+                        self.R_mhe_all[i, :, :],
+                        np.arange(self.M + 1),
+                    )
+
+                # Create warm-start for run at next timestep: current optimal solution + one forward-simulated step
+                if t < self.mhe_n_times - 1:
+                    for k in range(self.M):
+                        x_warmstart[i, t - self.M + 1, :, k] = self.x_mhe_all[
+                            i, t - self.M, :, k + 1
+                        ]
+                        if k < self.M - 1:
+                            u_warmstart[i, t - self.M + 1, :, k] = self.w_mhe_all[
+                                i, t - self.M, :, k + 1
+                            ]
+                        else:
+                            u_warmstart[i, t - self.M + 1, :, k] = np.zeros(
+                                (self.n_disturbances,)
+                            )
+                    x_warmstart[i, t - self.M + 1, :, self.M] = np.array(
+                        helpers.solve_rk4(
+                            self.model.state_update_ct,
+                            x_warmstart[i, t - self.M + 1, :, self.M - 1],
+                            self.inputs_int[:, t],
+                            self.ts,
+                        )
+                    ).flatten()
+                # Copy the first solution to the first warm-start in the next iteration (if there is one)
+                elif i < self.mhe_n_iter - 1:
+                    x_warmstart[i + 1, 0, :, :] = self.x_mhe_all[i, 0, :, :]
+                    u_warmstart[i + 1, 0, :, :] = self.w_mhe_all[i, 0, :, :]
+
+            # Update Q and R based on estimated disturbances measurement noises
+            # Estimate full covariance matrices Q and R
+            Q_est = np.cov(
+                np.squeeze(self.w_mhe_all[i, :, :, self.stage_est]), rowvar=False
+            )
+            R_est = np.cov(
+                np.squeeze(self.eta_mhe_all[i, :, :, self.stage_est]), rowvar=False
+            )
+            # Only estimate diagonal elements of Q and R
+            # Q_est = np.diag(
+            #     np.concatenate(
+            #         [
+            #             np.var(self.w_mhe_all[i, :, :, self.stage_est], axis=0),
+            #         ]
+            #     )
+            # )
+            # R_est = np.diag(
+            #     np.concatenate(
+            #         [
+            #             np.var(self.eta_mhe_all[i, :, :, self.stage_est], axis=0),
+            #         ]
+            #     )
+            # )
+            # Update covariance matrices Q and R
+            # stepsize = 0.5
+            # self.Q_cov_est_all[i + 1, :, :] = self.Q_cov_est_all[
+            #     i, :, :
+            # ]  # keep the same Q covariance matrix
+            self.Q_cov_est_all[i + 1, :, :] = Q_est
+            # self.Q_cov_est_all[i + 1, :, :] = self.Q_cov_est_all[i, :, :] - stepsize * (
+            #     Q_est - self.Q_cov_est_all[i, :, :]
+            # )
+            # self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[
+            #     i, :, :
+            # ]  # keep the same R covariance matrix
+            self.R_cov_est_all[i + 1, :, :] = R_est
+            # self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[i, :, :] - stepsize * (
+            #     R_est - self.R_cov_est_all[i, :, :]
+            # )
+            # print(f"Q_cov_est_all[i + 1, :, :] = {self.Q_cov_est_all[i + 1, :, :]}")
+            # print(f"R_cov_est_all[i + 1, :, :] = {self.R_cov_est_all[i + 1, :, :]}")
+
+            # # Print maximum likelihood costs before and after updating Q and R over a single horizon
+            # print(
+            #     f"MLE cost iter {i}: {float(helpers.get_cost_mle(self.M, self.w_mhe_all[i, t - self.M, :, :], self.eta_mhe_all[i, t - self.M, :, :], self.Q_mhe_all[i, :, :], self.R_mhe_all[i, :, :], self.Q_cov_est_all[i, :, :], self.R_cov_est_all[i, :, :], np.arange(self.M + 1)))}"
+            # )
+
+            # self.Q_cov_est_all[i + 1, :, :] = np.cov(
+            #     self.w_mhe_all[i, 0, :, :], rowvar=True
+            # )
+            # self.R_cov_est_all[i + 1, :, :] = np.cov(
+            #     self.eta_mhe_all[i, 0, :, :], rowvar=True
+            # )
+            # Q_mhe_updated, R_mhe_updated = helpers.get_mhe_weighting_matrices(
+            #     self.Q_cov_est_all[i + 1, :, :],
+            #     self.R_cov_est_all[i + 1, :, :],
+            #     self.eps,
+            # )
+            # print(
+            #     f"MLE cost iter {i} after update Q,R: {float(helpers.get_cost_mle(self.M, self.w_mhe_all[i, t - self.M, :, :], self.eta_mhe_all[i, t - self.M, :, :], Q_mhe_updated, R_mhe_updated, self.Q_cov_est_all[i + 1, :, :], self.R_cov_est_all[i + 1, :, :], np.arange(self.M + 1)))}"
+            # )
+
+        # Temporary: save Q and R to separate json file
+        # data_Q = {"Q_cov_est_all": self.Q_cov_est_all.tolist()}
+        # with open("Q_est.json", "w") as f:
+        #     json.dump(
+        #         data_Q,
+        #         f,
+        #     )
+        # data_R = {"R_cov_est_all": self.R_cov_est_all.tolist()}
+        # with open("R_est.json", "w") as f:
+        #     json.dump(
+        #         data_R,
+        #         f,
+        #     )
+
+    def compute_model_mismatch_bounds(self):
+        # Compute ground truth disturbance and measurement noise bounds
+        if self.disturbances_gt_known:
+            self.disturbances_min_gt_abs = np.min(self.disturbances_int, axis=1)
+            self.disturbances_max_gt_abs = np.max(self.disturbances_int, axis=1)
+            self.disturbances_bias_gt = (
+                self.disturbances_max_gt_abs + self.disturbances_min_gt_abs
+            ) / 2
+            self.disturbances_min_gt_rel = (
+                self.disturbances_min_gt_abs - self.disturbances_bias_gt
+            )
+            self.disturbances_max_gt_rel = (
+                self.disturbances_max_gt_abs - self.disturbances_bias_gt
+            )
+        if self.measurement_noises_gt_known:
+            self.measurement_noises_min_gt_abs = np.min(
+                self.measurement_noises_int, axis=1
+            )
+            self.measurement_noises_max_gt_abs = np.max(
+                self.measurement_noises_int, axis=1
+            )
+
+        # Compute estimated disturbance and measurement noise bounds
+        self.disturbances_min_est_abs = np.min(
+            self.w_mhe_all[-1, :, :, self.stage_est], axis=0
+        )
+        self.disturbances_max_est_abs = np.max(
+            self.w_mhe_all[-1, :, :, self.stage_est], axis=0
+        )
+        # self.disturbances_min_est_abs = np.min(self.w_mhe_all[-1, :, :, :], axis=(0, 2))
+        # self.disturbances_max_est_abs = np.max(self.w_mhe_all[-1, :, :, :], axis=(0, 2))
+        self.disturbances_bias_est = (
+            self.disturbances_max_est_abs + self.disturbances_min_est_abs
+        ) / 2
+        self.disturbances_min_est_rel = (
+            self.disturbances_min_est_abs - self.disturbances_bias_est
+        )
+        self.disturbances_max_est_rel = (
+            self.disturbances_max_est_abs - self.disturbances_bias_est
+        )
+        self.meas_noises_min_est_abs = np.min(
+            self.eta_mhe_all[-1, :, :, self.stage_est], axis=0
+        )
+        self.meas_noises_max_est_abs = np.max(
+            self.eta_mhe_all[-1, :, :, self.stage_est], axis=0
+        )
+        # self.meas_noises_min_est_abs = np.min(self.eta_mhe_all[-1, :, :, :], axis=(0, 2))
+        # self.meas_noises_max_est_abs = np.max(self.eta_mhe_all[-1, :, :, :], axis=(0, 2))
+
+        # Print results if desired
+        do_print_disturbances = (
+            self.do_print_disturbances_min
+            or self.do_print_disturbances_max
+            or self.do_print_disturbances_bias
+        )
+        if do_print_disturbances:
+            print(f"\nDisturbance bounds:")
+            if self.do_print_disturbances_min:
+                if self.disturbances_gt_known:
+                    if np.all(self.disturbances_min_gt_abs != 0):
+                        print(
+                            f"Min ratio:  {self.disturbances_min_est_abs / self.disturbances_min_gt_abs}"
+                        )
+                    print(f"Min GT:  {self.disturbances_min_gt_abs}")
+                # print(f"Min:     {self.disturbances_min_est_abs}")
+                print(f"Min:     {self.disturbances_min_est_rel}")
+            if self.do_print_disturbances_max:
+                if self.disturbances_gt_known:
+                    if np.all(self.disturbances_min_gt_abs != 0):
+                        print(
+                            f"Max ratio:  {self.disturbances_max_est_abs / self.disturbances_max_gt_abs}"
+                        )
+                    print(f"Max GT:  {self.disturbances_max_gt_abs}")
+                # print(f"Max:     {self.disturbances_max_est_abs}")
+                print(f"Max:     {self.disturbances_max_est_rel}")
+            if self.do_print_disturbances_bias:
+                if self.disturbances_gt_known:
+                    print(f"Bias GT: {self.disturbances_bias_gt}")
+                print(f"Bias:    {self.disturbances_bias_est}")
+
+        do_print_meas_noises = (
+            self.do_print_meas_noises_min or self.do_print_meas_noises_max
+        )
+        if do_print_meas_noises:
+            print(f"\nMeasurement noise bounds:")
+            if self.do_print_meas_noises_min:
+                if self.measurement_noises_gt_known:
+                    if np.all(self.measurement_noises_min_gt_abs != 0):
+                        print(
+                            f"Min ratio:  {self.meas_noises_min_est_abs / self.measurement_noises_min_gt_abs}"
+                        )
+                    print(f"Min GT:  {self.measurement_noises_min_gt_abs}")
+                print(f"Min:     {self.meas_noises_min_est_abs}")
+            if self.do_print_meas_noises_max:
+                if self.measurement_noises_gt_known:
+                    if np.all(self.measurement_noises_max_gt_abs != 0):
+                        print(
+                            f"Max ratio:  {self.meas_noises_max_est_abs / self.measurement_noises_max_gt_abs}"
+                        )
+                    print(f"Max GT:  {self.measurement_noises_max_gt_abs}")
+                print(f"Max:     {self.meas_noises_max_est_abs}")
+
+    def get_json_specific_data(self):
+        data_general = {
+            "t": self.times_int[: self.mhe_n_times].tolist(),
+            "y": self.outputs_int[:, : self.mhe_n_times].tolist(),
+            "u": self.inputs_int[:, : self.mhe_n_times].tolist(),
+        }
+        data_gt = {}
+        if self.disturbances_gt_known:
+            data_gt["w"] = self.disturbances_int[:, : self.mhe_n_times].tolist()
+        if self.measurement_noises_gt_known:
+            data_gt["eta"] = self.measurement_noises_int[:, : self.mhe_n_times].tolist()
+        data_mhe = {
+            "x_est_all": self.x_mhe_all.tolist(),
+            "w_est_all": self.w_mhe_all.tolist(),
+            "eta_est_all": self.eta_mhe_all.tolist(),
+            "Q_cov_est_all": self.Q_cov_est_all.tolist(),
+            "R_cov_est_all": self.R_cov_est_all.tolist(),
+        }
+        data_stat = {
+            "w_min_est_abs": self.disturbances_min_est_abs.tolist(),
+            "w_max_est_abs": self.disturbances_max_est_abs.tolist(),
+            "eta_min_est_abs": self.meas_noises_min_est_abs.tolist(),
+            "eta_max_est_abs": self.meas_noises_max_est_abs.tolist(),
+        }
+        data = {
+            k: v
+            for d in (data_general, data_gt, data_mhe, data_stat)
+            for k, v in d.items()
+        }
+        return data
+
+    def plot_raw_interp_inputs(self):
+        inputs_idc = np.where(
+            np.logical_and(
+                self.inputs_times >= self.times_max_begin,
+                self.inputs_times <= self.times_min_end,
+            )
+        )[0]
+        self.inputs_times = self.inputs_times[inputs_idc]
+        self.inputs = self.inputs[:, inputs_idc]
+        self.inputs_times = self.inputs_times - self.times_max_begin
+
+        handles_raw = []
+        handles_int = []
+        fig, axes = plt.subplots(
+            self.n_rows_inputs, self.n_cols_inputs, num="Raw vs interpolated inputs"
+        )
+        fig.suptitle("Raw vs interpolated inputs")
+        for input_idx in range(self.n_inputs):
+            row_idx = input_idx // self.n_cols_inputs
+            col_idx = input_idx % self.n_cols_inputs
+            handles_raw.append(
+                axes[row_idx, col_idx].plot(
+                    self.inputs_times,
+                    self.inputs[input_idx, :],
+                    "--o",
+                    linewidth=self.widths,
+                    markersize=self.sizes,
+                    label="Raw",
+                )
+            )
+            handles_int.append(
+                axes[row_idx, col_idx].plot(
+                    self.times_int,
+                    self.inputs_int[input_idx, :],
+                    "o",
+                    markersize=self.sizes,
+                    label="Interpolated",
+                )
+            )
+            axes[row_idx, col_idx].set_xlabel("Time (s)")
+            axes[row_idx, col_idx].set_ylabel(self.u_labels[input_idx])
+        fig.legend([handles_raw[0][0].get_label(), handles_int[0][0].get_label()])
+
+    def plot_raw_interp_outputs(self):
+        handles_raw = []
+        handles_int = []
+        fig, axes = plt.subplots(
+            self.n_rows_states, self.n_cols_states, num="Raw vs interpolated outputs"
+        )
+        fig.suptitle("Raw vs interpolated outputs")
+        outputs_idc = np.where(
+            np.logical_and(
+                self.outputs_times >= self.times_max_begin,
+                self.outputs_times <= self.times_min_end,
+            )
+        )[0]
+        self.outputs_times = self.outputs_times[outputs_idc]
+        self.outputs_times = self.outputs_times - self.times_max_begin
+        self.outputs = self.outputs[:, outputs_idc]
+
+        for ax_idx in range(self.n_rows_states * self.n_cols_states):
+            if self.plot_y_idx_at_ax_idx[ax_idx] == None:
+                axes.flat[ax_idx].axis("off")
+                continue
+            row_idx = ax_idx // self.n_cols_states
+            col_idx = ax_idx % self.n_cols_states
+            y_idx = self.plot_y_idx_at_ax_idx[ax_idx]
+            handles_raw.append(
+                axes[row_idx, col_idx].plot(
+                    self.outputs_times,
+                    self.outputs[y_idx, :],
+                    "--o",
+                    linewidth=self.widths,
+                    markersize=self.sizes,
+                    label="Raw",
+                )
+            )
+            handles_int.append(
+                axes[row_idx, col_idx].plot(
+                    self.times_int,
+                    self.outputs_int[y_idx, :],
+                    "o",
+                    markersize=self.sizes,
+                    label="Interpolated",
+                )
+            )
+            axes[row_idx, col_idx].set_xlabel("Time (s)")
+            axes[row_idx, col_idx].set_ylabel(self.y_labels[y_idx])
+        fig.legend([handles_raw[0][0].get_label(), handles_int[0][0].get_label()])
+
+    def plot_raw_interp_disturbances(self):
+        handles_raw = []
+        handles_int = []
+        fig, axes = plt.subplots(
+            self.n_rows_states,
+            self.n_cols_states,
+            num="Raw vs interpolated disturbances",
+        )
+        fig.suptitle("Raw vs interpolated disturbances")
+        disturbances_idc = np.where(
+            np.logical_and(
+                self.disturbances_times >= self.times_max_begin,
+                self.disturbances_times <= self.times_min_end,
+            )
+        )[0]
+        self.disturbances_times = self.disturbances_times[disturbances_idc]
+        self.disturbances_times = self.disturbances_times - self.times_max_begin
+        self.disturbances = self.disturbances[:, disturbances_idc]
+
+        for ax_idx in range(self.n_rows_states * self.n_cols_states):
+            if self.plot_w_idx_at_ax_idx[ax_idx] == None:
+                axes.flat[ax_idx].axis("off")
+                continue
+            row_idx = ax_idx // self.n_cols_states
+            col_idx = ax_idx % self.n_cols_states
+            w_idx = self.plot_w_idx_at_ax_idx[ax_idx]
+            handles_raw.append(
+                axes[row_idx, col_idx].plot(
+                    self.disturbances_times,
+                    self.disturbances[w_idx, :],
+                    "--o",
+                    linewidth=self.widths,
+                    markersize=self.sizes,
+                    label="Raw",
+                )
+            )
+            handles_int.append(
+                axes[row_idx, col_idx].plot(
+                    self.times_int,
+                    self.disturbances_int[w_idx, :],
+                    "o",
+                    markersize=self.sizes,
+                    label="Interpolated",
+                )
+            )
+            axes[row_idx, col_idx].set_xlabel("Time (s)")
+            axes[row_idx, col_idx].set_ylabel(self.w_labels[w_idx])
+        fig.legend([handles_raw[0][0].get_label(), handles_int[0][0].get_label()])
+
+    def plot_raw_interp_meas_noises(self):
+        handles_raw = []
+        handles_int = []
+        fig, axes = plt.subplots(
+            self.n_rows_states,
+            self.n_cols_states,
+            num="Raw vs interpolated measurement noises",
+        )
+        fig.suptitle("Raw vs interpolated measurement noises")
+        meas_noises_idc = np.where(
+            np.logical_and(
+                self.measurement_noises_times >= self.times_max_begin,
+                self.measurement_noises_times <= self.times_min_end,
+            )
+        )[0]
+        self.measurement_noises_times = self.measurement_noises_times[meas_noises_idc]
+        self.measurement_noises_times = (
+            self.measurement_noises_times - self.times_max_begin
+        )
+        self.measurement_noises = self.measurement_noises[:, meas_noises_idc]
+        for ax_idx in range(self.n_rows_states * self.n_cols_states):
+            if self.plot_eta_idx_at_ax_idx[ax_idx] == None:
+                axes.flat[ax_idx].axis("off")
+                continue
+            row_idx = ax_idx // self.n_cols_states
+            col_idx = ax_idx % self.n_cols_states
+            eta_idx = self.plot_eta_idx_at_ax_idx[ax_idx]
+            handles_raw.append(
+                axes[row_idx, col_idx].plot(
+                    self.measurement_noises_times,
+                    self.measurement_noises[eta_idx, :],
+                    "--o",
+                    linewidth=self.widths,
+                    markersize=self.sizes,
+                    label="Raw",
+                )
+            )
+            handles_int.append(
+                axes[row_idx, col_idx].plot(
+                    self.times_int,
+                    self.measurement_noises_int[eta_idx, :],
+                    "o",
+                    markersize=self.sizes,
+                    label="Interpolated",
+                )
+            )
+            axes[row_idx, col_idx].set_xlabel("Time (s)")
+            axes[row_idx, col_idx].set_ylabel(self.eta_labels[eta_idx])
+        fig.legend([handles_raw[0][0].get_label(), handles_int[0][0].get_label()])
+
+    def create_plots(self):
+        # General plot settings
+        self.sizes = 2
+        self.widths = 0.5
+        self.n_rows_inputs = 2
+        self.n_cols_inputs = 2
+        self.n_rows_states = 4
+        # self.n_rows_states = 5
+        self.n_cols_states = 4
+        self.plot_y_idx_at_ax_idx = [
+            0,
+            1,
+            2,
+            None,
+            3,
+            4,
+            5,
+            None,
+            6,
+            7,
+            8,
+            None,
+            9,
+            10,
+            11,
+            None,
+        ]
+        # self.plot_y_idx_at_ax_idx = [
+        #     0,
+        #     1,
+        #     2,
+        #     None,
+        #     3,
+        #     4,
+        #     5,
+        #     None,
+        #     6,
+        #     7,
+        #     8,
+        #     None,
+        #     9,
+        #     10,
+        #     11,
+        #     None,
+        #     12,
+        #     13,
+        #     14,
+        #     15,
+        # ]
+        self.plot_w_idx_at_ax_idx = [
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            0,
+            1,
+            2,
+            None,
+            3,
+            4,
+            5,
+            None,
+        ]
+        self.plot_eta_idx_at_ax_idx = [
+            0,
+            1,
+            2,
+            None,
+            3,
+            4,
+            5,
+            None,
+            6,
+            7,
+            8,
+            None,
+            9,
+            10,
+            11,
+            None,
+        ]
+        self.y_labels = [
+            "px (m)",
+            "py (m)",
+            "pz (m)",
+            "$\phi$ (rad)",
+            "$\\theta$ (rad)",
+            "$\psi$ (rad)",
+            "vx (m/s)",
+            "vy (m/s)",
+            "vz (m/s)",
+            "wbx (rad/s)",
+            "wby (rad/s)",
+            "wbz (rad/s)",
+        ]
+        # self.y_labels = [
+        #     "px (m)",
+        #     "py (m)",
+        #     "pz (m)",
+        #     "$\phi$ (rad)",
+        #     "$\\theta$ (rad)",
+        #     "$\psi$ (rad)",
+        #     "vx (m/s)",
+        #     "vy (m/s)",
+        #     "vz (m/s)",
+        #     "wbx (rad/s)",
+        #     "wby (rad/s)",
+        #     "wbz (rad/s)",
+        #     "wm0 (rad/s)",
+        #     "wm1 (rad/s)",
+        #     "wm2 (rad/s)",
+        #     "wm3 (rad/s)",
+        # ]
+        self.u_labels = [
+            "t0c (rad/s)",
+            "t1c (rad/s)",
+            "t2c (rad/s)",
+            "t3c (m/s^2)",
+        ]
+        # self.u_labels = [
+        #     "wm0c (rad/s)",
+        #     "wm1c (rad/s)",
+        #     "wm2c (rad/s)",
+        #     "wm3c (m/s^2)",
+        # ]
+        self.w_labels = [
+            "$w_{vx} (m/s / s)$",
+            "$w_{vy} (m/s / s)$",
+            "$w_{vz} (m/s / s)$",
+            "$w_{wbx} (rad/s / s)$",
+            "$w_{wby} (rad/s / s)$",
+            "$w_{wbz} (rad/s / s)$",
+        ]
+        self.eta_labels = self.y_labels
+
+        # Plot raw vs interpolated data
+        if self.do_plot_raw_interp_inputs:
+            self.plot_raw_interp_inputs()
+        if self.do_plot_raw_interp_outputs:
+            self.plot_raw_interp_outputs()
+        if self.do_plot_raw_interp_disturbances:
+            self.plot_raw_interp_disturbances()
+        if self.do_plot_raw_interp_meas_noises:
+            self.plot_raw_interp_meas_noises()
+
+
+def compute_absolute_w_eta_bounds(data, do_print_w_eta):
+    # Store all absolute disturbance and measurement noise bounds
+    w_min_all = np.zeros((len(data) - 1, data["common"]["nw"]))
+    w_max_all = np.zeros((len(data) - 1, data["common"]["nw"]))
+    eta_min_all = np.zeros((len(data) - 1, data["common"]["neta"]))
+    eta_max_all = np.zeros((len(data) - 1, data["common"]["neta"]))
+    idx = 0
+    for key in data.keys():
+        if key == "common":
+            continue
+        w_min_all[idx, :] = data[key]["w_min_est_abs"]
+        w_max_all[idx, :] = data[key]["w_max_est_abs"]
+        eta_min_all[idx, :] = data[key]["eta_min_est_abs"]
+        eta_max_all[idx, :] = data[key]["eta_max_est_abs"]
+        idx += 1
+    data["common"]["w_min_all"] = w_min_all.tolist()
+    data["common"]["w_max_all"] = w_max_all.tolist()
+    data["common"]["eta_min_all"] = eta_min_all.tolist()
+    data["common"]["eta_max_all"] = eta_max_all.tolist()
+
+    # Compute and store the overall absolute disturbance and measurement noise bounds
+    w_min_abs = np.min(w_min_all, axis=0)
+    w_max_abs = np.max(w_max_all, axis=0)
+    eta_min_abs = np.min(eta_min_all, axis=0)
+    eta_max_abs = np.max(eta_max_all, axis=0)
+    data["common"]["w_min_abs"] = w_min_abs.tolist()
+    data["common"]["w_max_abs"] = w_max_abs.tolist()
+    data["common"]["eta_min_abs"] = eta_min_abs.tolist()
+    data["common"]["eta_max_abs"] = eta_max_abs.tolist()
+
+    # Compute and store the overall biases and corresponding relative disturbance and measurement noise bounds
+    w_bias = (w_min_abs + w_max_abs) / 2
+    w_min_rel = w_min_abs - w_bias
+    w_max_rel = w_max_abs - w_bias
+    eta_bias = (eta_min_abs + eta_max_abs) / 2
+    eta_min_rel = eta_min_abs - eta_bias
+    eta_max_rel = eta_max_abs - eta_bias
+    data["common"]["w_bias"] = w_bias.tolist()
+    data["common"]["w_min_rel"] = w_min_rel.tolist()
+    data["common"]["w_max_rel"] = w_max_rel.tolist()
+    data["common"]["eta_bias"] = eta_bias.tolist()
+    data["common"]["eta_min_rel"] = eta_min_rel.tolist()
+    data["common"]["eta_max_rel"] = eta_max_rel.tolist()
+
+    # Print overall relative disturbance and measurement noise bounds
+    do_print_disturbances_min = do_print_w_eta[0]
+    do_print_disturbances_max = do_print_w_eta[1]
+    do_print_disturbances_bias = do_print_w_eta[2]
+    do_print_meas_noises_min = do_print_w_eta[3]
+    do_print_meas_noises_max = do_print_w_eta[4]
+    do_print_disturbances = (
+        do_print_disturbances_min
+        or do_print_disturbances_max
+        or do_print_disturbances_bias
+    )
+    do_print_meas_noises = do_print_meas_noises_min or do_print_meas_noises_max
+    if do_print_disturbances:
+        print(f"\nOverall disturbance bounds:")
+        if do_print_disturbances_min:
+            print(f'Min:     {data["common"]["w_min_abs"]}')
+        if do_print_disturbances_max:
+            print(f'Max:     {data["common"]["w_max_abs"]}')
+        # if do_print_disturbances_bias:
+        #     print(f'Bias:    {data["common"]["w_bias"]}')
+    if do_print_meas_noises:
+        print(f"\nOverall measurement noise bounds:")
+        if do_print_meas_noises_min:
+            print(f'Min:     {data["common"]["eta_min_abs"]}')
+        if do_print_meas_noises_max:
+            print(f'Max:     {data["common"]["eta_max_abs"]}')
+
+
+if __name__ == "__main__":
+    # Start timing
+    start = time.time()
+
+    # Log settings
+    parser = argparse.ArgumentParser(description="something")
+    parser.add_argument("-v", "--verbose", action="count", default=0, dest="verbosity")
+    args = parser.parse_args()
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.WARN - 10 * args.verbosity)
+
+    # Print settings
+    np.set_printoptions(linewidth=np.inf, precision=10)
+
+    # User settings
+    package_dir = Path(__file__).parents[1]
+    config_dir = f"{package_dir}/config"
+    config_path = f"{config_dir}/scripts/determine_model_mismatch.yaml"
+    data_dir = f"{package_dir}/data"
+    json_dir = f"{data_dir}/converted_bags"
+    data_sel_dir = f"{data_dir}/selected_data"
+    data_sel_file_name = "model_mismatch_data_select.json"
+    output_data_dir = f"{data_dir}/model_mismatch_results"
+
+    # Read configuration parameters
+    with open(config_path) as file:
+        config = yaml.load(file, Loader=yaml.FullLoader)
+
+    # Create model
+    quad_name = config["model"]["name"]
+    g = config["constants"]["g"]
+    params_file = f"{config_dir}/systems/{quad_name}.yaml"
+    if path.exists(params_file):
+        log.warning(f"Selected {quad_name} params file.")
+    else:
+        log.fatal(f"Unknown quad name {quad_name}! Exiting.")
+        exit(1)
+    if quad_name == "falcon":
+        model = helpers.DroneAgiModel(quad_name, g, params_file)
+    else:
+        log.fatal(f"Unknown model {quad_name}! Exiting.")
+        exit(1)
+
+    # Get sampling time
+    ts = config["recorded_data"]["processing"]["ts"]
+
+    # Get MHE solver parameters
+    generate_solver = config["mhe"]["generate_solver"]
+    M = config["mhe"]["M"]
+    stage_est = config["mhe"]["stage_est"]
+    eps = float(config["mhe"]["eps"])
+    cost_scaling = float(config["mhe"]["cost_scaling"])
+
+    # Generate MHE solver
+    solver = helpers.get_acados_mhe_solver(model, M, ts, generate_solver)
+
+    # Get printing options
+    do_print_disturbances_min = config["printing"]["disturbances"]["min"]
+    do_print_disturbances_max = config["printing"]["disturbances"]["max"]
+    do_print_disturbances_bias = config["printing"]["disturbances"]["bias"]
+    do_print_meas_noises_min = config["printing"]["meas_noises"]["min"]
+    do_print_meas_noises_max = config["printing"]["meas_noises"]["max"]
+    do_print_w_eta = [
+        do_print_disturbances_min,
+        do_print_disturbances_max,
+        do_print_disturbances_bias,
+        do_print_meas_noises_min,
+        do_print_meas_noises_max,
+    ]
+
+    # Create dictionary with common data, to be filled later with json-specific data
+    data = {}
+    model_name = model.get_name()
+    data_general = {
+        "g": g,
+        "ts": ts,
+        "params_file": params_file,
+        "model_name": model_name,
+        "M": M,
+        "stage_est": stage_est,
+        "eps": eps,
+        "cost_scaling": cost_scaling,
+    }
+    data_model = model.get_model_data()
+    data["common"] = {k: v for d in (data_general, data_model) for k, v in d.items()}
+
+    # Process json data files
+    json_names = config["recorded_data"]["json_names"]
+    for json_name in json_names:
+        print()
+        print("-" * 100)
+        log.warning(f"Selected json file: {json_name}")
+
+        # Process file name
+        _, exp_type, _, _, exp_details = helpers.read_file_name(json_name[:-5])
+        exp_details = "_".join([str(e) for e in exp_details])
+
+        compute_model_mismatch = ComputeModelMismatch(
+            config,
+            json_dir,
+            json_name,
+            data_sel_dir,
+            data_sel_file_name,
+            exp_type,
+            model,
+            solver,
+        )
+        compute_model_mismatch.process_recorded_data()
+        compute_model_mismatch.compute_model_mismatch_mhe()
+        compute_model_mismatch.compute_model_mismatch_bounds()
+        compute_model_mismatch.create_plots()
+        data[exp_details] = compute_model_mismatch.get_json_specific_data()
+        print("-" * 100)
+
+    compute_absolute_w_eta_bounds(data, do_print_w_eta)
+
+    # Save data to json file for plotting
+    output_data_json_path = f"{output_data_dir}/{model_name}.json"
+    with open(output_data_json_path, "w") as json_file:
+        json.dump(data, json_file, indent=4)
+    print(f"\nSaved data to {output_data_json_path}")
+
+    # Save data to mat file for SDP
+    output_data_mat_path = f"{output_data_dir}/{model_name}.mat"
+    scipy.io.savemat(output_data_mat_path, data["common"])
+    print(f"Saved data to {output_data_mat_path}")
+
+    # End timing and print
+    end = time.time()
+    print(f"\nElapsed time: {end - start}")
+
+    # Show plots if indicated
+    plt.show()

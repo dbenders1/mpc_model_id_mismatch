@@ -1,0 +1,68 @@
+constants:
+  g: 9.8124
+
+recorded_data:
+  # json_names:
+  #   [
+  #     2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise,
+  #   ]
+  # json_names:
+  #   [
+  #     2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise,
+  #   ]
+  json_names:
+    [
+      2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise,
+    ]
+  # json_names:
+  #   [
+  #     2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise,
+  #   ]
+  # json_names:
+  #   [
+  #     2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise,
+  #   ]
+  # json_names:
+  #   [
+  #     2025-06-04_sim_falcon_mpc_model_mismatch_hovering_open_loop_dist_meas_noise,
+  #   ]
+  # json_names:
+  #   [
+  #     2025-06-04_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_sin_dist_meas_noise,
+  #   ]
+  data_sel:
+    overwrite: false
+    automatic: true
+    automatic_first_offset_dist: 0.5
+    automatic_crossings_idc_to_sel: [0, 1]
+
+  processing:
+    ts: 0.002 # interpolation time
+
+model:
+  name: "falcon"
+  quad_number: 7
+
+mhe:
+  generate_solver: true
+  n_iter: 1
+  n_times: 0
+  M: 40
+  stage_est: 20
+  eps: 1e-9
+  cost_scaling: 1
+
+printing:
+  disturbances:
+    min: true
+    max: true
+    bias: true
+  meas_noises:
+    min: true
+    max: true
+
+plotting:
+  raw_interp_inputs: false
+  raw_interp_outputs: false
+  raw_interp_disturbances: false
+  raw_interp_meas_noises: false
