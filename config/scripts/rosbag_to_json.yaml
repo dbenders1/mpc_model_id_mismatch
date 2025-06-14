@@ -12,18 +12,6 @@ recorded_data:
   #     2025-05-07_gaz_falcon_mpc_model_id_inertia_matrix_only_thrust_dragtorque_rollingmoment_shiftedactualmotorvel,
   #     2025-05-08_sim_falcon_mpc_model_id_drag_coefficients,
   #   ]
-  topic_names:
-    [
-      /step_control,
-      /falcon/ground_truth/odometry,
-      /w,
-      /eta,
-    ]
+  topic_names: [/step_control, /falcon/ground_truth/odometry, /w, /eta]
 
-supported_topic_names:
-  [
-    /step_control,
-    /falcon/ground_truth/odometry,
-    /w,
-    /eta,
-  ]
+supported_topic_names: [/step_control, /falcon/ground_truth/odometry, /w, /eta]

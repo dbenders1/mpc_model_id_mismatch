@@ -7,6 +7,7 @@ from pathlib import Path
 
 FLOAT_TOL = 1e-6
 
+
 def check_duplicated_timestamps(topic_name, timestamps):
     # Convert the list to a numpy array
     timestamps = np.array(timestamps)
@@ -34,8 +35,9 @@ def check_duplicated_timestamps(topic_name, timestamps):
     # if duplicates:
     #     exit(1)
 
+
 def eta_to_dict(bag):
-    topic_name = '/eta'
+    topic_name = "/eta"
 
     # Determine size of eta
     for _, msg, _ in bag.read_messages(topic_name):
@@ -63,12 +65,13 @@ def eta_to_dict(bag):
 
     # Create dictionary
     eta_dict = {}
-    eta_dict['t'] = t.tolist()
-    eta_dict['eta'] = eta.tolist()
+    eta_dict["t"] = t.tolist()
+    eta_dict["eta"] = eta.tolist()
     return eta_dict
 
+
 def odometry_to_dict(bag):
-    topic_name = '/falcon/ground_truth/odometry'
+    topic_name = "/falcon/ground_truth/odometry"
 
     # Read messages from the bag
     n_msgs = bag.get_message_count(topic_name)
@@ -117,12 +120,13 @@ def odometry_to_dict(bag):
 
     # Create dictionary
     odom_dict = {}
-    odom_dict['t'] = t.tolist()
-    odom_dict['p'] = p.tolist()
-    odom_dict['q'] = q.tolist()
-    odom_dict['v'] = v.tolist()
-    odom_dict['wb'] = wb.tolist()
+    odom_dict["t"] = t.tolist()
+    odom_dict["p"] = p.tolist()
+    odom_dict["q"] = q.tolist()
+    odom_dict["v"] = v.tolist()
+    odom_dict["wb"] = wb.tolist()
     return odom_dict
+
 
 def step_control_to_dict(bag):
     topic_name = "/step_control"
@@ -150,9 +154,10 @@ def step_control_to_dict(bag):
 
     # Create dictionary
     step_control_dict = {}
-    step_control_dict['t'] = t.tolist()
-    step_control_dict['u'] = u.tolist()
+    step_control_dict["t"] = t.tolist()
+    step_control_dict["u"] = u.tolist()
     return step_control_dict
+
 
 def w_to_dict(bag):
     topic_name = "/w"
@@ -183,59 +188,60 @@ def w_to_dict(bag):
 
     # Create dictionary
     w_dict = {}
-    w_dict['t'] = t.tolist()
-    w_dict['w'] = w.tolist()
+    w_dict["t"] = t.tolist()
+    w_dict["w"] = w.tolist()
     return w_dict
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # Start timing
     start = time.time()
 
     # User settings
     package_dir = Path(__file__).parents[1]
-    json_dir = f'{package_dir}/data/converted_bags'
-    config_dir = f'{package_dir}/config'
-    config_path = f'{config_dir}/scripts/rosbag_to_json.yaml'
+    json_dir = f"{package_dir}/data/converted_bags"
+    config_dir = f"{package_dir}/config"
+    config_path = f"{config_dir}/scripts/rosbag_to_json.yaml"
 
     # Read configuration parameters
     with open(config_path) as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
-    bag_dir = config['recorded_data']['bag_dir']
-    bag_names = config['recorded_data']['bag_names']
-    topic_names = config['recorded_data']['topic_names']
-    supported_topic_names = config['supported_topic_names']
+    bag_dir = config["recorded_data"]["bag_dir"]
+    bag_names = config["recorded_data"]["bag_names"]
+    topic_names = config["recorded_data"]["topic_names"]
+    supported_topic_names = config["supported_topic_names"]
 
     # Process each topic in each bag and dump to a json file per bag
     for bag_name in bag_names:
         # Obtain bag file
-        bag_path = f'{bag_dir}/{bag_name}.bag'
-        print(f'\nConverting {bag_name}.bag')
+        bag_path = f"{bag_dir}/{bag_name}.bag"
+        print(f"\nConverting {bag_name}.bag")
         bag = rosbag.Bag(bag_path)
 
         # Store data in a dictionary
         bag_dict = {}
         for topic_name in topic_names:
-            print(f'Processing topic: {topic_name}', end="\r")
+            print(f"Processing topic: {topic_name}", end="\r")
             if topic_name in supported_topic_names:
-                if topic_name == '/eta':
+                if topic_name == "/eta":
                     bag_dict[topic_name] = eta_to_dict(bag)
-                elif topic_name == '/falcon/ground_truth/odometry':
+                elif topic_name == "/falcon/ground_truth/odometry":
                     bag_dict[topic_name] = odometry_to_dict(bag)
-                elif topic_name == '/step_control':
+                elif topic_name == "/step_control":
                     bag_dict[topic_name] = step_control_to_dict(bag)
-                elif topic_name == '/w':
+                elif topic_name == "/w":
                     bag_dict[topic_name] = w_to_dict(bag)
-                print(f'Processing of topic {topic_name} completed')
+                print(f"Processing of topic {topic_name} completed")
             else:
-                print(f'Processing of topic {topic_name} not supported; skipping')
+                print(f"Processing of topic {topic_name} not supported; skipping")
         bag.close()
 
         # Write to json file
-        json_path = f'{json_dir}/{bag_name}.json'
-        with open(json_path, 'w') as json_file:
+        json_path = f"{json_dir}/{bag_name}.json"
+        with open(json_path, "w") as json_file:
             json.dump(bag_dict, json_file, indent=4)
-        print(f'Converting of {bag_name}.bag completed')
+        print(f"Converting of {bag_name}.bag completed")
 
     # End timing
     end = time.time()
-    print(f'\nFinished converting bags in {end - start:.2f} seconds')
+    print(f"\nFinished converting bags in {end - start:.2f} seconds")
