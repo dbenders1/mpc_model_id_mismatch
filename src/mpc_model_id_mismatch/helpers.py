@@ -65,7 +65,7 @@ def get_acados_status_message(status):
         return "Unknown status"
 
 
-def get_acados_mhe_solver(model, M, ts, generate_solver=True):
+def get_acados_mhe_solver(model, M, ts, sim_eta_max, generate_solver=True):
     # Obtain number of states and inputs
     nx = model.get_n_states()
     nu = model.get_n_inputs()
@@ -106,6 +106,15 @@ def get_acados_mhe_solver(model, M, ts, generate_solver=True):
         F_transpose, y_meas - model.get_outputs(x_est, u_applied)
     )
     # symbolic constraint terms
+    acados_model.con_h_expr_0 = mtimes(
+        F_transpose, y_meas - model.get_outputs(x_est, u_applied)
+    )
+    acados_model.con_h_expr = mtimes(
+        F_transpose, y_meas - model.get_outputs(x_est, u_applied)
+    )
+    acados_model.con_h_expr_e = mtimes(
+        F_transpose, y_meas - model.get_outputs(x_est, u_applied)
+    )
     # acados_model.con_h_expr_0 = mtimes(
     #     F_complement, y_meas - model.get_outputs(x_est, u_applied)
     # )
@@ -129,6 +138,14 @@ def get_acados_mhe_solver(model, M, ts, generate_solver=True):
     ocp_cost.yref_e = np.zeros((neta,))
 
     # Create OCP constraints
+    # Known bounds on measurement noise
+    ocp_constraints = AcadosOcpConstraints()
+    ocp_constraints.lh_0 = -sim_eta_max
+    ocp_constraints.uh_0 = sim_eta_max
+    ocp_constraints.lh = -sim_eta_max
+    ocp_constraints.uh = sim_eta_max
+    ocp_constraints.lh_e = -sim_eta_max
+    ocp_constraints.uh_e = sim_eta_max
     # Motor velocity states equal motor velocity measurements
     # ocp_constraints = AcadosOcpConstraints()
     # ocp_constraints.lh_0 = np.zeros((ny - neta,))
@@ -152,7 +169,7 @@ def get_acados_mhe_solver(model, M, ts, generate_solver=True):
     ocp.dims = ocp_dims
     ocp.model = acados_model
     ocp.cost = ocp_cost
-    # ocp.constraints = ocp_constraints
+    ocp.constraints = ocp_constraints
     ocp.solver_options = ocp_options
     ocp.parameter_values = np.zeros((acados_model.p.rows(),))
 

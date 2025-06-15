@@ -29,6 +29,8 @@ class ComputeModelMismatch:
         exp_type,
         model,
         solver,
+        sim_w_max,
+        sim_eta_max,
     ) -> None:
         # Process config
         self.overwrite_data_sel = config["recorded_data"]["data_sel"]["overwrite"]
@@ -72,6 +74,8 @@ class ComputeModelMismatch:
         self.data_sel_dir = data_sel_dir
         self.data_sel_file_name = data_sel_file_name
         self.exp_type = exp_type
+        self.sim_w_max = sim_w_max
+        self.sim_eta_max = sim_eta_max
 
         # Variables to indicate whether ground truth data is available
         self.disturbances_gt_known = False
@@ -347,12 +351,7 @@ class ComputeModelMismatch:
         # if self.disturbances_gt_known:
         #     self.Q_cov_est_all[0, :, :] = np.cov(self.disturbances_int)
         self.Q_cov_est_all[0, :, :] = np.diag(
-            np.concatenate(
-                [
-                    0.2**2 / 12 * np.ones((3,)),
-                    1 / 12 * np.ones((3,)),
-                ]
-            )
+            (2 * self.sim_w_max) ** 2 / 12
         )  # ground truth values of uniform distribution used in simulation
         # self.Q_cov_est_all[0, :, :] = self.eps * np.eye(self.n_disturbances)
         # with open("Q_est.json", "r") as openfile:
@@ -374,14 +373,7 @@ class ComputeModelMismatch:
         # if self.measurement_noises_gt_known:
         #     self.R_cov_est_all[0, :, :] = np.cov(self.measurement_noises_int)
         self.R_cov_est_all[0, :, :] = np.diag(
-            np.concatenate(
-                [
-                    0.001**2 / 12 * np.ones((3,)),
-                    0.01256**2 / 12 * np.ones((3,)),
-                    0.01**2 / 12 * np.ones((3,)),
-                    0.0152**2 / 12 * np.ones((3,)),
-                ]
-            )
+            (2 * self.sim_eta_max) ** 2 / 12
         )  # ground truth values of uniform distribution used in simulation
         # self.R_cov_est_all[0, :, :] = self.eps * np.eye(self.n_measurement_noises)
         # with open("R_est.json", "r") as openfile:
@@ -602,23 +594,23 @@ class ComputeModelMismatch:
             # )
 
             # Update covariance matrices Q and R
-            # stepsize = 0.5
-            # self.Q_cov_est_all[i + 1, :, :] = self.Q_cov_est_all[
-            #     i, :, :
-            # ]  # keep the same Q covariance matrix
-            self.Q_cov_est_all[i + 1, :, :] = Q_est
+            stepsize = 0.5
+            self.Q_cov_est_all[i + 1, :, :] = self.Q_cov_est_all[
+                i, :, :
+            ]  # keep the same Q covariance matrix
+            # self.Q_cov_est_all[i + 1, :, :] = Q_est
             # self.Q_cov_est_all[i + 1, :, :] = self.Q_cov_est_all[i, :, :] - stepsize * (
             #     Q_est - self.Q_cov_est_all[i, :, :]
             # )
             # self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[
             #     i, :, :
             # ]  # keep the same R covariance matrix
-            self.R_cov_est_all[i + 1, :, :] = R_est
-            # self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[i, :, :] - stepsize * (
-            #     R_est - self.R_cov_est_all[i, :, :]
-            # )
-            # print(f"Q_cov_est_all[i + 1, :, :] = {self.Q_cov_est_all[i + 1, :, :]}")
-            # print(f"R_cov_est_all[i + 1, :, :] = {self.R_cov_est_all[i + 1, :, :]}")
+            # self.R_cov_est_all[i + 1, :, :] = R_est
+            self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[i, :, :] - stepsize * (
+                R_est - self.R_cov_est_all[i, :, :]
+            )
+            print(f"Q_cov_est_all[i + 1, :, :] = {self.Q_cov_est_all[i + 1, :, :]}")
+            print(f"R_cov_est_all[i + 1, :, :] = {self.R_cov_est_all[i + 1, :, :]}")
 
             # # Print maximum likelihood costs before and after updating Q and R over a single horizon
             # print(
@@ -1226,6 +1218,10 @@ if __name__ == "__main__":
     with open(config_path) as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
 
+    # Get simulation noise settings
+    sim_w_max = np.array(config["simulation"]["w_max"])
+    sim_eta_max = np.array(config["simulation"]["eta_max"])
+
     # Create model
     quad_name = config["model"]["name"]
     g = config["constants"]["g"]
@@ -1252,7 +1248,7 @@ if __name__ == "__main__":
     cost_scaling = float(config["mhe"]["cost_scaling"])
 
     # Generate MHE solver
-    solver = helpers.get_acados_mhe_solver(model, M, ts, generate_solver)
+    solver = helpers.get_acados_mhe_solver(model, M, ts, sim_eta_max, generate_solver)
 
     # Get printing options
     do_print_disturbances_min = config["printing"]["disturbances"]["min"]
@@ -1304,6 +1300,8 @@ if __name__ == "__main__":
             exp_type,
             model,
             solver,
+            sim_w_max,
+            sim_eta_max,
         )
         compute_model_mismatch.process_recorded_data()
         compute_model_mismatch.compute_model_mismatch_mhe()
