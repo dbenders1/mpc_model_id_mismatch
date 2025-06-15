@@ -95,194 +95,8 @@ class ComputeModelMismatch:
         self.solver = solver
 
     def process_recorded_data(self):
-        # READ BAG DATA
+        # READ RECORDED DATA
         # -------------------------------------------------------------------------------
-        # if self.exp_type == "sim":
-        #     # Agisim
-        #     # bag_reader_agi = bagreaders.BagReaderAgi(
-        #     #     self.bag_dir + self.bag_file_name, f"/{self.model_name}"
-        #     # )
-        #     # self.inputs_times, self.inputs = bag_reader_agi.read_command_thrusts()
-        #     # self.inputs_times = np.round(
-        #     #     self.inputs_times + self.ts, 5
-        #     # )  # NOTE: applied input command is given time in the past, so compensate for it. Also take care of using exactly a limited number of decimals to ensure that the interpolation works properly
-        #     # self.inputs = self.model.thrusts_to_motor_speeds(
-        #     #     self.inputs
-        #     # )  # NOTE: convert thrusts to motor speeds for consistent input definition
-        #     # self.outputs_times, p, q, v, wb, _, wm = bag_reader_agi.read_state()
-        #     # self.outputs = np.concatenate((p, q, v, wb, wm), axis=0)
-
-        #     # Simplesim
-        #     bag_reader_agi = bagreaders.BagReaderAgi(
-        #         self.bag_dir + self.bag_file_name, f"/{self.model_name}"
-        #     )
-        #     # # self.inputs_times, self.inputs = bag_reader_agi.read_command_motor_speeds()
-        #     # self.inputs_times, self.inputs = bag_reader_agi.read_step_control_simplesim(
-        #     #     skip_first=True
-        #     # )
-        #     # # self.outputs_times, p, eul, v, wb, wm = (
-        #     # #     bag_reader_agi.read_y_nom_eul_simplesim()
-        #     # # )
-        #     # # self.outputs_times, p, q, v, wb, wm = (
-        #     # #     bag_reader_agi.read_y_nom_q_simplesim()
-        #     # # )
-        #     # # self.outputs_times, p, q, v, wb, wm = bag_reader_agi.read_y_w_simplesim()
-        #     # # self.outputs_times, p, q, v, wb, wm = bag_reader_agi.read_y_eta_simplesim()
-        #     # self.outputs_times, p, q, v, wb, wm = (
-        #     #     bag_reader_agi.read_y_w_eta_simplesim()
-        #     # )
-        #     # # self.outputs_times, p, q, v, wb, _, wm = bag_reader_agi.read_state()
-        #     # eul = np.zeros((3, q.shape[1]))
-        #     # for t in range(q.shape[1]):
-        #     #     eul[:, t] = helpers.quaternion_to_zyx_euler(q[:, t])
-        #     # self.outputs = np.concatenate((p, eul, v, wb, wm), axis=0)
-        #     # # self.outputs = np.concatenate((p, eul, wb, wm), axis=0)
-
-        #     self.inputs_times, wmc = bag_reader_agi.read_step_control(skip_first=True)
-        #     n_inputs_times = len(self.inputs_times)
-        #     self.inputs = np.zeros((4, n_inputs_times))
-        #     for i in range(n_inputs_times):
-        #         self.inputs[:, i] = self.model.motor_speeds_to_thrusts(wmc[:, i])
-        #     (
-        #         self.outputs_times,
-        #         p,
-        #         q,
-        #         v,
-        #         wb,
-        #     ) = bag_reader_agi.read_odometry()
-        #     eul = np.zeros((3, q.shape[1]))
-        #     for t in range(q.shape[1]):
-        #         eul[:, t] = helpers.quaternion_to_zyx_euler(q[:, t])
-        #     self.outputs = np.concatenate((p, eul, v, wb), axis=0)
-
-        #     self.disturbances_times, self.disturbances = bag_reader_agi.read_w()
-        #     if self.disturbances_times.size > 0:
-        #         self.disturbances_gt_known = True
-        #     self.measurement_noises_times, self.measurement_noises = (
-        #         bag_reader_agi.read_eta()
-        #     )
-        #     if self.measurement_noises_times.size > 0:
-        #         self.measurement_noises_gt_known = True
-        #     self.measurement_noises = self.measurement_noises[
-        #         [0, 1, 2, 3, 4, 5, 9, 10, 11], :
-        #     ]  # remove measurement noise on velocities
-        # elif self.exp_type == "gaz":
-        #     bag_reader_agi = bagreaders.BagReaderAgi(
-        #         self.bag_dir + self.bag_file_name, f"/{self.model_name}"
-        #     )
-        #     # self.inputs_times, ac = bag_reader_agi.read_ac()
-        #     # _, wbc = bag_reader_agi.read_wbc()
-        #     # self.inputs = np.concatenate((wbc, ac), axis=0)
-        #     # self.outputs_times, p, q, v, wb, ai, _ = bag_reader_agi.read_state()
-        #     # ai = ai + np.array([0, 0, self.g]).reshape(
-        #     #     (3, 1)
-        #     # )  # add gravitational acceleration to acceleration data
-        #     # ab = np.zeros((3, ai.shape[1]))
-        #     # for i in range(ai.shape[1]):
-        #     #     ab[:, i] = np.array(
-        #     #         helpers.rotate_quat_inverse(q[:, i].reshape((4, 1)), ai[:, i])
-        #     #     ).flatten()  # convert acceleration from inertial to body frame
-        #     # abz = ab[2, :].reshape(
-        #     #     (1, ab.shape[1])
-        #     # )  # take z component of acceleration in body frame
-        #     # self.outputs = np.concatenate((p, q, v, wb, abz), axis=0)
-
-        #     # self.inputs_times, self.inputs = bag_reader_agi.read_command_motor_speeds()
-        #     # self.outputs_times, p, q, v, wb, _, wm = bag_reader_agi.read_state()
-        #     # eul = np.zeros((3, q.shape[1]))
-        #     # for t in range(q.shape[1]):
-        #     #     eul[:, t] = helpers.quaternion_to_zyx_euler(
-        #     #         q[0, t], q[1, t], q[2, t], q[3, t], order="zyx"
-        #     #     )
-        #     # self.outputs = np.concatenate((p, eul, v, wb, wm), axis=0)
-
-        #     # bag_reader_agi = bagreaders.BagReaderAgi(
-        #     #     self.bag_dir + self.bag_file_name, f"/{self.model_name}"
-        #     # )
-        #     # self.inputs_times, self.inputs = bag_reader_agi.read_step_control(
-        #     #     skip_first=True
-        #     # )
-        #     # (
-        #     #     odometry_times,
-        #     #     p,
-        #     #     q,
-        #     #     v,
-        #     #     wb,
-        #     # ) = bag_reader_agi.read_odometry()
-        #     # odometry_times = odometry_times - self.ts
-        #     # wm_times, wm = bag_reader_agi.read_motor_speed()
-        #     # outputs_start_time = max(odometry_times[0], wm_times[0])
-        #     # outputs_end_time = min(odometry_times[-1], wm_times[-1])
-        #     # odometry_idc = np.where(
-        #     #     (odometry_times >= outputs_start_time)
-        #     #     & (odometry_times <= outputs_end_time)
-        #     # )[0]
-        #     # wm_idc = np.where(
-        #     #     (wm_times >= outputs_start_time) & (wm_times <= outputs_end_time)
-        #     # )[0]
-        #     # self.outputs_times = odometry_times[odometry_idc]
-        #     # p = p[:, odometry_idc]
-        #     # q = q[:, odometry_idc]
-        #     # v = v[:, odometry_idc]
-        #     # wb = wb[:, odometry_idc]
-        #     # wm_times = wm_times[wm_idc]
-        #     # wm = wm[:, wm_idc]
-        #     # eul = np.zeros((3, q.shape[1]))
-        #     # for t in range(q.shape[1]):
-        #     #     eul[:, t] = helpers.quaternion_to_zyx_euler(q[:, t])
-        #     # self.outputs = np.concatenate((p, eul, v, wb, wm), axis=0)
-
-        #     self.inputs_times, wmc = bag_reader_agi.read_step_control(skip_first=True)
-        #     n_inputs_times = len(self.inputs_times)
-        #     self.inputs = np.zeros((4, n_inputs_times))
-        #     for i in range(n_inputs_times):
-        #         self.inputs[:, i] = self.model.motor_speeds_to_thrusts(wmc[:, i])
-        #     # self.inputs_times, wmc = bag_reader_agi.read_motor_speed()
-        #     # self.inputs_times = self.inputs_times - self.ts
-        #     # n_inputs_times = len(self.inputs_times)
-        #     # self.inputs = np.zeros((4, n_inputs_times))
-        #     # for i in range(n_inputs_times):
-        #     #     self.inputs[:, i] = self.model.motor_speeds_to_thrusts(wmc[:, i])
-        #     (
-        #         self.outputs_times,
-        #         p,
-        #         q,
-        #         v,
-        #         wb,
-        #     ) = bag_reader_agi.read_odometry()
-        #     eul = np.zeros((3, q.shape[1]))
-        #     for t in range(q.shape[1]):
-        #         eul[:, t] = helpers.quaternion_to_zyx_euler(q[:, t])
-        #     self.outputs = np.concatenate((p, eul, v, wb), axis=0)
-
-        #     self.measurement_noises_times, self.measurement_noises = (
-        #         bag_reader_agi.read_eta()
-        #     )
-        #     if self.measurement_noises_times.size > 0:
-        #         self.measurement_noises_gt_known = True
-        # elif self.exp_type == "exp":
-        #     log.fatal(
-        #         f"Experiment data reading not supported yet! Exiting."
-        #     )
-        #     # bag_reader_agi = bagreaders.BagReaderAgi(
-        #     #     self.bag_dir + self.bag_file_name,
-        #     #     f"/{self.model_name}{self.quad_number}",
-        #     # )
-        #     # self.inputs_times, self.inputs = bag_reader_agi.read_command_thrusts()
-        #     # self.inputs = self.model.thrusts_to_motor_speeds(
-        #     #     self.inputs
-        #     # )  # NOTE: convert thrusts to motor speeds for consistent input definition
-        #     # self.outputs_times, p, q, v, wb, _, wm = bag_reader_agi.read_state()
-        #     # self.outputs = np.concatenate((p, q, v, wb, wm), axis=0)
-        # else:
-        #     log.fatal(
-        #         f"Inputs reading not supported for experiment type {self.exp_type}! Exiting."
-        #     )
-        #     exit(1)
-        # self.P_ekf_times, self.P_ekf = bag_reader_agi.read_ekf_p()
-
-        # New setup using json files
-        # Store data in json file in dict
         with open(f"{self.json_dir}/{self.json_name}.json", "r") as openfile:
             json_data = json.load(openfile)
         self.inputs_times = np.array(json_data["/step_control"]["t"])
@@ -409,15 +223,6 @@ class ComputeModelMismatch:
                 ax[1].plot(self.inputs_times, self.inputs[2, :], label="t2c")
                 ax[1].plot(self.inputs_times, self.inputs[3, :], label="t3c")
                 ax[1].set_ylabel("Amplitude (N)")
-                # ax[1].plot(self.inputs_times, self.inputs[0, :], label="wm0c")
-                # ax[1].plot(self.inputs_times, self.inputs[1, :], label="wm1c")
-                # ax[1].plot(self.inputs_times, self.inputs[2, :], label="wm2c")
-                # ax[1].plot(self.inputs_times, self.inputs[3, :], label="wm3c")
-                # ax[1].plot(self.outputs_times, self.outputs[12, :], label="wm0")
-                # ax[1].plot(self.outputs_times, self.outputs[13, :], label="wm1")
-                # ax[1].plot(self.outputs_times, self.outputs[14, :], label="wm2")
-                # ax[1].plot(self.outputs_times, self.outputs[15, :], label="wm3")
-                # ax[1].set_ylabel("Amplitude (rad/s)")
                 ax[1].legend()
                 ax[1].set_xlabel("Time (s)")
                 sel = plt.ginput(2, show_clicks=True)
@@ -485,32 +290,6 @@ class ComputeModelMismatch:
                 measurement_noises_idc
             ]
             self.measurement_noises = self.measurement_noises[:, measurement_noises_idc]
-
-        # # Compare all self.inputs_times and self.outputs_times with each and print warning if there are any differences
-        # for i in range(len(self.inputs_times)):
-        #     if self.inputs_times[i] != self.outputs_times[i]:
-        #         print(
-        #             f"WARNING: inputs_times and outputs_times differ at index {i}: {self.inputs_times[i]} vs {self.outputs_times[i]}"
-        #         )
-        # # Compare the RK4 results with the recorded data
-        # y_diff = np.zeros((self.n_states, self.outputs.shape[1]))
-        # for i in range(1, y_diff.shape[1]):
-        #     y_diff[:, i] = (
-        #         self.outputs[:, i]
-        #         - np.array(
-        #             helpers.solve_rk4(
-        #                 self.model.state_update_ct,
-        #                 self.outputs[:, i - 1],
-        #                 self.inputs[:, i - 1],
-        #                 self.ts,
-        #             )
-        #         ).flatten()
-        #     )
-        # for i in range(1, y_diff.shape[1]):
-        #     if np.max(np.abs(y_diff[:, i])) > helpers.FLOAT_TOL:
-        #         print(
-        #             f"WARNING: RK4 and recorded data differ at timestep {i}: {y_diff[:, i]}"
-        #         )
         # -------------------------------------------------------------------------------
 
         # INTERPOLATE DATA
@@ -538,11 +317,6 @@ class ComputeModelMismatch:
             )
             self.measurement_noises_int = f(self.times_int)
 
-        # Create time and P data corresponding to the interpolated times by selecting the closest data points
-        # self.P_ekf_int = np.array(
-        #     [self.P_ekf[np.abs(self.P_ekf_times - t).argmin()] for t in self.times_int]
-        # )
-
         self.times_int = self.times_int - self.times_int[0]
         self.n_times = len(self.times_int)
         # -------------------------------------------------------------------------------
@@ -550,16 +324,7 @@ class ComputeModelMismatch:
     def compute_model_mismatch_mhe(self):
         # Based on code here: https://gitlab.ethz.ch/ics/parametric-mhe/-/blob/main/parametric-mhe.ipynb
 
-        # Number of iterations
-        # Empirically determine if Q and R are converged by checking their eigenvalues
-        self.Q_cov_est_all = np.zeros(
-            (self.mhe_n_iter + 1, self.n_disturbances, self.n_disturbances)
-        )
-        self.R_cov_est_all = np.zeros(
-            (self.mhe_n_iter + 1, self.n_measurement_noises, self.n_measurement_noises)
-        )
-
-        # Number of MHE time steps
+        # Determine number of MHE time steps
         if self.mhe_n_times < 1:
             self.mhe_n_times = self.n_times
         elif self.mhe_n_times <= self.n_times - self.M:
@@ -569,130 +334,16 @@ class ComputeModelMismatch:
                 f"Number of MHE time steps ({self.mhe_n_times}) is larger than the maximum allowed number of time steps ({self.n_times - self.M})."
             )
 
-        # Set static Agilicious EKF covariance matrices
-        Q_ekf = np.diag(
-            [1e-5, 1e-5, 1e-5, 10, 10, 10, 10, 10, 10, 10, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+        # Covariance matrices of disturbances (Q_cov) and measurement noises (R_cov)
+        # Need to empirically determine if these matrices have converged by plotting their values using plot_model_mismatch_data.py
+        self.Q_cov_est_all = np.zeros(
+            (self.mhe_n_iter + 1, self.n_disturbances, self.n_disturbances)
+        )
+        self.R_cov_est_all = np.zeros(
+            (self.mhe_n_iter + 1, self.n_measurement_noises, self.n_measurement_noises)
         )
 
-        # NOTE: remove one of the attitude weights from Q_ekf and recorded self.P_ekf_int in case the attitude is represented by Euler angles
-        # Remove 6th row and column from Q_ekf
-        Q_ekf = np.delete(Q_ekf, [6], axis=0)
-        Q_ekf = np.delete(Q_ekf, [6], axis=1)
-        # self.P_ekf_int = np.delete(self.P_ekf_int, [6], axis=1)
-        # self.P_ekf_int = np.delete(self.P_ekf_int, [6], axis=2)
-
-        # NOTE: the EKF does not provide covariance values for the bias-corrected angular rates and linear z acceleration, so estimate these matrices manually
-        # NOTE: the bias-corrected angular rates are represented by 2 states each, since they are 2nd-order models
-        # Q_ekf_wb = np.diag([1, 1, 1, 1, 1, 1])
-        # Q_ekf_az = 1
-
-        # NOTE: the EKF does not provide covariance values for the bias-corrected angular rates and motor speeds, so estimate these matrices manually
-        omega_body_cov = 10
-        Q_ekf_omega_body = np.diag([omega_body_cov, omega_body_cov, omega_body_cov])
-        wm_cov = 10
-        Q_ekf_omega_mot = np.diag([wm_cov, wm_cov, wm_cov, wm_cov])
-
-        # Construct EKF covariance matrix for relevant states considered here: [wb;ab;wm]
-        # R_ekf = np.diag(
-        #     [1e-4, 1e-4, 1e-4, 1e2, 1e2, 1e2, wm_cov, wm_cov, wm_cov, wm_cov]
-        # )
-        # Construct EKF covariance matrix for relevant states considered here: [wb;ab]
-        R_ekf = np.diag([1e-4, 1e-4, 1e-4, 1e2, 1e2, 1e2])
-
-        # Convert self.P_ekf_int to continuous time
-        # self.P_ekf_int_ct = self.P_ekf_int / self.ts**2
-
-        # NOTE: the EKF does not provide covariance values for the bias-corrected linear z acceleration and angular rates
-        # Therefore, take [az_body;wb_body] = H * x_ekf + K * y_ekf, with R_ekf_wb_az = H * P * H' + K * R * K'
-        # H = np.concatenate(
-        #     (
-        #         np.concatenate(
-        #             (np.zeros((3, 10)), -np.diag([1, 1, 1]), np.zeros((3, 3))), axis=1
-        #         ),
-        #         np.concatenate((np.zeros((1, 15)), -np.eye(1)), axis=1),
-        #     ),
-        #     axis=0,
-        # )
-        # K = np.concatenate(
-        #     (
-        #         np.concatenate((np.eye(3), np.zeros((3, 7))), axis=1),
-        #         np.concatenate((np.zeros((1, 5)), np.eye(1), np.zeros((1, 4))), axis=1),
-        #     ),
-        #     axis=0,
-        # )
-        # NOTE: the EKF does not provide covariance values for the bias-corrected angular rates and motor speeds
-        # Therefore, take [omega_body;omega_motor] = H * x_ekf + K * y_ekf, with R_ekf_omega_body_mot = H * P * H' + K * R * K'
-        #  with R_ekf for motor velocities is set to a low value, since motor speeds measurements are very accurate
-        # H = np.concatenate(
-        #     (
-        #         np.concatenate(
-        #             (np.zeros((3, 9)), -np.eye(3), np.zeros((3, 3))), axis=1
-        #         ),
-        #         np.zeros((4, 15)),
-        #     ),
-        #     axis=0,
-        # )
-        # K = np.concatenate(
-        #     (
-        #         np.concatenate((np.eye(3), np.zeros((3, 7))), axis=1),
-        #         np.concatenate((np.zeros((4, 6)), np.eye(4)), axis=1),
-        #     ),
-        #     axis=0,
-        # )
-        # NOTE: the EKF does not provide covariance values for the bias-corrected angular rates
-        # Therefore, take omega_body = H * x_ekf + K * y_ekf, with R_ekf_omega_body = H * P * H' + K * R * K'
-        H = np.concatenate((np.zeros((3, 9)), -np.eye(3), np.zeros((3, 3))), axis=1)
-        K = np.concatenate((np.eye(3), np.zeros((3, 3))), axis=1)
-
-        # R_ekf_wb_az = np.array(
-        #     [
-        #         H @ self.P_ekf_int_ct[t] @ H.T + K @ R_ekf @ K.T
-        #         for t in range(self.n_times)
-        #     ]
-        # )
-        # R_ekf_omega_body_mot = np.array(
-        #     [
-        #         H @ self.P_ekf_int_ct[t] @ H.T + K @ R_ekf @ K.T
-        #         for t in range(self.n_times)
-        #     ]
-        # )
-        # R_ekf_omega_body = np.array(
-        #     [
-        #         H @ self.P_ekf_int_ct[t] @ H.T + K @ R_ekf @ K.T
-        #         for t in range(self.n_times)
-        #     ]
-        # )
-
-        # self.P_ekf_int_wb_az = np.array(
-        #     [
-        #         block_diag(self.P_ekf_int_ct[t, :10, :10], R_ekf_wb_az[t])
-        #         for t in range(self.n_times)
-        #     ]
-        # )
-        # self.P_ekf_int_omega = np.array(
-        #     [
-        #         block_diag(self.P_ekf_int_ct[t, :9, :9], R_ekf_omega_body_mot[t])
-        #         for t in range(self.n_times)
-        #     ]
-        # )
-        # self.P_ekf_int_omega = np.array(
-        #     [
-        #         block_diag(self.P_ekf_int_ct[t, :9, :9], R_ekf_omega_body[t])
-        #         for t in range(self.n_times)
-        #     ]
-        # )
-
-        # Derive static weighting (precision) matrices from Agilicious covariance matrices
-        # self.Q_cov_est_all[0, :, :] = block_diag(Q_ekf[7:10, 7:10], Q_ekf_wb, Q_ekf_az)
-        # self.Q_cov_est_all[0, :, :] = block_diag(
-        #     Q_ekf[:9, :9], Q_ekf_omega_body, Q_ekf_omega_mot
-        # )
-        # self.Q_cov_est_all[0, :, :] = block_diag(
-        #     Q_ekf[6:9, 6:9], Q_ekf_omega_body, Q_ekf_omega_mot
-        # )
-        # self.Q_cov_est_all[0, :, :] = 1e-6 * np.eye(self.n_disturbances)
-        # self.Q_cov_est_all[0, :, :] = np.eye(self.n_disturbances)
-        # self.Q_cov_est_all[0, :, :] = 1e3 * np.eye(self.n_disturbances)
+        # Initialize Q_cov
         # if self.disturbances_gt_known:
         #     self.Q_cov_est_all[0, :, :] = np.cov(self.disturbances_int)
         self.Q_cov_est_all[0, :, :] = np.diag(
@@ -702,7 +353,7 @@ class ComputeModelMismatch:
                     1 / 12 * np.ones((3,)),
                 ]
             )
-        )
+        )  # ground truth values of uniform distribution used in simulation
         # self.Q_cov_est_all[0, :, :] = self.eps * np.eye(self.n_disturbances)
         # with open("Q_est.json", "r") as openfile:
         #     Q_est_dict = json.load(openfile)
@@ -719,6 +370,7 @@ class ComputeModelMismatch:
         #     )
         # )
 
+        # Initialize R_cov
         # if self.measurement_noises_gt_known:
         #     self.R_cov_est_all[0, :, :] = np.cov(self.measurement_noises_int)
         self.R_cov_est_all[0, :, :] = np.diag(
@@ -730,23 +382,13 @@ class ComputeModelMismatch:
                     0.0152**2 / 12 * np.ones((3,)),
                 ]
             )
-        )
+        )  # ground truth values of uniform distribution used in simulation
         # self.R_cov_est_all[0, :, :] = self.eps * np.eye(self.n_measurement_noises)
         # with open("R_est.json", "r") as openfile:
         #     R_est_dict = json.load(openfile)
         #     self.R_cov_est_all[0, :, :] = np.array(R_est_dict["R_cov_est_all"])[
         #         -1, :, :
         #     ]
-        self.R_cov_arr = np.zeros(
-            (self.n_times, self.n_measurement_noises, self.n_measurement_noises)
-        )
-        # for t in range(self.n_times):
-        #     # self.R_cov_arr[t] = self.P_ekf_int_wb_az[t]
-        #     # self.R_cov_arr[t] = self.P_ekf_int_omega[t]
-        #     self.R_cov_arr[t] = self.P_ekf_int_omega[t][
-        #         [0, 1, 2, 3, 4, 5, 9, 10, 11], [0, 1, 2, 3, 4, 5, 9, 10, 11]
-        #     ]  # TODO: write in terms of C matrix
-        # self.R_cov_est_all[0, :, :] = self.R_cov_arr[0]
 
         # Initialize parameters, cost and initial guess
         p = np.zeros((self.n_inputs + self.n_outputs,))
@@ -754,6 +396,14 @@ class ComputeModelMismatch:
         x_warmstart = np.zeros(
             (self.mhe_n_iter, self.mhe_n_times, self.n_states, self.M + 1)
         )
+        # Set initial guess for the first time step in the first iteration
+        # Initial states equal the measured outputs => start from non-zero disturbance values
+        for k in range(self.M + 1):
+            x_warmstart[0, 0, self.output_idc, k] = self.outputs_int[:, k]
+            x_warmstart[0, 0, self.hidden_state_idc, k] = np.zeros(
+                (self.n_hidden_states,)
+            )
+        # Initial states follow system dynamics from the initial measured outputs
         # x_warmstart[0, 0, self.output_idc, 0] = self.outputs_int[:, 0]
         # x_warmstart[0, 0, self.hidden_state_idc, 0] = np.zeros((self.n_hidden_states,))
         # for k in range(1, self.M + 1):
@@ -765,30 +415,17 @@ class ComputeModelMismatch:
         #             self.ts,
         #         )
         #     ).flatten()
-        # Set initial guess for the first time step in the first iteration
-        # Initial states equal the measured outputs => start from non-zero disturbance values
-        for k in range(self.M + 1):
-            x_warmstart[0, 0, self.output_idc, k] = self.outputs_int[:, k]
-            x_warmstart[0, 0, self.hidden_state_idc, k] = np.zeros(
-                (self.n_hidden_states,)
-            )
         u_warmstart = np.zeros(
             (self.mhe_n_iter, self.mhe_n_times, self.n_disturbances, self.M)
         )
 
-        # Create storage for cost values
+        # Create storage for saving optimization results
         self.Q_mhe_all = np.zeros(
             (self.mhe_n_iter, self.n_disturbances, self.n_disturbances)
         )
         self.R_mhe_all = np.zeros(
             (self.mhe_n_iter, self.n_measurement_noises, self.n_measurement_noises)
         )
-        self.costs_total = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
-        self.costs_term = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
-        if self.exp_type == "sim":
-            self.costs_total_gt = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
-
-        # Create storage for state and noise results
         self.x_mhe_all = np.zeros(
             (self.mhe_n_iter, self.mhe_n_times - self.M, self.n_states, self.M + 1)
         )
@@ -803,6 +440,10 @@ class ComputeModelMismatch:
                 self.M + 1,
             )
         )
+        self.costs_total = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
+        self.costs_term = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
+        if self.exp_type == "sim":
+            self.costs_total_gt = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
 
         # Iteratively find w_est, eta_est, Q and R
         for i in range(self.mhe_n_iter):
@@ -827,10 +468,6 @@ class ComputeModelMismatch:
 
                 # Set up problem stages 0 - self.M-1
                 for k in range(self.M):
-                    # Update EKF state measurement precision matrix
-                    # if i == 0:
-                    #     self.R_mhe_all[i, :, :] = np.linalg.inv(self.R_cov_arr[t - self.M + k])
-
                     # Update cost terms
                     W = block_diag(self.Q_mhe_all[i, :, :], self.R_mhe_all[i, :, :])
                     self.solver.cost_set(k, "W", W, api="new")
@@ -940,7 +577,7 @@ class ComputeModelMismatch:
                     x_warmstart[i + 1, 0, :, :] = self.x_mhe_all[i, 0, :, :]
                     u_warmstart[i + 1, 0, :, :] = self.w_mhe_all[i, 0, :, :]
 
-            # Update Q and R based on estimated disturbances measurement noises
+            # Update Q_cov and R_cov based on estimated disturbances measurement noises
             # Estimate full covariance matrices Q and R
             Q_est = np.cov(
                 np.squeeze(self.w_mhe_all[i, :, :, self.stage_est]), rowvar=False
@@ -963,6 +600,7 @@ class ComputeModelMismatch:
             #         ]
             #     )
             # )
+
             # Update covariance matrices Q and R
             # stepsize = 0.5
             # self.Q_cov_est_all[i + 1, :, :] = self.Q_cov_est_all[
