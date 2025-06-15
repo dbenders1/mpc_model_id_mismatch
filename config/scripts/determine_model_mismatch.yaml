@@ -10,16 +10,14 @@ recorded_data:
   #   [
   #     2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise,
   #   ]
-  json_names:
-    [2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise]
+  # json_names:
+  #   [2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise]
   # json_names:
   #   [
   #     2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise,
   #   ]
   # json_names:
-  #   [
-  #     2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise,
-  #   ]
+  #   [2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise]
   # json_names:
   #   [
   #     2025-06-04_sim_falcon_mpc_model_mismatch_hovering_open_loop_dist_meas_noise,
@@ -28,6 +26,16 @@ recorded_data:
   #   [
   #     2025-06-04_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_sin_dist_meas_noise,
   #   ]
+  # json_names:
+  #   [
+  #     2025-06-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise,
+  #   ]
+  # json_names:
+  #   [
+  #     2025-06-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise,
+  #   ]
+  json_names:
+    [2025-06-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise]
   data_sel:
     overwrite: false
     automatic: true
