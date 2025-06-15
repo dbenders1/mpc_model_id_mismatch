@@ -34,7 +34,7 @@ To run [determine_model_mismatch.py](scripts/determine_model_mismatch.py), you n
    and by running the script:
 
    ```bash
-   setup_venv.sh [/path/to/acados_template]
+   ./setup_venv.sh [/path/to/acados_template]
    ```
 
    The script will create a directory called _venv_ in the root of this repository.
