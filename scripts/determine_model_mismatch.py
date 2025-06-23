@@ -605,10 +605,10 @@ class ComputeModelMismatch:
             # self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[
             #     i, :, :
             # ]  # keep the same R covariance matrix
-            # self.R_cov_est_all[i + 1, :, :] = R_est
-            self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[i, :, :] - stepsize * (
-                R_est - self.R_cov_est_all[i, :, :]
-            )
+            self.R_cov_est_all[i + 1, :, :] = R_est
+            # self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[i, :, :] - stepsize * (
+            #     R_est - self.R_cov_est_all[i, :, :]
+            # )
             print(f"Q_cov_est_all[i + 1, :, :] = {self.Q_cov_est_all[i + 1, :, :]}")
             print(f"R_cov_est_all[i + 1, :, :] = {self.R_cov_est_all[i + 1, :, :]}")
 
