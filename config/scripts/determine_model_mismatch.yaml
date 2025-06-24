@@ -52,8 +52,12 @@ recorded_data:
   #   [
   #     2025-06-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise,
   #   ]
+  # json_names:
+  #   [2025-06-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise]
   json_names:
-    [2025-06-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise]
+    [
+      2025-06-23_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_rand_walk_meas_noise,
+    ]
   data_sel:
     overwrite: false
     automatic: true
@@ -69,12 +73,14 @@ model:
 
 mhe:
   generate_solver: true
-  n_iter: 4
+  n_iter: 10
   n_times: 100
   M: 40
   stage_est: 20
   eps: 1e-9
   cost_scaling: 1
+  update_Q: true
+  update_R: true
 
 printing:
   disturbances:

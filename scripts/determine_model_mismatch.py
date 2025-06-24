@@ -52,6 +52,8 @@ class ComputeModelMismatch:
         self.stage_est = config["mhe"]["stage_est"]
         self.eps = float(config["mhe"]["eps"])
         self.cost_scaling = float(config["mhe"]["cost_scaling"])
+        self.update_Q = config["mhe"]["update_Q"]
+        self.update_R = config["mhe"]["update_R"]
 
         self.do_print_disturbances_min = config["printing"]["disturbances"]["min"]
         self.do_print_disturbances_max = config["printing"]["disturbances"]["max"]
@@ -348,39 +350,41 @@ class ComputeModelMismatch:
         )
 
         # Initialize Q_cov
-        # if self.disturbances_gt_known:
-        #     self.Q_cov_est_all[0, :, :] = np.cov(self.disturbances_int)
-        self.Q_cov_est_all[0, :, :] = np.diag(
-            (2 * self.sim_w_max) ** 2 / 12
-        )  # ground truth values of uniform distribution used in simulation
-        # self.Q_cov_est_all[0, :, :] = self.eps * np.eye(self.n_disturbances)
-        # with open("Q_est.json", "r") as openfile:
-        #     Q_est_dict = json.load(openfile)
-        #     self.Q_cov_est_all[0, :, :] = np.array(Q_est_dict["Q_cov_est_all"])[
-        #         -1, :, :
-        #     ]
-        # self.Q_cov_est_all[0, :, :] = np.diag(
-        #     np.concatenate(
-        #         [
-        #             0.2**2 / 12 * np.ones((3,)),
-        #             1 / 12 * np.ones((3,)),
-        #             1 / 3 * np.ones((4,)),
-        #         ]
-        #     )
-        # )
+        if self.disturbances_gt_known:
+            self.Q_cov_est_all[0, :, :] = np.cov(self.disturbances_int)
+        else:
+            self.Q_cov_est_all[0, :, :] = np.diag(
+                (2 * self.sim_w_max) ** 2 / 12
+            )  # ground truth values of uniform distribution used in simulation
+            # self.Q_cov_est_all[0, :, :] = self.eps * np.eye(self.n_disturbances)
+            # with open("Q_est.json", "r") as openfile:
+            #     Q_est_dict = json.load(openfile)
+            #     self.Q_cov_est_all[0, :, :] = np.array(Q_est_dict["Q_cov_est_all"])[
+            #         -1, :, :
+            #     ]
+            # self.Q_cov_est_all[0, :, :] = np.diag(
+            #     np.concatenate(
+            #         [
+            #             0.2**2 / 12 * np.ones((3,)),
+            #             1 / 12 * np.ones((3,)),
+            #             1 / 3 * np.ones((4,)),
+            #         ]
+            #     )
+            # )
 
         # Initialize R_cov
-        # if self.measurement_noises_gt_known:
-        #     self.R_cov_est_all[0, :, :] = np.cov(self.measurement_noises_int)
-        self.R_cov_est_all[0, :, :] = np.diag(
-            (2 * self.sim_eta_max) ** 2 / 12
-        )  # ground truth values of uniform distribution used in simulation
-        # self.R_cov_est_all[0, :, :] = self.eps * np.eye(self.n_measurement_noises)
-        # with open("R_est.json", "r") as openfile:
-        #     R_est_dict = json.load(openfile)
-        #     self.R_cov_est_all[0, :, :] = np.array(R_est_dict["R_cov_est_all"])[
-        #         -1, :, :
-        #     ]
+        if self.measurement_noises_gt_known:
+            self.R_cov_est_all[0, :, :] = np.cov(self.measurement_noises_int)
+        else:
+            self.R_cov_est_all[0, :, :] = np.diag(
+                (2 * self.sim_eta_max) ** 2 / 12
+            )  # ground truth values of uniform distribution used in simulation
+            # self.R_cov_est_all[0, :, :] = self.eps * np.eye(self.n_measurement_noises)
+            # with open("R_est.json", "r") as openfile:
+            #     R_est_dict = json.load(openfile)
+            #     self.R_cov_est_all[0, :, :] = np.array(R_est_dict["R_cov_est_all"])[
+            #         -1, :, :
+            #     ]
 
         # Initialize parameters, cost and initial guess
         p = np.zeros((self.n_inputs + self.n_outputs,))
@@ -593,22 +597,15 @@ class ComputeModelMismatch:
             #     )
             # )
 
-            # Update covariance matrices Q and R
-            stepsize = 0.5
-            self.Q_cov_est_all[i + 1, :, :] = self.Q_cov_est_all[
-                i, :, :
-            ]  # keep the same Q covariance matrix
-            # self.Q_cov_est_all[i + 1, :, :] = Q_est
-            # self.Q_cov_est_all[i + 1, :, :] = self.Q_cov_est_all[i, :, :] - stepsize * (
-            #     Q_est - self.Q_cov_est_all[i, :, :]
-            # )
-            # self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[
-            #     i, :, :
-            # ]  # keep the same R covariance matrix
-            self.R_cov_est_all[i + 1, :, :] = R_est
-            # self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[i, :, :] - stepsize * (
-            #     R_est - self.R_cov_est_all[i, :, :]
-            # )
+            # Update covariance matrices Q and R if desired
+            if self.update_Q:
+                self.Q_cov_est_all[i + 1, :, :] = Q_est
+            else:
+                self.Q_cov_est_all[i + 1, :, :] = self.Q_cov_est_all[i, :, :]
+            if self.update_R:
+                self.R_cov_est_all[i + 1, :, :] = R_est
+            else:
+                self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[i, :, :]
             print(f"Q_cov_est_all[i + 1, :, :] = {self.Q_cov_est_all[i + 1, :, :]}")
             print(f"R_cov_est_all[i + 1, :, :] = {self.R_cov_est_all[i + 1, :, :]}")
 
