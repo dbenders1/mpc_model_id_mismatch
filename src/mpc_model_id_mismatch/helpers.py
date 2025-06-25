@@ -65,13 +65,16 @@ def get_acados_status_message(status):
         return "Unknown status"
 
 
-def get_acados_mhe_solver(model, M, ts, sim_eta_max, generate_solver=True):
+def get_acados_mhe_solver(
+    model, M, ts, sim_eta_max, generate_solver=True, determine_w=False
+):
     # Obtain number of states and inputs
     nx = model.get_n_states()
     nu = model.get_n_inputs()
     ny = model.get_n_outputs()
     nw = model.get_n_disturbances()
     neta = model.get_n_measurement_noises()
+    E_transpose = model.get_disturbance_sel_matrix()
     F_transpose = model.get_measurement_noise_sel_matrix()
     # F_complement = model.get_wm_sel_matrix()
 
@@ -95,57 +98,81 @@ def get_acados_mhe_solver(model, M, ts, sim_eta_max, generate_solver=True):
     acados_model.p = vertcat(u_applied, y_meas)
     # state update equality constraint
     acados_model.f_expl_expr = model.state_update_ct_noise(x_est, u_applied, w_est)
-    # symbolic cost terms
-    acados_model.cost_y_expr_0 = vertcat(
-        w_est, mtimes(F_transpose, y_meas - model.get_outputs(x_est, u_applied))
-    )
-    acados_model.cost_y_expr = vertcat(
-        w_est, mtimes(F_transpose, y_meas - model.get_outputs(x_est, u_applied))
-    )
-    acados_model.cost_y_expr_e = mtimes(
-        F_transpose, y_meas - model.get_outputs(x_est, u_applied)
-    )
-    # symbolic constraint terms
-    acados_model.con_h_expr_0 = mtimes(
-        F_transpose, y_meas - model.get_outputs(x_est, u_applied)
-    )
-    acados_model.con_h_expr = mtimes(
-        F_transpose, y_meas - model.get_outputs(x_est, u_applied)
-    )
-    acados_model.con_h_expr_e = mtimes(
-        F_transpose, y_meas - model.get_outputs(x_est, u_applied)
-    )
-    # acados_model.con_h_expr_0 = mtimes(
-    #     F_complement, y_meas - model.get_outputs(x_est, u_applied)
-    # )
-    # acados_model.con_h_expr = mtimes(
-    #     F_complement, y_meas - model.get_outputs(x_est, u_applied)
-    # )
-    # acados_model.con_h_expr_e = mtimes(
-    #     F_complement, y_meas - model.get_outputs(x_est, u_applied)
-    # )
+    if determine_w:
+        # symbolic cost terms
+        acados_model.cost_y_expr_0 = w_est
+        acados_model.cost_y_expr = w_est
+        # symbolic constraint terms
+        acados_model.con_h_expr_0 = mtimes(E_transpose, y_meas - x_est)
+        acados_model.con_h_expr = mtimes(E_transpose, y_meas - x_est)
+        acados_model.con_h_expr_e = mtimes(E_transpose, y_meas - x_est)
+    else:
+        # symbolic cost terms
+        acados_model.cost_y_expr_0 = vertcat(
+            w_est, mtimes(F_transpose, y_meas - model.get_outputs(x_est, u_applied))
+        )
+        acados_model.cost_y_expr = vertcat(
+            w_est, mtimes(F_transpose, y_meas - model.get_outputs(x_est, u_applied))
+        )
+        acados_model.cost_y_expr_e = mtimes(
+            F_transpose, y_meas - model.get_outputs(x_est, u_applied)
+        )
+        # symbolic constraint terms
+        acados_model.con_h_expr_0 = mtimes(
+            F_transpose, y_meas - model.get_outputs(x_est, u_applied)
+        )
+        acados_model.con_h_expr = mtimes(
+            F_transpose, y_meas - model.get_outputs(x_est, u_applied)
+        )
+        acados_model.con_h_expr_e = mtimes(
+            F_transpose, y_meas - model.get_outputs(x_est, u_applied)
+        )
+        # acados_model.con_h_expr_0 = mtimes(
+        #     F_complement, y_meas - model.get_outputs(x_est, u_applied)
+        # )
+        # acados_model.con_h_expr = mtimes(
+        #     F_complement, y_meas - model.get_outputs(x_est, u_applied)
+        # )
+        # acados_model.con_h_expr_e = mtimes(
+        #     F_complement, y_meas - model.get_outputs(x_est, u_applied)
+        # )
 
     # Create OCP cost
     ocp_cost = AcadosOcpCost()
     ocp_cost.cost_type_0 = "NONLINEAR_LS"
-    ocp_cost.W_0 = np.zeros((nw + neta, nw + neta))
-    ocp_cost.yref_0 = np.zeros((nw + neta,))
     ocp_cost.cost_type = "NONLINEAR_LS"
-    ocp_cost.W = np.zeros((nw + neta, nw + neta))
-    ocp_cost.yref = np.zeros((nw + neta,))
-    ocp_cost.cost_type_e = "NONLINEAR_LS"
-    ocp_cost.W_e = np.zeros((neta, neta))
-    ocp_cost.yref_e = np.zeros((neta,))
+    if determine_w:
+        ocp_cost.W_0 = np.zeros((nw, nw))
+        ocp_cost.yref_0 = np.zeros((nw,))
+        ocp_cost.W = np.zeros((nw, nw))
+        ocp_cost.yref = np.zeros((nw,))
+    else:
+        ocp_cost.W_0 = np.zeros((nw + neta, nw + neta))
+        ocp_cost.yref_0 = np.zeros((nw + neta,))
+        ocp_cost.W = np.zeros((nw + neta, nw + neta))
+        ocp_cost.yref = np.zeros((nw + neta,))
+        ocp_cost.cost_type_e = "NONLINEAR_LS"
+        ocp_cost.W_e = np.zeros((neta, neta))
+        ocp_cost.yref_e = np.zeros((neta,))
 
     # Create OCP constraints
     # Known bounds on measurement noise
     ocp_constraints = AcadosOcpConstraints()
-    ocp_constraints.lh_0 = -sim_eta_max
-    ocp_constraints.uh_0 = sim_eta_max
-    ocp_constraints.lh = -sim_eta_max
-    ocp_constraints.uh = sim_eta_max
-    ocp_constraints.lh_e = -sim_eta_max
-    ocp_constraints.uh_e = sim_eta_max
+    if determine_w:
+        # ocp_constraints.x0 = np.zeros((nx,))
+        ocp_constraints.lh_0 = np.zeros((nw,))
+        ocp_constraints.uh_0 = np.zeros((nw,))
+        ocp_constraints.lh = np.zeros((nw,))
+        ocp_constraints.uh = np.zeros((nw,))
+        ocp_constraints.lh_e = np.zeros((nw,))
+        ocp_constraints.uh_e = np.zeros((nw,))
+    else:
+        ocp_constraints.lh_0 = -sim_eta_max
+        ocp_constraints.uh_0 = sim_eta_max
+        ocp_constraints.lh = -sim_eta_max
+        ocp_constraints.uh = sim_eta_max
+        ocp_constraints.lh_e = -sim_eta_max
+        ocp_constraints.uh_e = sim_eta_max
     # Motor velocity states equal motor velocity measurements
     # ocp_constraints = AcadosOcpConstraints()
     # ocp_constraints.lh_0 = np.zeros((ny - neta,))
@@ -639,6 +666,9 @@ class DroneAgiModel:
 
     def get_disturbance_prop_matrix(self):
         return self.E
+
+    def get_disturbance_sel_matrix(self):
+        return self.E.T
 
     def get_inertia_matrix(self):
         return self.inertia_matrix

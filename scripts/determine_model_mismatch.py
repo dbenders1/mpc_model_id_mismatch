@@ -26,6 +26,7 @@ class ComputeModelMismatch:
         json_name,
         data_sel_dir,
         data_sel_file_name,
+        output_data_dir,
         exp_type,
         model,
         solver,
@@ -54,6 +55,8 @@ class ComputeModelMismatch:
         self.cost_scaling = float(config["mhe"]["cost_scaling"])
         self.update_Q = config["mhe"]["update_Q"]
         self.update_R = config["mhe"]["update_R"]
+        self.determine_w = config["mhe"]["determine_w"]
+        self.use_predetermined_w = config["mhe"]["use_predetermined_w"]
 
         self.do_print_disturbances_min = config["printing"]["disturbances"]["min"]
         self.do_print_disturbances_max = config["printing"]["disturbances"]["max"]
@@ -75,6 +78,7 @@ class ComputeModelMismatch:
         self.json_name = json_name
         self.data_sel_dir = data_sel_dir
         self.data_sel_file_name = data_sel_file_name
+        self.output_data_dir = output_data_dir
         self.exp_type = exp_type
         self.sim_w_max = sim_w_max
         self.sim_eta_max = sim_eta_max
@@ -95,10 +99,40 @@ class ComputeModelMismatch:
         self.disturbance_idc = self.model.get_disturbance_idc()
         self.E = self.model.get_disturbance_prop_matrix()
         self.n_measurement_noises = self.model.get_n_measurement_noises()
+        self.F = self.model.get_measurement_noise_prop_matrix()
         self.F_transpose = self.model.get_measurement_noise_sel_matrix()
 
         # Set solver
         self.solver = solver
+
+        # Handle settings related to determining w
+        if self.determine_w:
+            if self.exp_type == "sim":
+                log.warning(
+                    f"The 'determine_w' setting is only relevant for the Gazebo experiment type. It will be ignored for the simple simulation experiment type"
+                )
+                self.determine_w = False
+            elif self.exp_type == "gaz":
+                if self.mhe_n_iter > 1:
+                    log.warning(
+                        f"Only one MHE iteration is required to determine w. Setting 'mhe_n_iter' to 1"
+                    )
+                self.mhe_n_iter = 1
+            if self.use_predetermined_w:
+                log.warning(
+                    f"The 'use_predetermined_w' setting cannot be combined with 'determine_w'. It will be set to False"
+                )
+                self.use_predetermined_w = False
+
+        if self.use_predetermined_w:
+            if self.exp_type == "sim":
+                log.warning(
+                    f"The 'use_predetermined_w' setting is only relevant for the Gazebo experiment type. It will be ignored for the simple simulation experiment type"
+                )
+                self.use_predetermined_w = False
+
+        if self.determine_w or self.use_predetermined_w:
+            self.w_json_path = f"{self.output_data_dir}/{self.json_name}_w.json"
 
     def process_recorded_data(self):
         # READ RECORDED DATA
@@ -191,13 +225,13 @@ class ComputeModelMismatch:
                 n_crossings = len(crossing_idc)
                 if n_crossings < min_n_crossings:
                     print(
-                        f"WARNING: Automatic data selection: expected at least {min_n_crossings} detected crossings, but only found {n_crossings}. Exiting."
+                        f"WARNING: Automatic data selection: expected at least {min_n_crossings} detected crossings, but only found {n_crossings}. Exiting"
                     )
                     exit(1)
                 else:
                     if n_crossings > min_n_crossings:
                         print(
-                            f"INFO: Automatic data selection: expected at least {min_n_crossings} detected crossings, found {n_crossings}."
+                            f"INFO: Automatic data selection: expected at least {min_n_crossings} detected crossings, found {n_crossings}"
                         )
                     crossing_idx_0 = crossing_idc[
                         self.automatic_data_sel_crossing_idc_to_sel[0]
@@ -233,7 +267,7 @@ class ComputeModelMismatch:
                 ax[1].set_xlabel("Time (s)")
                 sel = plt.ginput(2, show_clicks=True)
                 print(f"Manually selected points: {sel}")
-                print("You can close the data selection figure now.")
+                print("You can close the data selection figure now")
 
             plt.figure()
             outputs_idc = np.where(
@@ -256,7 +290,7 @@ class ComputeModelMismatch:
             select_data_dict[self.json_name] = sel
             with open(data_sel_path, "w") as outfile:
                 json.dump(select_data_dict, outfile)
-            print(f"Added sel for {self.json_name} to {self.data_sel_file_name}.")
+            print(f"Added sel for {self.json_name} to {self.data_sel_file_name}")
 
         # Select the data in the corresponding arrays
         inputs_idc = np.where(
@@ -327,6 +361,38 @@ class ComputeModelMismatch:
         self.n_times = len(self.times_int)
         # -------------------------------------------------------------------------------
 
+        # IF DETERMINING W: REMOVE MEASUREMENT NOISE FROM OUTPUTS
+        # -------------------------------------------------------------------------------
+        if self.determine_w:
+            if self.measurement_noises_gt_known:
+                self.outputs_int = (
+                    self.outputs_int - self.F @ self.measurement_noises_int
+                )
+                self.measurement_noises_int = np.zeros(self.measurement_noises.shape)
+            else:
+                log.warning(
+                    "Measurement noises are not known. Cannot remove them from outputs. Therefore, the disturbance vector w cannot be determined"
+                )
+                exit(1)
+        # -------------------------------------------------------------------------------
+
+        # IF USING PREDETERMINED W: LOAD FROM FILE AND SET CORRESPONDING VARIABLES
+        # -------------------------------------------------------------------------------
+        if self.use_predetermined_w:
+            if path.exists(self.w_json_path):
+                self.disturbances_gt_known = True
+                with open(self.w_json_path, "r") as w_file:
+                    w_dict = json.load(w_file)
+                    self.disturbances_int = np.array(w_dict["w"])
+                    print(
+                        f"Loaded interpolated disturbance data from {self.w_json_path}"
+                    )
+            else:
+                raise FileNotFoundError(
+                    f"File {self.w_json_path} does not exist. Please run the script with 'determine_w: true' to create it"
+                )
+        # -------------------------------------------------------------------------------
+
     def compute_model_mismatch_mhe(self):
         # Based on code here: https://gitlab.ethz.ch/ics/parametric-mhe/-/blob/main/parametric-mhe.ipynb
 
@@ -337,7 +403,7 @@ class ComputeModelMismatch:
             self.mhe_n_times = self.M + self.mhe_n_times
         else:
             raise ValueError(
-                f"Number of MHE time steps ({self.mhe_n_times}) is larger than the maximum allowed number of time steps ({self.n_times - self.M})."
+                f"Number of MHE time steps ({self.mhe_n_times}) is larger than the maximum allowed number of time steps ({self.n_times - self.M})"
             )
 
         # Covariance matrices of disturbances (Q_cov) and measurement noises (R_cov)
@@ -353,24 +419,27 @@ class ComputeModelMismatch:
         if self.disturbances_gt_known:
             self.Q_cov_est_all[0, :, :] = np.cov(self.disturbances_int)
         else:
-            self.Q_cov_est_all[0, :, :] = np.diag(
-                (2 * self.sim_w_max) ** 2 / 12
-            )  # ground truth values of uniform distribution used in simulation
-            # self.Q_cov_est_all[0, :, :] = self.eps * np.eye(self.n_disturbances)
-            # with open("Q_est.json", "r") as openfile:
-            #     Q_est_dict = json.load(openfile)
-            #     self.Q_cov_est_all[0, :, :] = np.array(Q_est_dict["Q_cov_est_all"])[
-            #         -1, :, :
-            #     ]
-            # self.Q_cov_est_all[0, :, :] = np.diag(
-            #     np.concatenate(
-            #         [
-            #             0.2**2 / 12 * np.ones((3,)),
-            #             1 / 12 * np.ones((3,)),
-            #             1 / 3 * np.ones((4,)),
-            #         ]
-            #     )
-            # )
+            if self.determine_w:
+                self.Q_cov_est_all[0, :, :] = 1 / self.eps * np.eye(self.n_disturbances)
+            else:
+                self.Q_cov_est_all[0, :, :] = np.diag(
+                    (2 * self.sim_w_max) ** 2 / 12
+                )  # ground truth values of uniform distribution used in simulation
+                # self.Q_cov_est_all[0, :, :] = self.eps * np.eye(self.n_disturbances)
+                # with open("Q_est.json", "r") as openfile:
+                #     Q_est_dict = json.load(openfile)
+                #     self.Q_cov_est_all[0, :, :] = np.array(Q_est_dict["Q_cov_est_all"])[
+                #         -1, :, :
+                #     ]
+                # self.Q_cov_est_all[0, :, :] = np.diag(
+                #     np.concatenate(
+                #         [
+                #             0.2**2 / 12 * np.ones((3,)),
+                #             1 / 12 * np.ones((3,)),
+                #             1 / 3 * np.ones((4,)),
+                #         ]
+                #     )
+                # )
 
         # Initialize R_cov
         if self.measurement_noises_gt_known:
@@ -388,7 +457,10 @@ class ComputeModelMismatch:
 
         # Initialize parameters, cost and initial guess
         p = np.zeros((self.n_inputs + self.n_outputs,))
-        yref = np.zeros((self.n_disturbances + self.n_measurement_noises,))
+        if self.determine_w:
+            yref = np.zeros((self.n_disturbances,))
+        else:
+            yref = np.zeros((self.n_disturbances + self.n_measurement_noises,))
         x_warmstart = np.zeros(
             (self.mhe_n_iter, self.mhe_n_times, self.n_states, self.M + 1)
         )
@@ -438,7 +510,7 @@ class ComputeModelMismatch:
         )
         self.costs_total = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
         self.costs_term = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
-        if self.exp_type == "sim":
+        if self.disturbances_gt_known and self.measurement_noises_gt_known:
             self.costs_total_gt = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
 
         # Iteratively find w_est, eta_est, Q and R
@@ -462,10 +534,18 @@ class ComputeModelMismatch:
                 else:
                     print(f"Time step {t - self.M + 1}/{self.mhe_n_times - self.M}")
 
+                # if self.determine_w:
+                #     # Set initial state constraint
+                #     self.solver.set(0, "lbx", self.outputs_int[:, t - self.M])
+                #     self.solver.set(0, "ubx", self.outputs_int[:, t - self.M])
+
                 # Set up problem stages 0 - self.M-1
                 for k in range(self.M):
                     # Update cost terms
-                    W = block_diag(self.Q_mhe_all[i, :, :], self.R_mhe_all[i, :, :])
+                    if self.determine_w:
+                        W = self.Q_mhe_all[i, :, :]
+                    else:
+                        W = block_diag(self.Q_mhe_all[i, :, :], self.R_mhe_all[i, :, :])
                     self.solver.cost_set(k, "W", W, api="new")
                     self.solver.cost_set(k, "yref", yref)
                     self.solver.cost_set(k, "scaling", self.cost_scaling)
@@ -484,10 +564,13 @@ class ComputeModelMismatch:
                     self.solver.set(k, "u", u_warmstart[i, t - self.M, :, k])
 
                 # Set up problem stage self.M
-                W = self.R_mhe_all[i, :, :]
-                self.solver.cost_set(self.M, "W", W, api="new")
-                self.solver.cost_set(self.M, "yref", yref[-self.n_measurement_noises :])
-                self.solver.cost_set(self.M, "scaling", self.cost_scaling)
+                if not determine_w:
+                    W = self.R_mhe_all[i, :, :]
+                    self.solver.cost_set(self.M, "W", W, api="new")
+                    self.solver.cost_set(
+                        self.M, "yref", yref[-self.n_measurement_noises :]
+                    )
+                    self.solver.cost_set(self.M, "scaling", self.cost_scaling)
                 p = np.concatenate(
                     (
                         self.inputs_int[:, t],
@@ -606,8 +689,6 @@ class ComputeModelMismatch:
                 self.R_cov_est_all[i + 1, :, :] = R_est
             else:
                 self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[i, :, :]
-            print(f"Q_cov_est_all[i + 1, :, :] = {self.Q_cov_est_all[i + 1, :, :]}")
-            print(f"R_cov_est_all[i + 1, :, :] = {self.R_cov_est_all[i + 1, :, :]}")
 
             # # Print maximum likelihood costs before and after updating Q and R over a single horizon
             # print(
@@ -642,6 +723,28 @@ class ComputeModelMismatch:
         #         data_R,
         #         f,
         #     )
+
+        # Save disturbance data
+        if self.determine_w:
+            w = np.zeros((self.n_disturbances, self.mhe_n_times - 1))
+            for i in range(self.mhe_n_times - self.M):
+                if i == 0:
+                    w[:, : self.stage_est + 1] = self.w_mhe_all[
+                        0, i, :, : self.stage_est + 1
+                    ]
+                elif i == self.mhe_n_times - self.M - 1:
+                    w[:, i + self.stage_est :] = self.w_mhe_all[
+                        0, i, :, self.stage_est :
+                    ]
+                else:
+                    w[:, i + self.stage_est] = self.w_mhe_all[0, i, :, self.stage_est]
+            data_w = {"w": w.tolist()}
+            with open(self.w_json_path, "w") as f:
+                json.dump(
+                    data_w,
+                    f,
+                )
+            print(f"Disturbance data stored in {self.w_json_path}")
 
     def compute_model_mismatch_bounds(self):
         # Compute ground truth disturbance and measurement noise bounds
@@ -1224,14 +1327,14 @@ if __name__ == "__main__":
     g = config["constants"]["g"]
     params_file = f"{config_dir}/systems/{quad_name}.yaml"
     if path.exists(params_file):
-        log.warning(f"Selected {quad_name} params file.")
+        log.warning(f"Selected {quad_name} params file")
     else:
-        log.fatal(f"Unknown quad name {quad_name}! Exiting.")
+        log.fatal(f"Unknown quad name {quad_name}! Exiting")
         exit(1)
     if quad_name == "falcon":
         model = helpers.DroneAgiModel(quad_name, g, params_file)
     else:
-        log.fatal(f"Unknown model {quad_name}! Exiting.")
+        log.fatal(f"Unknown model {quad_name}! Exiting")
         exit(1)
 
     # Get sampling time
@@ -1243,9 +1346,12 @@ if __name__ == "__main__":
     stage_est = config["mhe"]["stage_est"]
     eps = float(config["mhe"]["eps"])
     cost_scaling = float(config["mhe"]["cost_scaling"])
+    determine_w = config["mhe"]["determine_w"]
 
     # Generate MHE solver
-    solver = helpers.get_acados_mhe_solver(model, M, ts, sim_eta_max, generate_solver)
+    solver = helpers.get_acados_mhe_solver(
+        model, M, ts, sim_eta_max, generate_solver, determine_w
+    )
 
     # Get printing options
     do_print_disturbances_min = config["printing"]["disturbances"]["min"]
@@ -1294,6 +1400,7 @@ if __name__ == "__main__":
             json_name,
             data_sel_dir,
             data_sel_file_name,
+            output_data_dir,
             exp_type,
             model,
             solver,
@@ -1302,23 +1409,25 @@ if __name__ == "__main__":
         )
         compute_model_mismatch.process_recorded_data()
         compute_model_mismatch.compute_model_mismatch_mhe()
-        compute_model_mismatch.compute_model_mismatch_bounds()
-        compute_model_mismatch.create_plots()
-        data[exp_details] = compute_model_mismatch.get_json_specific_data()
+        if not determine_w:
+            compute_model_mismatch.compute_model_mismatch_bounds()
+            compute_model_mismatch.create_plots()
+            data[exp_details] = compute_model_mismatch.get_json_specific_data()
         print("-" * 100)
 
-    compute_absolute_w_eta_bounds(data, do_print_w_eta)
+    if not determine_w:
+        compute_absolute_w_eta_bounds(data, do_print_w_eta)
 
-    # Save data to json file for plotting
-    output_data_json_path = f"{output_data_dir}/{model_name}.json"
-    with open(output_data_json_path, "w") as json_file:
-        json.dump(data, json_file, indent=4)
-    print(f"\nSaved data to {output_data_json_path}")
+        # Save data to json file for plotting
+        output_data_json_path = f"{output_data_dir}/{model_name}.json"
+        with open(output_data_json_path, "w") as json_file:
+            json.dump(data, json_file, indent=4)
+        print(f"\nSaved data to {output_data_json_path}")
 
-    # Save data to mat file for SDP
-    output_data_mat_path = f"{output_data_dir}/{model_name}.mat"
-    scipy.io.savemat(output_data_mat_path, data["common"])
-    print(f"Saved data to {output_data_mat_path}")
+        # Save data to mat file for SDP
+        output_data_mat_path = f"{output_data_dir}/{model_name}.mat"
+        scipy.io.savemat(output_data_mat_path, data["common"])
+        print(f"Saved data to {output_data_mat_path}")
 
     # End timing and print
     end = time.time()
