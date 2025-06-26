@@ -9,13 +9,18 @@ recorded_data:
   #     2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise,
   #     2025-06-23_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_rand_walk_meas_noise,
   #   ]
-  bag_names:
-    [2025-06-24_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise]
+  # bag_names:
+  #   [2025-06-24_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise]
   # bag_names:
   #   [
   #     2025-05-07_gaz_falcon_mpc_model_id_inertia_matrix_only_thrust_dragtorque_rollingmoment_shiftedactualmotorvel,
   #     2025-05-08_sim_falcon_mpc_model_id_drag_coefficients,
   #   ]
-  topic_names: [/step_control, /falcon/ground_truth/odometry, /w, /eta]
+  # bag_names:
+  #   [2025-06-26_sim_falcon_mpc_model_id_inertia_matrix_no_dist_no_meas_noise]
+  bag_names:
+    [2025-06-26_gaz_falcon_mpc_model_id_inertia_matrix_dist_no_meas_noise]
+  # topic_names: [/step_control, /falcon/ground_truth/odometry, /w, /eta]
+  topic_names: [/step_control, /falcon/ground_truth/odometry]
 
 supported_topic_names: [/step_control, /falcon/ground_truth/odometry, /w, /eta]
