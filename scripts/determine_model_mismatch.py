@@ -105,6 +105,13 @@ class ComputeModelMismatch:
         # Set solver
         self.solver = solver
 
+        # Handle MHE settings
+        if self.mhe_n_iter < 1:
+            log.warning(
+                f"Number of MHE iterations ({self.mhe_n_iter}) is less than 1. Setting it to 1"
+            )
+            self.mhe_n_iter = 1
+
         # Handle settings related to determining w
         if self.determine_w:
             if self.exp_type == "sim":
