@@ -804,27 +804,27 @@ class ComputeModelMismatch:
         if do_print_disturbances:
             print(f"\nDisturbance bounds:")
             if self.do_print_disturbances_min:
+                print(f"Min:     {self.disturbances_min_est_abs}")
+                # print(f"Min:     {self.disturbances_min_est_rel}")
                 if self.disturbances_gt_known:
+                    print(f"Min GT:  {self.disturbances_min_gt_abs}")
                     if np.all(self.disturbances_min_gt_abs != 0):
                         print(
                             f"Min ratio:  {self.disturbances_min_est_abs / self.disturbances_min_gt_abs}"
                         )
-                    print(f"Min GT:  {self.disturbances_min_gt_abs}")
-                # print(f"Min:     {self.disturbances_min_est_abs}")
-                print(f"Min:     {self.disturbances_min_est_rel}")
             if self.do_print_disturbances_max:
+                print(f"Max:     {self.disturbances_max_est_abs}")
+                # print(f"Max:     {self.disturbances_max_est_rel}")
                 if self.disturbances_gt_known:
-                    if np.all(self.disturbances_min_gt_abs != 0):
+                    print(f"Max GT:  {self.disturbances_max_gt_abs}")
+                    if np.all(self.disturbances_max_gt_abs != 0):
                         print(
                             f"Max ratio:  {self.disturbances_max_est_abs / self.disturbances_max_gt_abs}"
                         )
-                    print(f"Max GT:  {self.disturbances_max_gt_abs}")
-                # print(f"Max:     {self.disturbances_max_est_abs}")
-                print(f"Max:     {self.disturbances_max_est_rel}")
             if self.do_print_disturbances_bias:
+                print(f"Bias:    {self.disturbances_bias_est}")
                 if self.disturbances_gt_known:
                     print(f"Bias GT: {self.disturbances_bias_gt}")
-                print(f"Bias:    {self.disturbances_bias_est}")
 
         do_print_meas_noises = (
             self.do_print_meas_noises_min or self.do_print_meas_noises_max
