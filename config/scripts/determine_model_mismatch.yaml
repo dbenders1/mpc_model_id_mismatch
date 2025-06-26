@@ -60,15 +60,32 @@ recorded_data:
   #   ]
   # json_names:
   #   [2025-06-24_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise]
+  # json_names:
+  #   [
+  #     2025-06-26_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_no_dist_no_meas_noise,
+  #   ]
+  # json_names:
+  #   [
+  #     2025-06-26_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
+  #   ]
+  # json_names:
+  #   [
+  #     2025-06-26_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_ccw_dist_meas_noise,
+  #   ]
+  # json_names:
+  #   [
+  #     2025-06-26_sim_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_dist_meas_noise,
+  #   ]
   json_names:
     [
-      2025-06-26_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise,
+      2025-06-26_sim_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_dist_meas_noise,
     ]
   data_sel:
     overwrite: false
     automatic: true
     automatic_first_offset_dist: 0.5
-    automatic_crossings_idc_to_sel: [0, 1]
+    # automatic_crossings_idc_to_sel: [0, 1]
+    automatic_crossings_idc_to_sel: [0, 2]
 
   processing:
     ts: 0.002 # interpolation time
@@ -79,8 +96,8 @@ model:
 
 mhe:
   generate_solver: true
-  n_iter: 1
-  n_times: 0
+  n_iter: 4
+  n_times: 500
   M: 40
   stage_est: 20
   eps: 1e-9
@@ -88,7 +105,7 @@ mhe:
   update_Q: true
   update_R: true
   determine_w: false # if true, the script will use a different solver to determine disturbance vector w from data
-  use_predetermined_w: true # if true, the script will use predetermined disturbance vector w
+  use_predetermined_w: false # if true, the script will use predetermined disturbance vector w
 
 printing:
   disturbances:
