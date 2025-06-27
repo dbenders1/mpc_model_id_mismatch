@@ -413,6 +413,24 @@ class ComputeModelMismatch:
                 f"Number of MHE time steps ({self.mhe_n_times}) is larger than the maximum allowed number of time steps ({self.n_times - self.M})"
             )
 
+        # Cut disturbances and measurement noises to the number of MHE time steps
+        if self.disturbances_gt_known:
+            if self.disturbances_int.shape[1] > self.mhe_n_times - 1:
+                self.disturbances_int = self.disturbances_int[:, : self.mhe_n_times - 1]
+            elif self.disturbances_int.shape[1] < self.mhe_n_times - 1:
+                raise ValueError(
+                    f"Number of MHE time steps - 1 ({self.mhe_n_times - 1}) is larger than the number of disturbance time steps ({self.disturbances_int.shape[1]})"
+                )
+        if self.measurement_noises_gt_known:
+            if self.measurement_noises_int.shape[1] > self.mhe_n_times:
+                self.measurement_noises_int = self.measurement_noises_int[
+                    :, : self.mhe_n_times
+                ]
+            elif self.measurement_noises_int.shape[1] < self.mhe_n_times:
+                raise ValueError(
+                    f"Number of MHE time steps ({self.mhe_n_times}) is larger than the number of measurement noise time steps ({self.measurement_noises_int.shape[1]})"
+                )
+
         # Covariance matrices of disturbances (Q_cov) and measurement noises (R_cov)
         # Need to empirically determine if these matrices have converged by plotting their values using plot_model_mismatch_data.py
         self.Q_cov_est_all = np.zeros(
