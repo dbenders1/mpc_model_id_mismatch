@@ -534,6 +534,14 @@ class ComputeModelMismatch:
         for i in range(self.mhe_n_iter):
             print(f"\nIteration {i + 1}/{self.mhe_n_iter}")
 
+            # Print eigenvalues of Q_cov and R_cov used for this iteration
+            print(
+                f"Eigenvalues Q_cov_est_all[{i}, :, :]: {np.linalg.eigvals(self.Q_cov_est_all[i, :, :])}"
+            )
+            print(
+                f"Eigenvalues R_cov_est_all[{i}, :, :]: {np.linalg.eigvals(self.R_cov_est_all[i, :, :])}"
+            )
+
             # Compute Q and R weighting matrices
             self.Q_mhe_all[i, :, :], self.R_mhe_all[i, :, :] = (
                 helpers.get_mhe_weighting_matrices(
@@ -706,14 +714,6 @@ class ComputeModelMismatch:
                 self.R_cov_est_all[i + 1, :, :] = R_est
             else:
                 self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[i, :, :]
-
-            # Print eigenvalues of Q_cov and R_cov used for this iteration
-            print(
-                f"Eigenvalues Q_cov_est_all[{i}, :, :]: {np.linalg.eigvals(self.Q_cov_est_all[i, :, :])}"
-            )
-            print(
-                f"Eigenvalues R_cov_est_all[{i}, :, :]: {np.linalg.eigvals(self.R_cov_est_all[i, :, :])}"
-            )
 
             # Compute and print model mismatch bounds resulting from this iteration
             self.compute_model_mismatch_bounds(i)
