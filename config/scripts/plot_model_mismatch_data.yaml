@@ -1,0 +1,118 @@
+mhe_json_name: falcon_t
+
+# gazebo_w_json_names: []
+gazebo_w_json_names:
+  [
+    2025-06-26_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_w,
+    2025-06-26_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_ccw_dist_meas_noise_w,
+    2025-06-26_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_dist_meas_noise_w,
+    2025-06-26_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_dist_meas_noise_w,
+  ]
+
+do_plot:
+  y_y_fs_over_horizon: false
+  y_x_est_u_over_time: false
+  y_x_est_u_over_horizon: false
+  u_t_over_horizon: false
+  u_wm_over_horizon: false
+  w_est_over_time: false
+  w_est_over_horizon: false
+  eta_est_over_time: false
+  eta_est_over_horizon: false
+  x_est_w_est_stage: false
+  Q_R_trace: false
+  Q_diag: false
+  R_diag: false
+  Q_eig_vals: false
+  R_eig_vals: false
+
+plot_settings:
+  sizes: 2
+  widths: 0.5
+  n_rows_states: 4
+  n_cols_states: 4
+  plot_x_idx_at_ax_idx:
+    &my_plot_x_idx_at_ax_idx [
+      0,
+      1,
+      2,
+      null,
+      3,
+      4,
+      5,
+      null,
+      6,
+      7,
+      8,
+      null,
+      9,
+      10,
+      11,
+      null,
+    ]
+  plot_y_idx_at_ax_idx: *my_plot_x_idx_at_ax_idx
+  plot_u_idx_at_ax_idx:
+    [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      0,
+      1,
+      2,
+      3,
+    ]
+  plot_w_idx_at_ax_idx:
+    [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      0,
+      1,
+      2,
+      null,
+      3,
+      4,
+      5,
+      null,
+    ]
+  plot_eta_idx_at_ax_idx:
+    [0, 1, 2, null, 3, 4, 5, null, 6, 7, 8, null, 9, 10, 11, null]
+  x_labels:
+    &my_x_labels [
+      px (m),
+      py (m),
+      pz (m),
+      $\phi$ (rad),
+      "$\\theta$ (rad)",
+      $\psi$ (rad),
+      vx (m/s),
+      vy (m/s),
+      vz (m/s),
+      wbx (rad/s),
+      wby (rad/s),
+      wbz (rad/s),
+    ]
+  y_labels: *my_x_labels
+  w_labels:
+    [
+      "$w_{vx} (m/s / s)$",
+      "$w_{vy} (m/s / s)$",
+      "$w_{vz} (m/s / s)$",
+      "$w_{wbx} (rad/s / s)$",
+      "$w_{wby} (rad/s / s)$",
+      "$w_{wbz} (rad/s / s)$",
+    ]

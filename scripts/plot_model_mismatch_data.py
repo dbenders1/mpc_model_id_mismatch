@@ -1,365 +1,9 @@
 import json
 import matplotlib.pyplot as plt
 import numpy as np
+import yaml
 from mpc_model_id_mismatch import helpers
 from pathlib import Path
-
-sizes = 2
-widths = 0.5
-n_rows_states = 4
-# n_rows_states = 5
-n_cols_states = 4
-# plot_x_idx_at_ax_idx = [
-#     0,
-#     1,
-#     2,
-#     None,
-#     3,
-#     4,
-#     5,
-#     6,
-#     7,
-#     8,
-#     9,
-#     None,
-#     10,
-#     12,
-#     14,
-#     16,
-#     11,
-#     13,
-#     15,
-#     None,
-# ]
-# plot_y_idx_at_ax_idx = [
-#     0,
-#     1,
-#     2,
-#     None,
-#     3,
-#     4,
-#     5,
-#     6,
-#     7,
-#     8,
-#     9,
-#     None,
-#     10,
-#     11,
-#     12,
-#     13,
-#     None,
-#     None,
-#     None,
-#     None,
-# ]
-# plot_u_idx_at_ax_idx = [
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     0,
-#     1,
-#     2,
-#     3,
-#     None,
-#     None,
-#     None,
-#     None,
-# ]
-# plot_w_idx_at_ax_idx = [
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     0,
-#     1,
-#     2,
-#     None,
-#     3,
-#     5,
-#     7,
-#     9,
-#     4,
-#     6,
-#     8,
-#     None,
-# ]
-# x_labels = [
-#     "px (m)",
-#     "py (m)",
-#     "pz (m)",
-#     "qw (-)",
-#     "qx (-)",
-#     "qy (-)",
-#     "qz (-)",
-#     "vx (m/s)",
-#     "vy (m/s)",
-#     "vz (m/s)",
-#     "wbx (rad/s)",
-#     "wbx1 (rad/s^2?)",
-#     "wby (rad/s)",
-#     "wby1 (rad/s^2?)",
-#     "wbz (rad/s)",
-#     "wbz1 (rad/s^2?)",
-#     "abz (m/s^2)",
-# ]
-# y_labels = [
-#     "px (m)",
-#     "py (m)",
-#     "pz (m)",
-#     "qw (-)",
-#     "qx (-)",
-#     "qy (-)",
-#     "qz (-)",
-#     "vx (m/s)",
-#     "vy (m/s)",
-#     "vz (m/s)",
-#     "wbx (rad/s)",
-#     "wby (rad/s)",
-#     "wbz (rad/s)",
-#     "abz (m/s^2)",
-# ]
-# w_labels = [
-#     "$w_{vx} (m/s / s)$",
-#     "$w_{vy} (m/s / s)$",
-#     "$w_{vz} (m/s / s)$",
-#     "$w_{wbx} (rad/s / s)$",
-#     "$w_{wbx1} (rad/s^2? / s)$",
-#     "$w_{wby} (rad/s / s)$",
-#     "$w_{wby1} (rad/s^2? / s)$",
-#     "$w_{wbz} (rad/s / s)$",
-#     "$w_{wbz1} (rad/s^2? / s)$",
-#     "$w_{abz} (m/s^2 / s)$",
-# ]
-plot_x_idx_at_ax_idx = [
-    0,
-    1,
-    2,
-    None,
-    3,
-    4,
-    5,
-    None,
-    6,
-    7,
-    8,
-    None,
-    9,
-    10,
-    11,
-    None,
-]
-plot_y_idx_at_ax_idx = plot_x_idx_at_ax_idx
-plot_u_idx_at_ax_idx = [
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    0,
-    1,
-    2,
-    3,
-]
-plot_w_idx_at_ax_idx = [
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    0,
-    1,
-    2,
-    None,
-    3,
-    4,
-    5,
-    None,
-]
-plot_eta_idx_at_ax_idx = [
-    0,
-    1,
-    2,
-    None,
-    3,
-    4,
-    5,
-    None,
-    6,
-    7,
-    8,
-    None,
-    9,
-    10,
-    11,
-    None,
-]
-x_labels = [
-    "px (m)",
-    "py (m)",
-    "pz (m)",
-    "$\phi$ (rad)",
-    "$\\theta$ (rad)",
-    "$\psi$ (rad)",
-    "vx (m/s)",
-    "vy (m/s)",
-    "vz (m/s)",
-    "wbx (rad/s)",
-    "wby (rad/s)",
-    "wbz (rad/s)",
-]
-y_labels = x_labels
-w_labels = [
-    "$w_{vx} (m/s / s)$",
-    "$w_{vy} (m/s / s)$",
-    "$w_{vz} (m/s / s)$",
-    "$w_{wbx} (rad/s / s)$",
-    "$w_{wby} (rad/s / s)$",
-    "$w_{wbz} (rad/s / s)$",
-]
-# plot_x_idx_at_ax_idx = [
-#     0,
-#     1,
-#     2,
-#     None,
-#     3,
-#     4,
-#     5,
-#     None,
-#     6,
-#     7,
-#     8,
-#     None,
-#     9,
-#     10,
-#     11,
-#     None,
-#     12,
-#     13,
-#     14,
-#     15,
-# ]
-# plot_y_idx_at_ax_idx = plot_x_idx_at_ax_idx
-# plot_u_idx_at_ax_idx = [
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     0,
-#     1,
-#     2,
-#     3,
-# ]
-# plot_w_idx_at_ax_idx = [
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-#     0,
-#     1,
-#     2,
-#     None,
-#     3,
-#     4,
-#     5,
-#     None,
-#     6,
-#     7,
-#     8,
-#     9,
-# ]
-# plot_eta_idx_at_ax_idx = [
-#     0,
-#     1,
-#     2,
-#     None,
-#     3,
-#     4,
-#     5,
-#     None,
-#     6,
-#     7,
-#     8,
-#     None,
-#     9,
-#     10,
-#     11,
-#     None,
-#     None,
-#     None,
-#     None,
-#     None,
-# ]
-# x_labels = [
-#     "px (m)",
-#     "py (m)",
-#     "pz (m)",
-#     "$\phi$ (rad)",
-#     "$\\theta$ (rad)",
-#     "$\psi$ (rad)",
-#     "vx (m/s)",
-#     "vy (m/s)",
-#     "vz (m/s)",
-#     "wbx (rad/s)",
-#     "wby (rad/s)",
-#     "wbz (rad/s)",
-#     "wm0 (rad/s)",
-#     "wm1 (rad/s)",
-#     "wm2 (rad/s)",
-#     "wm3 (rad/s)",
-# ]
-# y_labels = x_labels
-# w_labels = [
-#     "$w_{vx} (m/s / s)$",
-#     "$w_{vy} (m/s / s)$",
-#     "$w_{vz} (m/s / s)$",
-#     "$w_{wbx} (rad/s / s)$",
-#     "$w_{wby} (rad/s / s)$",
-#     "$w_{wbz} (rad/s / s)$",
-#     "$w_{wm0} (rad/s / s)$",
-#     "$w_{wm1} (rad/s / s)$",
-#     "$w_{wm2} (rad/s / s)$",
-#     "$w_{wm3} (rad/s / s)$",
-# ]
 
 
 def get_x_y_fs(model, ts, M, u, x_est, w_est, eta_est, time_idx):
@@ -639,6 +283,30 @@ def plot_u_wm_over_horizon(exp_idx, model, t, x_est, u, M, time_idx):
             )
         axes[row_idx, col_idx].set_xlabel("Time (s)")
         axes[row_idx, col_idx].set_ylabel("Equiv. inputs")
+
+
+def plot_gazebo_w_over_time(name, w):
+    fig, axes = plt.subplots(
+        n_rows_states,
+        n_cols_states,
+        num=name,
+    )
+    fig.suptitle(name)
+    for ax_idx in range(n_rows_states * n_cols_states):
+        if plot_w_idx_at_ax_idx[ax_idx] == None:
+            axes.flat[ax_idx].axis("off")
+            continue
+        row_idx = ax_idx // n_cols_states
+        col_idx = ax_idx % n_cols_states
+        w_idx = plot_w_idx_at_ax_idx[ax_idx]
+        axes[row_idx, col_idx].plot(
+            w[w_idx, :],
+            "-o",
+            linewidth=widths,
+            markersize=sizes,
+        )
+        axes[row_idx, col_idx].set_xlabel("Time index")
+        axes[row_idx, col_idx].set_ylabel(w_labels[w_idx])
 
 
 def plot_w_est_over_time(exp_idx, t, w, w_est, stage_idx):
@@ -953,10 +621,53 @@ if __name__ == "__main__":
     # Ensure that matrices are fully printed
     np.set_printoptions(threshold=np.inf)
 
-    # Load data from falcon_t.json
+    # User settings
     package_dir = Path(__file__).parents[1]
-    model_mismatch_results_dir = f"{package_dir}/data/model_mismatch_results"
-    with open(f"{model_mismatch_results_dir}/falcon_t.json", "r") as f:
+    config_dir = f"{package_dir}/config"
+    config_path = f"{config_dir}/scripts/plot_model_mismatch_data.yaml"
+    data_dir = f"{package_dir}/data"
+    model_mismatch_results_dir = f"{data_dir}/model_mismatch_results"
+
+    # Read configuration parameters
+    with open(config_path) as file:
+        config = yaml.load(file, Loader=yaml.FullLoader)
+
+    # Get common parameters
+    mhe_json_name = config["mhe_json_name"]
+
+    gazebo_w_json_names = config["gazebo_w_json_names"]
+
+    do_plot_y_y_fs_over_horizon = config["do_plot"]["y_y_fs_over_horizon"]
+    do_plot_y_x_est_u_over_time = config["do_plot"]["y_x_est_u_over_time"]
+    do_plot_y_x_est_u_over_horizon = config["do_plot"]["y_x_est_u_over_horizon"]
+    do_plot_u_t_over_horizon = config["do_plot"]["u_t_over_horizon"]
+    do_plot_u_wm_over_horizon = config["do_plot"]["u_wm_over_horizon"]
+    do_plot_w_est_over_time = config["do_plot"]["w_est_over_time"]
+    do_plot_w_est_over_horizon = config["do_plot"]["w_est_over_horizon"]
+    do_plot_eta_est_over_time = config["do_plot"]["eta_est_over_time"]
+    do_plot_eta_est_over_horizon = config["do_plot"]["eta_est_over_horizon"]
+    do_plot_x_est_w_est_stage = config["do_plot"]["x_est_w_est_stage"]
+    do_plot_Q_R_trace = config["do_plot"]["Q_R_trace"]
+    do_plot_Q_diag = config["do_plot"]["Q_diag"]
+    do_plot_R_diag = config["do_plot"]["R_diag"]
+    do_plot_Q_eig_vals = config["do_plot"]["Q_eig_vals"]
+    do_plot_R_eig_vals = config["do_plot"]["R_eig_vals"]
+
+    sizes = config["plot_settings"]["sizes"]
+    widths = config["plot_settings"]["widths"]
+    n_rows_states = config["plot_settings"]["n_rows_states"]
+    n_cols_states = config["plot_settings"]["n_cols_states"]
+    plot_x_idx_at_ax_idx = config["plot_settings"]["plot_x_idx_at_ax_idx"]
+    plot_y_idx_at_ax_idx = config["plot_settings"]["plot_y_idx_at_ax_idx"]
+    plot_u_idx_at_ax_idx = config["plot_settings"]["plot_u_idx_at_ax_idx"]
+    plot_w_idx_at_ax_idx = config["plot_settings"]["plot_w_idx_at_ax_idx"]
+    plot_eta_idx_at_ax_idx = config["plot_settings"]["plot_eta_idx_at_ax_idx"]
+    x_labels = config["plot_settings"]["x_labels"]
+    y_labels = config["plot_settings"]["y_labels"]
+    w_labels = config["plot_settings"]["w_labels"]
+
+    # Read data
+    with open(f"{model_mismatch_results_dir}/{mhe_json_name}.json", "r") as f:
         data = json.load(f)
 
     # Get common data
@@ -1035,19 +746,46 @@ if __name__ == "__main__":
         )
 
         # Create plots
-        # plot_y_y_fs_over_horizon(exp_idx, t, y, y_fs, M, time_idx)
-        # plot_y_x_est_u_over_time(exp_idx, t, x_est_all, y, u, stage_idx)
-        # plot_y_x_est_u_over_horizon(exp_idx, t, x_est_all, y, u, time_idx)
-        # plot_u_t_over_horizon(exp_idx, t, thrusts_horizon, torques_horizon, M, time_idx)
-        # plot_u_wm_over_horizon(exp_idx, model, t, x_est_all, u, M, time_idx)
-        # plot_w_est_over_time(exp_idx, t, w, w_est_all, stage_idx)
-        plot_w_est_over_horizon(exp_idx, t, ts, w, w_est_all, time_idx)
-        # plot_eta_est_over_time(exp_idx, t, eta, eta_est_all, stage_idx)
-        plot_eta_est_over_horizon(exp_idx, t, ts, eta, eta_est_all, time_idx)
-        # plot_x_est_w_est_stage(exp_idx, x_est_all, w_est_all, stage_idx)
-        # plot_Q_R_trace(exp_idx, Q_cov_est_all, R_cov_est_all)
-        # plot_Q_diag(exp_idx, Q_cov_est_all)
-        # plot_R_diag(exp_idx, R_cov_est_all)
-        plot_Q_eig_vals(exp_idx, Q_cov_est_all)
-        plot_R_eig_vals(exp_idx, R_cov_est_all)
+        if do_plot_y_y_fs_over_horizon:
+            plot_y_y_fs_over_horizon(exp_idx, t, y, y_fs, M, time_idx)
+        if do_plot_y_x_est_u_over_time:
+            plot_y_x_est_u_over_time(exp_idx, t, x_est_all, y, u, stage_idx)
+        if do_plot_y_x_est_u_over_horizon:
+            plot_y_x_est_u_over_horizon(exp_idx, t, x_est_all, y, u, time_idx)
+        if do_plot_u_t_over_horizon:
+            plot_u_t_over_horizon(
+                exp_idx, t, thrusts_horizon, torques_horizon, M, time_idx
+            )
+        if do_plot_u_wm_over_horizon:
+            plot_u_wm_over_horizon(exp_idx, model, t, x_est_all, u, M, time_idx)
+        if do_plot_w_est_over_time:
+            plot_w_est_over_time(exp_idx, t, w, w_est_all, stage_idx)
+        if do_plot_w_est_over_horizon:
+            plot_w_est_over_horizon(exp_idx, t, ts, w, w_est_all, time_idx)
+        if do_plot_eta_est_over_time:
+            plot_eta_est_over_time(exp_idx, t, eta, eta_est_all, stage_idx)
+        if do_plot_eta_est_over_horizon:
+            plot_eta_est_over_horizon(exp_idx, t, ts, eta, eta_est_all, time_idx)
+        if do_plot_x_est_w_est_stage:
+            plot_x_est_w_est_stage(exp_idx, x_est_all, w_est_all, stage_idx)
+        if do_plot_Q_R_trace:
+            plot_Q_R_trace(exp_idx, Q_cov_est_all, R_cov_est_all)
+        if do_plot_Q_diag:
+            plot_Q_diag(exp_idx, Q_cov_est_all)
+        if do_plot_R_diag:
+            plot_R_diag(exp_idx, R_cov_est_all)
+        if do_plot_Q_eig_vals:
+            plot_Q_eig_vals(exp_idx, Q_cov_est_all)
+        if do_plot_R_eig_vals:
+            plot_R_eig_vals(exp_idx, R_cov_est_all)
+
+    if gazebo_w_json_names:
+        for gazebo_w_json_name in gazebo_w_json_names:
+            with open(
+                f"{model_mismatch_results_dir}/{gazebo_w_json_name}.json", "r"
+            ) as f:
+                w_data = json.load(f)
+            w = np.array(w_data["w"])
+            plot_gazebo_w_over_time(gazebo_w_json_name, w)
+
     plt.show()
