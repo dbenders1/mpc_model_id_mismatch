@@ -839,21 +839,21 @@ class ComputeModelMismatch:
         if do_print_meas_noises:
             print(f"\nMeasurement noise bounds:")
             if self.do_print_meas_noises_min:
+                print(f"Min:     {self.meas_noises_min_est_abs}")
                 if self.measurement_noises_gt_known:
+                    print(f"Min GT:  {self.measurement_noises_min_gt_abs}")
                     if np.all(self.measurement_noises_min_gt_abs != 0):
                         print(
                             f"Min ratio:  {self.meas_noises_min_est_abs / self.measurement_noises_min_gt_abs}"
                         )
-                    print(f"Min GT:  {self.measurement_noises_min_gt_abs}")
-                print(f"Min:     {self.meas_noises_min_est_abs}")
             if self.do_print_meas_noises_max:
+                print(f"Max:     {self.meas_noises_max_est_abs}")
                 if self.measurement_noises_gt_known:
+                    print(f"Max GT:  {self.measurement_noises_max_gt_abs}")
                     if np.all(self.measurement_noises_max_gt_abs != 0):
                         print(
                             f"Max ratio:  {self.meas_noises_max_est_abs / self.measurement_noises_max_gt_abs}"
                         )
-                    print(f"Max GT:  {self.measurement_noises_max_gt_abs}")
-                print(f"Max:     {self.meas_noises_max_est_abs}")
 
     def get_json_specific_data(self):
         data_general = {
