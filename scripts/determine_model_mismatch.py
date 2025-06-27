@@ -1328,6 +1328,7 @@ if __name__ == "__main__":
     # Get simulation noise settings
     sim_w_max = np.array(config["simulation"]["w_max"])
     sim_eta_max = np.array(config["simulation"]["eta_max"])
+    sim_eta_max_scaling = config["simulation"]["eta_max_scaling"]
 
     # Create model
     quad_name = config["model"]["name"]
@@ -1357,7 +1358,7 @@ if __name__ == "__main__":
 
     # Generate MHE solver
     solver = helpers.get_acados_mhe_solver(
-        model, M, ts, sim_eta_max, generate_solver, determine_w
+        model, M, ts, sim_eta_max, sim_eta_max_scaling, determine_w, generate_solver
     )
 
     # Get printing options

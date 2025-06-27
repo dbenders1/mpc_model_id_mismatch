@@ -66,7 +66,13 @@ def get_acados_status_message(status):
 
 
 def get_acados_mhe_solver(
-    model, M, ts, sim_eta_max, generate_solver=True, determine_w=False
+    model,
+    M,
+    ts,
+    sim_eta_max,
+    sim_eta_max_scaling=1,
+    determine_w=False,
+    generate_solver=True,
 ):
     # Obtain number of states and inputs
     nx = model.get_n_states()
@@ -167,6 +173,7 @@ def get_acados_mhe_solver(
         ocp_constraints.lh_e = np.zeros((nw,))
         ocp_constraints.uh_e = np.zeros((nw,))
     else:
+        sim_eta_max = sim_eta_max_scaling * sim_eta_max
         ocp_constraints.lh_0 = -sim_eta_max
         ocp_constraints.uh_0 = sim_eta_max
         ocp_constraints.lh = -sim_eta_max
