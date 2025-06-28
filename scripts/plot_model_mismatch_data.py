@@ -766,6 +766,7 @@ if __name__ == "__main__":
 
     # Get common parameters
     mhe_json_name = config["mhe_json_name"]
+    time_idx = config["time_idx"]
 
     gazebo_w_json_names = config["gazebo_w_json_names"]
 
@@ -858,7 +859,6 @@ if __name__ == "__main__":
         # Set data indices to use
         iter_idx = n_iter - 1
         stage_idx = stage_est
-        time_idx = 0
 
         # Print estimated Q and R matrices
         Q_cov_est_all = np.array(data_exp["Q_cov_est_all"])
