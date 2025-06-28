@@ -6,6 +6,68 @@ from mpc_model_id_mismatch import helpers
 from pathlib import Path
 
 
+def get_eta_est_gt_ratios(eta_min, eta_max, eta_est_all, stage_idx):
+    n_iter = eta_est_all.shape[0]
+    n_eta = eta_est_all.shape[2]
+    eta_est_gt_ratios_min = np.zeros(
+        (
+            n_iter,
+            n_eta,
+        )
+    )
+    eta_est_gt_ratios_max = np.zeros(
+        (
+            n_iter,
+            n_eta,
+        )
+    )
+    for iter_idx in range(n_iter):
+        if np.all(eta_min != 0):
+            eta_est_gt_ratios_min[iter_idx, :] = (
+                np.min(eta_est_all[iter_idx, :, :, stage_idx], axis=0) / eta_min
+            )
+        else:
+            raise ValueError("Cannot compute ratios when eta_min contains zero values.")
+        if np.all(eta_max != 0):
+            eta_est_gt_ratios_max[iter_idx, :] = (
+                np.max(eta_est_all[iter_idx, :, :, stage_idx], axis=0) / eta_max
+            )
+        else:
+            raise ValueError("Cannot compute ratios when eta_max contains zero values.")
+    return eta_est_gt_ratios_min, eta_est_gt_ratios_max
+
+
+def get_w_est_gt_ratios(w_min, w_max, w_est_all, stage_idx):
+    n_iter = w_est_all.shape[0]
+    n_w = w_est_all.shape[2]
+    w_est_gt_ratios_min = np.zeros(
+        (
+            n_iter,
+            n_w,
+        )
+    )
+    w_est_gt_ratios_max = np.zeros(
+        (
+            n_iter,
+            n_w,
+        )
+    )
+    for iter_idx in range(n_iter):
+        if np.all(w_min != 0):
+            w_est_gt_ratios_min[iter_idx, :] = (
+                np.min(w_est_all[iter_idx, :, :, stage_idx], axis=0) / w_min
+            )
+        else:
+            raise ValueError("Cannot compute ratios when w_min contains zero values.")
+        if np.all(w_max != 0):
+            w_est_gt_ratios_max[iter_idx, :] = (
+                np.max(w_est_all[iter_idx, :, :, stage_idx], axis=0) / w_max
+            )
+        else:
+            raise ValueError("Cannot compute ratios when w_max contains zero values.")
+    return w_est_gt_ratios_min, w_est_gt_ratios_max
+
+
 def get_x_y_fs(model, ts, M, u, x_est, w_est, eta_est, time_idx):
     n_horizon = M + 1
     n_x = x_est.shape[1]
@@ -144,7 +206,7 @@ def plot_y_x_est_u_over_time(exp_idx, t, x_est, y, u, stage_idx):
     fig.legend(["Measured outputs", "Estimated states", "Applied inputs"])
 
 
-def plot_y_x_est_u_over_horizon(exp_idx, t, x_est_all, y, u, time_idx):
+def plot_y_x_est_u_over_horizon(exp_idx, t, x_est_all_last_iter, y, u, time_idx):
     fig, axes = plt.subplots(
         n_rows_states,
         n_cols_states,
@@ -153,7 +215,7 @@ def plot_y_x_est_u_over_horizon(exp_idx, t, x_est_all, y, u, time_idx):
     fig.suptitle(
         f"Measured outputs vs estimated states over horizon at time t={t[time_idx]}s (time_idx={time_idx}/{t.shape[0]})"
     )
-    n_horizon = x_est_all.shape[2]
+    n_horizon = x_est_all_last_iter.shape[2]
     t = (np.arange(0, n_horizon) * ts).reshape((n_horizon,))
     for ax_idx in range(n_rows_states * n_cols_states):
         if plot_x_idx_at_ax_idx[ax_idx] == None:
@@ -173,7 +235,7 @@ def plot_y_x_est_u_over_horizon(exp_idx, t, x_est_all, y, u, time_idx):
             )
         axes[row_idx, col_idx].plot(
             t,
-            x_est_all[time_idx, x_idx, :],
+            x_est_all_last_iter[time_idx, x_idx, :],
             "-o",
             linewidth=widths,
             markersize=sizes,
@@ -382,6 +444,40 @@ def plot_w_est_over_horizon(exp_idx, t, ts, w, w_est, time_idx):
         fig.legend(["Ground truth", "Estimated"])
 
 
+def plot_w_est_gt_ratios(exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_max):
+    fig, axes = plt.subplots(
+        n_rows_states,
+        n_cols_states,
+        num=f"Experiment {exp_idx} - Min/max disturbance ratios",
+    )
+    fig.suptitle(f"Min/max disturbance ratios")
+    n_iter = w_est_gt_ratios_min.shape[0]
+    for ax_idx in range(n_rows_states * n_cols_states):
+        if plot_w_idx_at_ax_idx[ax_idx] == None:
+            axes.flat[ax_idx].axis("off")
+            continue
+        row_idx = ax_idx // n_cols_states
+        col_idx = ax_idx % n_cols_states
+        w_idx = plot_w_idx_at_ax_idx[ax_idx]
+        axes[row_idx, col_idx].plot(
+            np.arange(0, n_iter),
+            w_est_gt_ratios_min[:, w_idx],
+            "-o",
+            linewidth=widths,
+            markersize=sizes,
+        )
+        axes[row_idx, col_idx].plot(
+            np.arange(0, n_iter),
+            w_est_gt_ratios_max[:, w_idx],
+            "-o",
+            linewidth=widths,
+            markersize=sizes,
+        )
+        axes[row_idx, col_idx].set_xlabel("Iteration")
+        axes[row_idx, col_idx].set_ylabel(f"Disturbance ratio {w_labels[w_idx]}")
+    fig.legend(["Min ratios", "Max ratios"])
+
+
 def plot_eta_est_over_time(exp_idx, t, eta, eta_est, stage_idx):
     fig, axes = plt.subplots(
         n_rows_states,
@@ -453,6 +549,42 @@ def plot_eta_est_over_horizon(exp_idx, t, ts, eta, eta_est, time_idx):
         axes[row_idx, col_idx].set_ylabel(y_labels[eta_idx])
     if eta is not None:
         fig.legend(["Ground truth", "Estimated"])
+
+
+def plot_eta_est_gt_ratios(exp_idx, eta_est_gt_ratios_min, eta_est_gt_ratios_max):
+    fig, axes = plt.subplots(
+        n_rows_states,
+        n_cols_states,
+        num=f"Experiment {exp_idx} - Min/max measurement noise ratios",
+    )
+    fig.suptitle(f"Min/max measurement noise ratios")
+    n_iter = eta_est_gt_ratios_min.shape[0]
+    for ax_idx in range(n_rows_states * n_cols_states):
+        if plot_eta_idx_at_ax_idx[ax_idx] == None:
+            axes.flat[ax_idx].axis("off")
+            continue
+        row_idx = ax_idx // n_cols_states
+        col_idx = ax_idx % n_cols_states
+        eta_idx = plot_eta_idx_at_ax_idx[ax_idx]
+        axes[row_idx, col_idx].plot(
+            np.arange(0, n_iter),
+            eta_est_gt_ratios_min[:, eta_idx],
+            "-o",
+            linewidth=widths,
+            markersize=sizes,
+        )
+        axes[row_idx, col_idx].plot(
+            np.arange(0, n_iter),
+            eta_est_gt_ratios_max[:, eta_idx],
+            "-o",
+            linewidth=widths,
+            markersize=sizes,
+        )
+        axes[row_idx, col_idx].set_xlabel("Iteration")
+        axes[row_idx, col_idx].set_ylabel(
+            f"Measurement noise ratio {y_labels[eta_idx]}"
+        )
+    fig.legend(["Min ratios", "Max ratios"])
 
 
 def plot_x_est_w_est_stage(exp_idx, x_est, w_est, stage_idx):
@@ -647,6 +779,8 @@ if __name__ == "__main__":
     do_plot_eta_est_over_time = config["do_plot"]["eta_est_over_time"]
     do_plot_eta_est_over_horizon = config["do_plot"]["eta_est_over_horizon"]
     do_plot_x_est_w_est_stage = config["do_plot"]["x_est_w_est_stage"]
+    do_plot_w_est_gt_ratios = config["do_plot"]["w_est_gt_ratios"]
+    do_plot_eta_est_gt_ratios = config["do_plot"]["eta_est_gt_ratios"]
     do_plot_Q_R_trace = config["do_plot"]["Q_R_trace"]
     do_plot_Q_diag = config["do_plot"]["Q_diag"]
     do_plot_R_diag = config["do_plot"]["R_diag"]
@@ -704,9 +838,13 @@ if __name__ == "__main__":
         w = None
         if "w" in data_exp:
             w = np.array(data_exp["w"])
+            w_min = np.array(data_exp["w_min"])
+            w_max = np.array(data_exp["w_max"])
         eta = None
         if "eta" in data_exp:
             eta = np.array(data_exp["eta"])
+            eta_min = np.array(data_exp["eta_min"])
+            eta_max = np.array(data_exp["eta_max"])
         x_est_all = np.array(data_exp["x_est_all"])
         w_est_all = np.array(data_exp["w_est_all"])
         eta_est_all = np.array(data_exp["eta_est_all"])
@@ -729,45 +867,73 @@ if __name__ == "__main__":
         # print(f"R_est = {R_cov_est_all[iter_idx + 1, :, :]}")
 
         # Select data for the selected iteration
-        x_est_all = x_est_all[iter_idx, :, :, :]
-        w_est_all = w_est_all[iter_idx, :, :, :]
-        eta_est_all = eta_est_all[iter_idx, :, :, :]
+        x_est_all_last_iter = x_est_all[iter_idx, :, :, :]
+        w_est_all_last_iter = w_est_all[iter_idx, :, :, :]
+        eta_est_all_last_iter = eta_est_all[iter_idx, :, :, :]
 
         # Print estimated disturbances and measurement noise
-        # print(f"w_est = {w_est_all[0, :, :]}")
-        # print(f"eta_est = {eta_est_all[0, :, :]}")
+        # print(f"w_est = {w_est_all_last_iter[0, :, :]}")
+        # print(f"eta_est = {eta_est_all_last_iter[0, :, :]}")
 
-        # Compute forward-simulated outputs and thrusts/torques over horizon
-        x_fs, y_fs = get_x_y_fs(
-            model, ts, M, u, x_est_all, w_est_all, eta_est_all, time_idx
-        )
-        thrusts_horizon, torques_horizon = get_thrusts_torques_over_horizon(
-            model, u, x_est_all, M, time_idx
-        )
+        # Compute the ratios of the estimated disturbances and measurement noise compared to the min and max values
+        # if w is not None:
 
         # Create plots
         if do_plot_y_y_fs_over_horizon:
+            x_fs, y_fs = get_x_y_fs(
+                model,
+                ts,
+                M,
+                u,
+                x_est_all_last_iter,
+                w_est_all_last_iter,
+                eta_est_all_last_iter,
+                time_idx,
+            )
             plot_y_y_fs_over_horizon(exp_idx, t, y, y_fs, M, time_idx)
         if do_plot_y_x_est_u_over_time:
-            plot_y_x_est_u_over_time(exp_idx, t, x_est_all, y, u, stage_idx)
+            plot_y_x_est_u_over_time(exp_idx, t, x_est_all_last_iter, y, u, stage_idx)
         if do_plot_y_x_est_u_over_horizon:
-            plot_y_x_est_u_over_horizon(exp_idx, t, x_est_all, y, u, time_idx)
+            plot_y_x_est_u_over_horizon(exp_idx, t, x_est_all_last_iter, y, u, time_idx)
         if do_plot_u_t_over_horizon:
+            thrusts_horizon, torques_horizon = get_thrusts_torques_over_horizon(
+                model, u, x_est_all_last_iter, M, time_idx
+            )
             plot_u_t_over_horizon(
                 exp_idx, t, thrusts_horizon, torques_horizon, M, time_idx
             )
         if do_plot_u_wm_over_horizon:
-            plot_u_wm_over_horizon(exp_idx, model, t, x_est_all, u, M, time_idx)
+            plot_u_wm_over_horizon(
+                exp_idx, model, t, x_est_all_last_iter, u, M, time_idx
+            )
         if do_plot_w_est_over_time:
-            plot_w_est_over_time(exp_idx, t, w, w_est_all, stage_idx)
+            plot_w_est_over_time(exp_idx, t, w, w_est_all_last_iter, stage_idx)
         if do_plot_w_est_over_horizon:
-            plot_w_est_over_horizon(exp_idx, t, ts, w, w_est_all, time_idx)
+            plot_w_est_over_horizon(exp_idx, t, ts, w, w_est_all_last_iter, time_idx)
+        if do_plot_w_est_gt_ratios:
+            if w is not None:
+                w_est_gt_ratios_min, w_est_gt_ratios_max = get_w_est_gt_ratios(
+                    w_min, w_max, w_est_all, stage_idx
+                )
+                plot_w_est_gt_ratios(exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_max)
         if do_plot_eta_est_over_time:
-            plot_eta_est_over_time(exp_idx, t, eta, eta_est_all, stage_idx)
+            plot_eta_est_over_time(exp_idx, t, eta, eta_est_all_last_iter, stage_idx)
         if do_plot_eta_est_over_horizon:
-            plot_eta_est_over_horizon(exp_idx, t, ts, eta, eta_est_all, time_idx)
+            plot_eta_est_over_horizon(
+                exp_idx, t, ts, eta, eta_est_all_last_iter, time_idx
+            )
+        if do_plot_eta_est_gt_ratios:
+            if eta is not None:
+                eta_est_gt_ratios_min, eta_est_gt_ratios_max = get_eta_est_gt_ratios(
+                    eta_min, eta_max, eta_est_all, stage_idx
+                )
+                plot_eta_est_gt_ratios(
+                    exp_idx, eta_est_gt_ratios_min, eta_est_gt_ratios_max
+                )
         if do_plot_x_est_w_est_stage:
-            plot_x_est_w_est_stage(exp_idx, x_est_all, w_est_all, stage_idx)
+            plot_x_est_w_est_stage(
+                exp_idx, x_est_all_last_iter, w_est_all_last_iter, stage_idx
+            )
         if do_plot_Q_R_trace:
             plot_Q_R_trace(exp_idx, Q_cov_est_all, R_cov_est_all)
         if do_plot_Q_diag:

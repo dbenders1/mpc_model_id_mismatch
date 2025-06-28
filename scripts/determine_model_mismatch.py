@@ -885,8 +885,12 @@ class ComputeModelMismatch:
         data_gt = {}
         if self.disturbances_gt_known:
             data_gt["w"] = self.disturbances_int[:, : self.mhe_n_times].tolist()
+            data_gt["w_min"] = self.disturbances_min_gt_abs.tolist()
+            data_gt["w_max"] = self.disturbances_max_gt_abs.tolist()
         if self.measurement_noises_gt_known:
             data_gt["eta"] = self.measurement_noises_int[:, : self.mhe_n_times].tolist()
+            data_gt["eta_min"] = self.measurement_noises_min_gt_abs.tolist()
+            data_gt["eta_max"] = self.measurement_noises_max_gt_abs.tolist()
         data_mhe = {
             "x_est_all": self.x_mhe_all.tolist(),
             "w_est_all": self.w_mhe_all.tolist(),
