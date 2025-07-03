@@ -608,9 +608,12 @@ class ComputeModelMismatch:
                 # Run solver
                 status = self.solver.solve()
                 if status != 0:
-                    raise Exception(
+                    print(
                         f"Solver for estimating state at t={t} (index {t - self.M}) returned status {status}: {helpers.get_acados_status_message(status)}"
                     )
+                    # raise Exception(
+                    #     f"Solver for estimating state at t={t} (index {t - self.M}) returned status {status}: {helpers.get_acados_status_message(status)}"
+                    # )
 
                 # Store result:
                 # - estimated state of the current timestep

@@ -129,8 +129,8 @@ model:
 
 mhe:
   generate_solver: true
-  n_iter: 4
-  n_times: 500
+  n_iter: 10
+  n_times: 0
   M: 40
   stage_est: 20
   eps: 1e-9
