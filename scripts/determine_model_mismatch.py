@@ -766,7 +766,11 @@ class ComputeModelMismatch:
                     ]
                 else:
                     w[:, i + self.stage_est] = self.w_mhe_all[0, i, :, self.stage_est]
-            data_w = {"w": w.tolist()}
+            data_w = {
+                "u": self.inputs_int[:, : self.mhe_n_times - 1].tolist(),
+                "y": self.outputs_int[:, : self.mhe_n_times - 1].tolist(),
+                "w": w.tolist(),
+            }
             with open(self.w_json_path, "w") as f:
                 json.dump(
                     data_w,
