@@ -371,6 +371,77 @@ def plot_gazebo_w_over_time(name, w):
         axes[row_idx, col_idx].set_ylabel(w_labels[w_idx])
 
 
+def plot_gazebo_u_w(name, u, w, w_idx):
+    n_inputs = u.shape[0]
+    fig, axes = plt.subplots(
+        n_rows_inputs,
+        n_cols_inputs,
+        num=f"{name} - Disturbances over inputs",
+    )
+    fig.suptitle(f"{name} - Disturbances over inputs")
+    for ax_idx in range(n_rows_inputs * n_cols_inputs):
+        row_idx = ax_idx // n_cols_inputs
+        col_idx = ax_idx % n_cols_inputs
+        axes[row_idx, col_idx].scatter(
+            u[ax_idx, :],
+            w[w_idx, :],
+            s=sizes,
+        )
+        axes[row_idx, col_idx].set_xlabel(f"{u_labels[ax_idx]}")
+        axes[row_idx, col_idx].set_ylabel(f"{w_labels[w_idx]}")
+    fig.legend(["Disturbances over inputs"])
+
+
+def plot_gazebo_y_w(name, y, w, w_idx):
+    n_outputs = y.shape[0]
+    fig, axes = plt.subplots(
+        n_rows_states,
+        n_cols_states,
+        num=f"{name} - Disturbances over outputs",
+    )
+    fig.suptitle(f"{name} - Disturbances over outputs")
+    for ax_idx in range(n_rows_states * n_cols_states):
+        if plot_y_idx_at_ax_idx[ax_idx] == None:
+            axes.flat[ax_idx].axis("off")
+            continue
+        row_idx = ax_idx // n_cols_states
+        col_idx = ax_idx % n_cols_states
+        y_idx = plot_y_idx_at_ax_idx[ax_idx]
+        axes[row_idx, col_idx].scatter(
+            y[y_idx, :],
+            w[w_idx, :],
+            s=sizes,
+        )
+        axes[row_idx, col_idx].set_xlabel(f"{y_labels[y_idx]}")
+        axes[row_idx, col_idx].set_ylabel(f"{w_labels[w_idx]}")
+    fig.legend(["Disturbances over outputs"])
+
+
+def plot_gazebo_w_sorted(name, w):
+    n_samples = w.shape[1]
+    fig, axes = plt.subplots(
+        n_rows_states,
+        n_cols_states,
+        num=f"{name} - Disturbances sorted",
+    )
+    fig.suptitle(f"{name} - Disturbances sorted")
+    for ax_idx in range(n_rows_states * n_cols_states):
+        if plot_w_idx_at_ax_idx[ax_idx] == None:
+            axes.flat[ax_idx].axis("off")
+            continue
+        row_idx = ax_idx // n_cols_states
+        col_idx = ax_idx % n_cols_states
+        w_idx = plot_w_idx_at_ax_idx[ax_idx]
+        w_idc = np.arange(n_samples)
+        w_sorted = np.sort(w[w_idx, :])
+        axes[row_idx, col_idx].plot(
+            w_idc, w_sorted, "-o", linewidth=widths, markersize=sizes
+        )
+        axes[row_idx, col_idx].set_xlabel("Index")
+        axes[row_idx, col_idx].set_ylabel(f"{w_labels[w_idx]}")
+    fig.legend(["Disturbances sorted"])
+
+
 def plot_w_est_over_time(exp_idx, t, w, w_est, stage_idx):
     fig, axes = plt.subplots(
         n_rows_states,
@@ -769,6 +840,7 @@ if __name__ == "__main__":
     time_idx = config["time_idx"]
 
     gazebo_w_json_names = config["gazebo_w_json_names"]
+    gazebo_w_idx = config["gazebo_w_idx"]
 
     do_plot_y_y_fs_over_horizon = config["do_plot"]["y_y_fs_over_horizon"]
     do_plot_y_x_est_u_over_time = config["do_plot"]["y_x_est_u_over_time"]
@@ -790,6 +862,8 @@ if __name__ == "__main__":
 
     sizes = config["plot_settings"]["sizes"]
     widths = config["plot_settings"]["widths"]
+    n_rows_inputs = config["plot_settings"]["n_rows_inputs"]
+    n_cols_inputs = config["plot_settings"]["n_cols_inputs"]
     n_rows_states = config["plot_settings"]["n_rows_states"]
     n_cols_states = config["plot_settings"]["n_cols_states"]
     plot_x_idx_at_ax_idx = config["plot_settings"]["plot_x_idx_at_ax_idx"]
@@ -797,6 +871,7 @@ if __name__ == "__main__":
     plot_u_idx_at_ax_idx = config["plot_settings"]["plot_u_idx_at_ax_idx"]
     plot_w_idx_at_ax_idx = config["plot_settings"]["plot_w_idx_at_ax_idx"]
     plot_eta_idx_at_ax_idx = config["plot_settings"]["plot_eta_idx_at_ax_idx"]
+    u_labels = config["plot_settings"]["u_labels"]
     x_labels = config["plot_settings"]["x_labels"]
     y_labels = config["plot_settings"]["y_labels"]
     w_labels = config["plot_settings"]["w_labels"]
@@ -950,8 +1025,13 @@ if __name__ == "__main__":
             with open(
                 f"{model_mismatch_results_dir}/{gazebo_w_json_name}.json", "r"
             ) as f:
-                w_data = json.load(f)
-            w = np.array(w_data["w"])
+                gazebo_w_data = json.load(f)
+            u = np.array(gazebo_w_data["u"])
+            y = np.array(gazebo_w_data["y"])
+            w = np.array(gazebo_w_data["w"])
             plot_gazebo_w_over_time(gazebo_w_json_name, w)
+            plot_gazebo_u_w(gazebo_w_json_name, u, w, gazebo_w_idx)
+            plot_gazebo_y_w(gazebo_w_json_name, y, w, gazebo_w_idx)
+            plot_gazebo_w_sorted(gazebo_w_json_name, w)
 
     plt.show()

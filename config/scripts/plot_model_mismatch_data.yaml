@@ -1,7 +1,11 @@
 mhe_json_name: falcon_t
 time_idx: 0
 
-gazebo_w_json_names: []
+# gazebo_w_json_names: []
+gazebo_w_json_names:
+  [
+    2025-06-26_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_w,
+  ]
 # gazebo_w_json_names:
 #   [
 #     2025-06-26_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_w,
@@ -9,6 +13,7 @@ gazebo_w_json_names: []
 #     2025-06-26_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_dist_meas_noise_w,
 #     2025-06-26_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_dist_meas_noise_w,
 #   ]
+gazebo_w_idx: 4
 
 do_plot:
   y_y_fs_over_horizon: false
@@ -17,7 +22,7 @@ do_plot:
   u_t_over_horizon: false
   u_wm_over_horizon: false
   w_est_over_time: false
-  w_est_over_horizon: true
+  w_est_over_horizon: false
   eta_est_over_time: false
   eta_est_over_horizon: false
   x_est_w_est_stage: false
@@ -32,6 +37,8 @@ do_plot:
 plot_settings:
   sizes: 2
   widths: 0.5
+  n_rows_inputs: 2
+  n_cols_inputs: 2
   n_rows_states: 4
   n_cols_states: 4
   plot_x_idx_at_ax_idx:
@@ -94,6 +101,7 @@ plot_settings:
     ]
   plot_eta_idx_at_ax_idx:
     [0, 1, 2, null, 3, 4, 5, null, 6, 7, 8, null, 9, 10, 11, null]
+  u_labels: [t0 (N), t1 (N), t2 (N), t3 (N)]
   x_labels:
     &my_x_labels [
       px (m),
