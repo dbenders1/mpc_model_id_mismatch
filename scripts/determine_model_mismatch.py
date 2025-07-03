@@ -155,12 +155,14 @@ class ComputeModelMismatch:
         self.outputs_times = np.array(json_data["/falcon/ground_truth/odometry"]["t"])
         p = np.array(json_data["/falcon/ground_truth/odometry"]["p"])
         q = np.array(json_data["/falcon/ground_truth/odometry"]["q"])
-        v = np.array(json_data["/falcon/ground_truth/odometry"]["v"])
+        v_body = np.array(json_data["/falcon/ground_truth/odometry"]["v"])
         wb = np.array(json_data["/falcon/ground_truth/odometry"]["wb"])
+        # Convert quaternion to Euler angles
         eul = np.zeros((3, q.shape[1]))
         for t in range(q.shape[1]):
             eul[:, t] = helpers.quaternion_to_zyx_euler(q[:, t])
-        self.outputs = np.concatenate((p, eul, v, wb), axis=0)
+        # Note: conversion of velocities from body to world frame is done after subtracting the measurement noise to determine w
+        self.outputs = np.concatenate((p, eul, v_body, wb), axis=0)
 
         self.disturbances_times = np.array(json_data["/w"]["t"])
         self.disturbances = np.array(json_data["/w"]["w"])
@@ -399,6 +401,19 @@ class ComputeModelMismatch:
                     f"File {self.w_json_path} does not exist. Please run the script with 'determine_w: true' to create it"
                 )
         # -------------------------------------------------------------------------------
+
+        # Convert linear velocity from body frame to world frame (in both outputs and interpolated outputs)
+        n_outputs = len(self.outputs_times)
+        for t in range(n_outputs):
+            self.outputs[6:9, t] = np.array(
+                helpers.body_to_world(self.outputs[6:9, t], self.outputs[3:6, t])
+            ).reshape((3,))
+        for t in range(self.n_times):
+            self.outputs_int[6:9, t] = np.array(
+                helpers.body_to_world(
+                    self.outputs_int[6:9, t], self.outputs_int[3:6, t]
+                )
+            ).reshape((3,))
 
     def compute_model_mismatch_mhe(self):
         # Based on code here: https://gitlab.ethz.ch/ics/parametric-mhe/-/blob/main/parametric-mhe.ipynb

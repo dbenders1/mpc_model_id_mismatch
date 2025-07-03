@@ -1,1 +1,1002 @@
-{"2024-08-22_sim_falcon_mpc_model_mismatch_zvar_lemniscate.bag": [[69.9987741935484, 0.010182729209852415], [83.88884677419355, 1.679515681975516]], "2024-09-17_sim_falcon_mpc_model_mismatch_x5_straight_line_motor_dynamics.bag": [[34.51862903225806, -0.023812956964407883], [39.00316935483871, 4.9620249074584635]], "2024-09-17_gaz_falcon_mpc_model_mismatch_x5_straight_line_no_noise_drag_rolling.bag": [[10.23928629032258, -0.008933830762756223], [11.329780241935484, 0.5122030467577194]], "2024-09-17_gaz_falcon_mpc_model_mismatch_hover_no_noise_drag_rolling.bag": [[12.600116935483868, 1.0122691696757595], [16.389883064516127, 1.0122691696757595]], "2024-09-17_gaz_falcon_mpc_model_mismatch_x5_straight_line_no_noise_drag_rolling_no_rotor_inertia.bag": [[14.261146924592886, -0.004624295138200729], [17.93612358676486, 5.004514110584495]], "2024-09-17_gaz_falcon_mpc_model_mismatch_y5_straight_line_no_noise_drag_rolling.bag": [[15.330903225806452, 0.020844767202357284], [18.852145161290323, 4.9938256299144745]], "2024-09-17_gaz_falcon_mpc_model_mismatch_yaw90_no_noise_drag_rolling.bag": [[16.50741129032258, 1.0152867409415425], [19.430258064516124, 1.00925055338337]], "2024-09-18_gaz_falcon_mpc_model_mismatch_circle_r1dot5_f0dot45.bag": [[35.94830040322581, 2.983318323687083], [38.38098588709678, 2.983318323687083]], "2024-04-19_gaz_falcon_mpc_model_mismatch_x5_straight_line_drag_rolling.bag": [[8.28455443548387, -0.008927510721321585], [12.195366935483872, 5.035073257958993]], "2024-04-19_gaz_falcon_mpc_model_mismatch_x5_straight_line_drag_no_rolling.bag": [[15.619798387096774, 0.06546545625565225], [20.534536290322578, 4.990258232397246]], "2024-04-19_exp_falcon_straight_lines_lab.bag": [[1726765714.984417, -0.006986775236586862], [1726765718.7027626, 2.991753906718394]], "2024-09-27_exp_falcon_straight_lines_lab.bag": [[1727450397.586853, 0.014245904393167974], [1727450429.230842, 0.0051999450761403]], "2024-10-02_exp_falcon_mpc_model_mismatch_straight_lines.bag": [[1727885151.1420012, 0.006656278944774829], [1727885185.1639402, 0.967844879395308]], "2024-10-10_gaz_falcon_pid_id_circle.bag": [[104.9961852090032, 0.00033685182481946185], [110.13102765273311, -1.0825977110262714]], "2024-10-14_gaz_falcon_mpc_model_mismatch_circle.bag": [[17.052617338709677, -0.0028406919727856916], [23.559312499999997, -0.029747563788331988]], "2024-12-12_gaz_falcon_mpc_model_mismatch_zlemn_r2_f0dot16_lab.bag": [[30.014213709677414, -0.006785485929961865], [41.66986693548387, 0.009533183015217439]], "2024-12-13_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [[11.179112096774194, 0.007917042475700686], [24.255335483870972, -0.00987932789328827]], "2025-01-03_gaz_falcon_mpc_model_mismatch_zlemn_r2_f0dot16_lab.bag": [[40.74885080645161, -1.9652321918204723], [47.05943548387096, -1.94892066745776]], "2025-01-03_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [[190.86380645161293, -0.011906754449733548], [202.7097419354839, -0.011906754449733548]], "2025-03-28_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [[75.75184475806452, 0.02053265451123698], [85.9132056451613, 0.010736733008230637]], "2025-03-29_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [[31.593638471112946, 0.01595458007810935], [41.7428926978529, 0.012220577476768746]], "2025-03-30_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [[47.47257131003008, 0.027017819413506672], [57.691241572450984, 0.030752181737653927]], "2025-03-31_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [[39.331149769585245, 0.022652174727853414], [49.493845622119814, 0.02776015741637705]], "2025-04-01_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [[43.60979032258065, 0.020474610644214408], [53.720481566820276, 0.020474610644214408]], "2025-04-02_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [[65.09970143138679, 0.02121717944804713], [75.26227066694327, 0.02121717944804713]], "2025-04-04_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_disturbances.bag": [[45.51886370708433, 0.018602272802301645], [55.72389949175397, 0.029800191879382876]], "2025-04-04_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [[42.894309718908815, 0.017986827120292315], [53.00823980914842, 0.017986827120292315]], "2025-04-07_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_disturbances.bag": [[57.706962400165935, 0.02241173491423787], [67.92054968364275, 0.02614438581898515]], "2025-04-08_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_uniform_no_disturbances.bag": [[86.62520814132107, 0.02305921901596486], [96.78616052227345, 0.017952692191049113]], "2025-04-08_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_gaussian.bag": [[42.91739554531489, 0.018352540161336695], [52.984377112135164, 0.026565530954366423]], "2025-04-08_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_uniform.bag": [[40.35900806451613, 0.02843026305127605], [50.48999999999999, 0.02843026305127605]], "2025-04-12_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_gaussian_dt0dot002.bag": [[19.523002593091995, -0.0037134502876834397], [29.56217695259827, 0.010457772220584527]], "2025-04-14_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_gaussian_dt0dot01.bag": [[25.834210196037752, 0.027491155206181617], [35.88932377346748, 0.027491155206181617]], "2025-04-14_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_gaussian_dt0dot01_old_sim.bag": [[63.294188621512276, 0.02671598119759544], [73.40669251115027, 0.02671598119759544]], "2025-04-14_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_gaussian_dt0dot01_old_sim_old_meas_noise.bag": [[41.0657537599834, 0.021923658022963366], [51.17041925111502, 0.021923658022963366]], "2025-04-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_uniform_dt0dot002.bag": [[17.97050768049155, 0.014287198489000286], [28.04717434715822, 0.004591115997787831]], "2025-04-17_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_disturbances_dt0dot002.bag": [[19.046580645161292, 0.004277019110846325], [29.16141935483871, 0.009124127649582814]], "2025-04-25_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_uniform_dt0dot002.bag": [[24.887421771600454, 0.003128325098341378], [34.938729104864635, 0.003128325098341378]], "2025-04-25_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_disturbances_dt0dot002.bag": [[18.69051515402966, 0.003450623759344573], [28.7460303495488, 0.006992532587148936]], "2025-04-28_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_disturbances_dt0dot002.bag": [[18.298552073732722, 0.004324311392425617], [28.37767956989247, 0.009171243838665077]], "2025-04-29_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_disturbances_no_drag_dt0dot002.bag": [[23.39866989247312, 0.006626804927910346], [33.50354393241168, 0.010946243250690824]], "2025-04-29_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_disturbances_dt0dot002.bag": [[51.41144700460829, 0.01436109205597802], [61.475963133640555, 0.01859019512756177]], "2025-04-29_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_disturbances_new_param_values_dt0dot002.bag": [[20.07598248847927, -0.00044248200639751545], [30.141632258064526, 0.009255045000867046]], "2025-04-29_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_meas_noise.bag": [[18.048548847926266, -0.007703801972498425], [28.100014285714288, -0.012112887297981878]], "2025-04-29_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_meas_noise.bag": [[24.473899999999997, -0.012049009666395438], [34.54456666666666, -0.020869722991449624]], "2025-04-29_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_new_param_values_dt0dot002.bag": [[18.418959620371325, 0.0071722898609558605], [28.48117795871797, 0.01426139321557196]], "2025-05-02_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_meas_noise_0dot005.bag": [[17.064780313245514, -0.006168900540903799], [27.070102375272278, -0.009397438409477932]], "2025-04-29_gaz_falcon_mpc_model_id_motortau.bag": [[4.953487885074161, 979.3856989722822], [5.85773785914324, 1496.2314554236755]], "2025-04-25_sim_falcon_mpc_model_id_motortau.bag": [[4.965397292811947, 986.0845175766641], [5.635469691940668, 1493.831071695694]], "2025-05-03_gaz_falcon_mpc_model_id_motortau.bag": [[4.952155741105694, 983.8149232325236], [6.17887651695882, 1501.9693878587852]], "2025-05-04_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_meas_noise.bag": [[21.72693186391453, -0.008420361596278347], [31.731732507001347, -0.008420361596278347]], "2025-05-05_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise.bag": [[20.243798537496104, 0.007813158694219169], [30.324645337620574, 0.007813158694219169]], "2025-05-06_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise.bag": [[20.018325806451614, -0.02120820531035328], [30.064938709677413, -0.011499728468894688]], "2025-05-06_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise.bag": [[18.240915668202764, 0.0004429050231546938], [28.300249001536095, 0.0004429050231546938]], "2025-05-06_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise.bag": [[18.82646728110599, 0.011228954374103317], [28.88949032258064, 0.02188431641369526]], "2025-05-06_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise.bag": [[19.19825023041475, 0.0007442936609152184], [29.248898463901696, -0.009909671669706022]], "2025-05-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise.bag": [[19.408350648272993, 0.005767856931043092], [29.477278975210034, -0.015515273618196268]], "2025-05-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise_only_thrust_drag_torque.bag": [[17.445350834975628, 0.001909489336825665], [27.490081672025724, 0.009030606634443217]], "2025-05-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise_only_thrust_air_drag_drag_torque.bag": [[17.15310102686443, -0.008422007535734188], [27.155958614251627, -0.008422007535734188]], "2025-05-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise_shiftedactualmotorvel.bag": [[16.6350688172043, -0.011500794982198137], [26.678939784946238, -0.001792308193482306]], "2025-05-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise_only_thrust_dragtorque_airddrag_shiftedactualmotorvel.bag": [[22.998017050691246, -0.011499237100243143], [33.01356543778802, -0.011499237100243143]], "2025-05-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise_only_thrust_dragtorque_shiftedactualmotorvel.bag": [[20.809184485407066, 0.013811493127880325], [30.883881874039936, 0.004066417506412456]], "2025-05-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise_only_thrust_shiftedactualmotorvel.bag": [[24.342558986175113, -0.005681080941597472], [34.45643917050691, 0.004064017490457594]], "2025-05-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise_only_thrust_dragtorque_rollingmoment_shiftedactualmotorvel.bag": [[29.32824516129032, 0.001907857918907574], [39.365922580645154, -0.005213270685266558]], "2025-05-08_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise.bag": [[19.636, 0.01286207428880011], [29.64, 0.016322790019441098]], "2025-05-08_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise.bag": [[20.75, 0.013084470310943027], [30.754, 0.015907868368800333]], "2025-05-08_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise.bag": [[20.256, 0.01319037763185574], [30.272, 0.015765300627781954]], "2025-05-08_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise.bag": [[20.03, -9.847690419101394e-05], [30.03, -9.837765043404446e-05]], "2025-05-08_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise.bag": [[18.986, -0.0008139225151833792], [28.986, 0.0004850131542664697]], "2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise.bag": [[15.812, 0.012723270810274169], [25.816, 0.01583235397762901]], "2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise.bag": [[20.294, 0.012829628495270747], [30.3, 0.01522823686865067]], "2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise.bag": [[18.82, 0.015243637689747153], [28.822, 0.017980847321206073]], "2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise.bag": [[17.22, -9.857694798320403e-05], [27.22, -9.839470920093635e-05]], "2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise.bag": [[17.834, -4.575403285357653e-05], [27.832, -0.0004545130299038961]], "2025-06-04_sim_falcon_mpc_model_mismatch_hovering_open_loop_dist_meas_noise.bag": [[5.259948604916502, 1.493326475017824], [10.069370864018254, 1.493326475017824]], "2025-06-04_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_sin_dist_meas_noise.bag": [[20.128, 0.016642998597559064], [30.134, 0.01616082106558436]], "2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise": [[18.82, 0.015243637689747153], [28.822, 0.017980847321206073]], "2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise": [[17.834, -4.575403285357653e-05], [27.832, -0.0004545130299038961]], "2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise": [[15.812, 0.012723270810274169], [25.816, 0.01583235397762901]], "2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise": [[20.294, 0.012829628495270747], [30.3, 0.01522823686865067]], "2025-06-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise": [[32.978, -5.864868341137175e-05], [42.978, -5.866473051039293e-05]], "2025-06-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise": [[30.842, -4.729997551630201e-05], [40.838, 0.0003562209559052431]], "2025-06-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise": [[29.872, -0.0007867080661356278], [39.872, 0.00026198320169860544]], "2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise": [[17.22, -9.857694798320403e-05], [27.22, -9.839470920093635e-05]], "2025-06-23_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_rand_walk_meas_noise": [[18.93, -0.0023500157696723836], [28.948, 0.0035372087605822122]], "2025-06-24_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise": [[14.51, 0.0005414431572888536], [24.51, -0.0009024867842189451]], "2025-06-26_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_no_dist_no_meas_noise": [[14.49, -5.500425874012761e-05], [24.49, -5.501433454452804e-05]], "2025-06-26_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise": [[15.718, -0.009213637025789237], [25.704, 0.003393323709177736]], "2025-06-26_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_ccw_dist_meas_noise": [[15.706, -0.009454519310336309], [25.726, 0.0028330516555815353]], "2025-06-26_sim_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_dist_meas_noise": [[25.708, -0.017336840023143583], [45.712, -0.023280961624812618]], "2025-06-26_sim_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_dist_meas_noise": [[15.706, 0.012233915872002815], [35.702, 0.014005971424789493]], "2025-06-26_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise": [[14.51, 0.0005414431572888536], [24.51, -0.0009024867842189451]], "2025-06-26_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_ccw_dist_meas_noise": [[14.51, 0.0005437674700278847], [24.51, -0.0009043863767799231]], "2025-06-26_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_dist_meas_noise": [[14.51, -0.011911014998508261], [34.51, -0.012225536129754015]], "2025-06-26_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_dist_meas_noise": [[14.512, 0.012134319572067225], [34.51, 0.012943626700348322]], "2025-06-27_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_gaz_dist_meas_noise": [[14.49, 0.00018302400808822855], [24.49, -0.0008882063562680501]], "2025-06-27_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_ccw_gaz_dist_meas_noise": [[14.49, 0.00018180720739505532], [24.49, -0.0008693092269788539]], "2025-06-27_sim_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_gaz_dist_meas_noise": [[14.49, -0.01231977387681246], [34.49, -0.01207169374218665]], "2025-06-27_sim_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_gaz_dist_meas_noise": [[14.492, 0.011295606775430995], [34.49, 0.01311749889905769]]}
+{
+    "2024-08-22_sim_falcon_mpc_model_mismatch_zvar_lemniscate.bag": [
+        [
+            69.9987741935484,
+            0.010182729209852415
+        ],
+        [
+            83.88884677419355,
+            1.679515681975516
+        ]
+    ],
+    "2024-09-17_sim_falcon_mpc_model_mismatch_x5_straight_line_motor_dynamics.bag": [
+        [
+            34.51862903225806,
+            -0.023812956964407883
+        ],
+        [
+            39.00316935483871,
+            4.9620249074584635
+        ]
+    ],
+    "2024-09-17_gaz_falcon_mpc_model_mismatch_x5_straight_line_no_noise_drag_rolling.bag": [
+        [
+            10.23928629032258,
+            -0.008933830762756223
+        ],
+        [
+            11.329780241935484,
+            0.5122030467577194
+        ]
+    ],
+    "2024-09-17_gaz_falcon_mpc_model_mismatch_hover_no_noise_drag_rolling.bag": [
+        [
+            12.600116935483868,
+            1.0122691696757595
+        ],
+        [
+            16.389883064516127,
+            1.0122691696757595
+        ]
+    ],
+    "2024-09-17_gaz_falcon_mpc_model_mismatch_x5_straight_line_no_noise_drag_rolling_no_rotor_inertia.bag": [
+        [
+            14.261146924592886,
+            -0.004624295138200729
+        ],
+        [
+            17.93612358676486,
+            5.004514110584495
+        ]
+    ],
+    "2024-09-17_gaz_falcon_mpc_model_mismatch_y5_straight_line_no_noise_drag_rolling.bag": [
+        [
+            15.330903225806452,
+            0.020844767202357284
+        ],
+        [
+            18.852145161290323,
+            4.9938256299144745
+        ]
+    ],
+    "2024-09-17_gaz_falcon_mpc_model_mismatch_yaw90_no_noise_drag_rolling.bag": [
+        [
+            16.50741129032258,
+            1.0152867409415425
+        ],
+        [
+            19.430258064516124,
+            1.00925055338337
+        ]
+    ],
+    "2024-09-18_gaz_falcon_mpc_model_mismatch_circle_r1dot5_f0dot45.bag": [
+        [
+            35.94830040322581,
+            2.983318323687083
+        ],
+        [
+            38.38098588709678,
+            2.983318323687083
+        ]
+    ],
+    "2024-04-19_gaz_falcon_mpc_model_mismatch_x5_straight_line_drag_rolling.bag": [
+        [
+            8.28455443548387,
+            -0.008927510721321585
+        ],
+        [
+            12.195366935483872,
+            5.035073257958993
+        ]
+    ],
+    "2024-04-19_gaz_falcon_mpc_model_mismatch_x5_straight_line_drag_no_rolling.bag": [
+        [
+            15.619798387096774,
+            0.06546545625565225
+        ],
+        [
+            20.534536290322578,
+            4.990258232397246
+        ]
+    ],
+    "2024-04-19_exp_falcon_straight_lines_lab.bag": [
+        [
+            1726765714.984417,
+            -0.006986775236586862
+        ],
+        [
+            1726765718.7027626,
+            2.991753906718394
+        ]
+    ],
+    "2024-09-27_exp_falcon_straight_lines_lab.bag": [
+        [
+            1727450397.586853,
+            0.014245904393167974
+        ],
+        [
+            1727450429.230842,
+            0.0051999450761403
+        ]
+    ],
+    "2024-10-02_exp_falcon_mpc_model_mismatch_straight_lines.bag": [
+        [
+            1727885151.1420012,
+            0.006656278944774829
+        ],
+        [
+            1727885185.1639402,
+            0.967844879395308
+        ]
+    ],
+    "2024-10-10_gaz_falcon_pid_id_circle.bag": [
+        [
+            104.9961852090032,
+            0.00033685182481946185
+        ],
+        [
+            110.13102765273311,
+            -1.0825977110262714
+        ]
+    ],
+    "2024-10-14_gaz_falcon_mpc_model_mismatch_circle.bag": [
+        [
+            17.052617338709677,
+            -0.0028406919727856916
+        ],
+        [
+            23.559312499999997,
+            -0.029747563788331988
+        ]
+    ],
+    "2024-12-12_gaz_falcon_mpc_model_mismatch_zlemn_r2_f0dot16_lab.bag": [
+        [
+            30.014213709677414,
+            -0.006785485929961865
+        ],
+        [
+            41.66986693548387,
+            0.009533183015217439
+        ]
+    ],
+    "2024-12-13_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [
+        [
+            11.179112096774194,
+            0.007917042475700686
+        ],
+        [
+            24.255335483870972,
+            -0.00987932789328827
+        ]
+    ],
+    "2025-01-03_gaz_falcon_mpc_model_mismatch_zlemn_r2_f0dot16_lab.bag": [
+        [
+            40.74885080645161,
+            -1.9652321918204723
+        ],
+        [
+            47.05943548387096,
+            -1.94892066745776
+        ]
+    ],
+    "2025-01-03_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [
+        [
+            190.86380645161293,
+            -0.011906754449733548
+        ],
+        [
+            202.7097419354839,
+            -0.011906754449733548
+        ]
+    ],
+    "2025-03-28_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [
+        [
+            75.75184475806452,
+            0.02053265451123698
+        ],
+        [
+            85.9132056451613,
+            0.010736733008230637
+        ]
+    ],
+    "2025-03-29_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [
+        [
+            31.593638471112946,
+            0.01595458007810935
+        ],
+        [
+            41.7428926978529,
+            0.012220577476768746
+        ]
+    ],
+    "2025-03-30_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [
+        [
+            47.47257131003008,
+            0.027017819413506672
+        ],
+        [
+            57.691241572450984,
+            0.030752181737653927
+        ]
+    ],
+    "2025-03-31_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [
+        [
+            39.331149769585245,
+            0.022652174727853414
+        ],
+        [
+            49.493845622119814,
+            0.02776015741637705
+        ]
+    ],
+    "2025-04-01_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [
+        [
+            43.60979032258065,
+            0.020474610644214408
+        ],
+        [
+            53.720481566820276,
+            0.020474610644214408
+        ]
+    ],
+    "2025-04-02_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [
+        [
+            65.09970143138679,
+            0.02121717944804713
+        ],
+        [
+            75.26227066694327,
+            0.02121717944804713
+        ]
+    ],
+    "2025-04-04_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_disturbances.bag": [
+        [
+            45.51886370708433,
+            0.018602272802301645
+        ],
+        [
+            55.72389949175397,
+            0.029800191879382876
+        ]
+    ],
+    "2025-04-04_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1.bag": [
+        [
+            42.894309718908815,
+            0.017986827120292315
+        ],
+        [
+            53.00823980914842,
+            0.017986827120292315
+        ]
+    ],
+    "2025-04-07_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_disturbances.bag": [
+        [
+            57.706962400165935,
+            0.02241173491423787
+        ],
+        [
+            67.92054968364275,
+            0.02614438581898515
+        ]
+    ],
+    "2025-04-08_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_uniform_no_disturbances.bag": [
+        [
+            86.62520814132107,
+            0.02305921901596486
+        ],
+        [
+            96.78616052227345,
+            0.017952692191049113
+        ]
+    ],
+    "2025-04-08_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_gaussian.bag": [
+        [
+            42.91739554531489,
+            0.018352540161336695
+        ],
+        [
+            52.984377112135164,
+            0.026565530954366423
+        ]
+    ],
+    "2025-04-08_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_uniform.bag": [
+        [
+            40.35900806451613,
+            0.02843026305127605
+        ],
+        [
+            50.48999999999999,
+            0.02843026305127605
+        ]
+    ],
+    "2025-04-12_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_gaussian_dt0dot002.bag": [
+        [
+            19.523002593091995,
+            -0.0037134502876834397
+        ],
+        [
+            29.56217695259827,
+            0.010457772220584527
+        ]
+    ],
+    "2025-04-14_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_gaussian_dt0dot01.bag": [
+        [
+            25.834210196037752,
+            0.027491155206181617
+        ],
+        [
+            35.88932377346748,
+            0.027491155206181617
+        ]
+    ],
+    "2025-04-14_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_gaussian_dt0dot01_old_sim.bag": [
+        [
+            63.294188621512276,
+            0.02671598119759544
+        ],
+        [
+            73.40669251115027,
+            0.02671598119759544
+        ]
+    ],
+    "2025-04-14_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_gaussian_dt0dot01_old_sim_old_meas_noise.bag": [
+        [
+            41.0657537599834,
+            0.021923658022963366
+        ],
+        [
+            51.17041925111502,
+            0.021923658022963366
+        ]
+    ],
+    "2025-04-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_uniform_dt0dot002.bag": [
+        [
+            17.97050768049155,
+            0.014287198489000286
+        ],
+        [
+            28.04717434715822,
+            0.004591115997787831
+        ]
+    ],
+    "2025-04-17_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_disturbances_dt0dot002.bag": [
+        [
+            19.046580645161292,
+            0.004277019110846325
+        ],
+        [
+            29.16141935483871,
+            0.009124127649582814
+        ]
+    ],
+    "2025-04-25_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_uniform_dt0dot002.bag": [
+        [
+            24.887421771600454,
+            0.003128325098341378
+        ],
+        [
+            34.938729104864635,
+            0.003128325098341378
+        ]
+    ],
+    "2025-04-25_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_disturbances_dt0dot002.bag": [
+        [
+            18.69051515402966,
+            0.003450623759344573
+        ],
+        [
+            28.7460303495488,
+            0.006992532587148936
+        ]
+    ],
+    "2025-04-28_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_disturbances_dt0dot002.bag": [
+        [
+            18.298552073732722,
+            0.004324311392425617
+        ],
+        [
+            28.37767956989247,
+            0.009171243838665077
+        ]
+    ],
+    "2025-04-29_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_disturbances_no_drag_dt0dot002.bag": [
+        [
+            23.39866989247312,
+            0.006626804927910346
+        ],
+        [
+            33.50354393241168,
+            0.010946243250690824
+        ]
+    ],
+    "2025-04-29_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_disturbances_dt0dot002.bag": [
+        [
+            51.41144700460829,
+            0.01436109205597802
+        ],
+        [
+            61.475963133640555,
+            0.01859019512756177
+        ]
+    ],
+    "2025-04-29_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_disturbances_new_param_values_dt0dot002.bag": [
+        [
+            20.07598248847927,
+            -0.00044248200639751545
+        ],
+        [
+            30.141632258064526,
+            0.009255045000867046
+        ]
+    ],
+    "2025-04-29_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_meas_noise.bag": [
+        [
+            18.048548847926266,
+            -0.007703801972498425
+        ],
+        [
+            28.100014285714288,
+            -0.012112887297981878
+        ]
+    ],
+    "2025-04-29_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_meas_noise.bag": [
+        [
+            24.473899999999997,
+            -0.012049009666395438
+        ],
+        [
+            34.54456666666666,
+            -0.020869722991449624
+        ]
+    ],
+    "2025-04-29_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_disturbances_new_param_values_dt0dot002.bag": [
+        [
+            18.418959620371325,
+            0.0071722898609558605
+        ],
+        [
+            28.48117795871797,
+            0.01426139321557196
+        ]
+    ],
+    "2025-05-02_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_meas_noise_0dot005.bag": [
+        [
+            17.064780313245514,
+            -0.006168900540903799
+        ],
+        [
+            27.070102375272278,
+            -0.009397438409477932
+        ]
+    ],
+    "2025-04-29_gaz_falcon_mpc_model_id_motortau.bag": [
+        [
+            4.953487885074161,
+            979.3856989722822
+        ],
+        [
+            5.85773785914324,
+            1496.2314554236755
+        ]
+    ],
+    "2025-04-25_sim_falcon_mpc_model_id_motortau.bag": [
+        [
+            4.965397292811947,
+            986.0845175766641
+        ],
+        [
+            5.635469691940668,
+            1493.831071695694
+        ]
+    ],
+    "2025-05-03_gaz_falcon_mpc_model_id_motortau.bag": [
+        [
+            4.952155741105694,
+            983.8149232325236
+        ],
+        [
+            6.17887651695882,
+            1501.9693878587852
+        ]
+    ],
+    "2025-05-04_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_meas_noise.bag": [
+        [
+            21.72693186391453,
+            -0.008420361596278347
+        ],
+        [
+            31.731732507001347,
+            -0.008420361596278347
+        ]
+    ],
+    "2025-05-05_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise.bag": [
+        [
+            20.243798537496104,
+            0.007813158694219169
+        ],
+        [
+            30.324645337620574,
+            0.007813158694219169
+        ]
+    ],
+    "2025-05-06_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise.bag": [
+        [
+            20.018325806451614,
+            -0.02120820531035328
+        ],
+        [
+            30.064938709677413,
+            -0.011499728468894688
+        ]
+    ],
+    "2025-05-06_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise.bag": [
+        [
+            18.240915668202764,
+            0.0004429050231546938
+        ],
+        [
+            28.300249001536095,
+            0.0004429050231546938
+        ]
+    ],
+    "2025-05-06_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise.bag": [
+        [
+            18.82646728110599,
+            0.011228954374103317
+        ],
+        [
+            28.88949032258064,
+            0.02188431641369526
+        ]
+    ],
+    "2025-05-06_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise.bag": [
+        [
+            19.19825023041475,
+            0.0007442936609152184
+        ],
+        [
+            29.248898463901696,
+            -0.009909671669706022
+        ]
+    ],
+    "2025-05-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise.bag": [
+        [
+            19.408350648272993,
+            0.005767856931043092
+        ],
+        [
+            29.477278975210034,
+            -0.015515273618196268
+        ]
+    ],
+    "2025-05-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise_only_thrust_drag_torque.bag": [
+        [
+            17.445350834975628,
+            0.001909489336825665
+        ],
+        [
+            27.490081672025724,
+            0.009030606634443217
+        ]
+    ],
+    "2025-05-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise_only_thrust_air_drag_drag_torque.bag": [
+        [
+            17.15310102686443,
+            -0.008422007535734188
+        ],
+        [
+            27.155958614251627,
+            -0.008422007535734188
+        ]
+    ],
+    "2025-05-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise_shiftedactualmotorvel.bag": [
+        [
+            16.6350688172043,
+            -0.011500794982198137
+        ],
+        [
+            26.678939784946238,
+            -0.001792308193482306
+        ]
+    ],
+    "2025-05-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise_only_thrust_dragtorque_airddrag_shiftedactualmotorvel.bag": [
+        [
+            22.998017050691246,
+            -0.011499237100243143
+        ],
+        [
+            33.01356543778802,
+            -0.011499237100243143
+        ]
+    ],
+    "2025-05-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise_only_thrust_dragtorque_shiftedactualmotorvel.bag": [
+        [
+            20.809184485407066,
+            0.013811493127880325
+        ],
+        [
+            30.883881874039936,
+            0.004066417506412456
+        ]
+    ],
+    "2025-05-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise_only_thrust_shiftedactualmotorvel.bag": [
+        [
+            24.342558986175113,
+            -0.005681080941597472
+        ],
+        [
+            34.45643917050691,
+            0.004064017490457594
+        ]
+    ],
+    "2025-05-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise_only_thrust_dragtorque_rollingmoment_shiftedactualmotorvel.bag": [
+        [
+            29.32824516129032,
+            0.001907857918907574
+        ],
+        [
+            39.365922580645154,
+            -0.005213270685266558
+        ]
+    ],
+    "2025-05-08_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise.bag": [
+        [
+            19.636,
+            0.01286207428880011
+        ],
+        [
+            29.64,
+            0.016322790019441098
+        ]
+    ],
+    "2025-05-08_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise.bag": [
+        [
+            20.75,
+            0.013084470310943027
+        ],
+        [
+            30.754,
+            0.015907868368800333
+        ]
+    ],
+    "2025-05-08_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise.bag": [
+        [
+            20.256,
+            0.01319037763185574
+        ],
+        [
+            30.272,
+            0.015765300627781954
+        ]
+    ],
+    "2025-05-08_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise.bag": [
+        [
+            20.03,
+            -9.847690419101394e-05
+        ],
+        [
+            30.03,
+            -9.837765043404446e-05
+        ]
+    ],
+    "2025-05-08_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise.bag": [
+        [
+            18.986,
+            -0.0008139225151833792
+        ],
+        [
+            28.986,
+            0.0004850131542664697
+        ]
+    ],
+    "2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise.bag": [
+        [
+            15.812,
+            0.012723270810274169
+        ],
+        [
+            25.816,
+            0.01583235397762901
+        ]
+    ],
+    "2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise.bag": [
+        [
+            20.294,
+            0.012829628495270747
+        ],
+        [
+            30.3,
+            0.01522823686865067
+        ]
+    ],
+    "2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise.bag": [
+        [
+            18.82,
+            0.015243637689747153
+        ],
+        [
+            28.822,
+            0.017980847321206073
+        ]
+    ],
+    "2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise.bag": [
+        [
+            17.22,
+            -9.857694798320403e-05
+        ],
+        [
+            27.22,
+            -9.839470920093635e-05
+        ]
+    ],
+    "2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise.bag": [
+        [
+            17.834,
+            -4.575403285357653e-05
+        ],
+        [
+            27.832,
+            -0.0004545130299038961
+        ]
+    ],
+    "2025-06-04_sim_falcon_mpc_model_mismatch_hovering_open_loop_dist_meas_noise.bag": [
+        [
+            5.259948604916502,
+            1.493326475017824
+        ],
+        [
+            10.069370864018254,
+            1.493326475017824
+        ]
+    ],
+    "2025-06-04_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_sin_dist_meas_noise.bag": [
+        [
+            20.128,
+            0.016642998597559064
+        ],
+        [
+            30.134,
+            0.01616082106558436
+        ]
+    ],
+    "2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise": [
+        [
+            18.82,
+            0.015243637689747153
+        ],
+        [
+            28.822,
+            0.017980847321206073
+        ]
+    ],
+    "2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise": [
+        [
+            17.834,
+            -4.575403285357653e-05
+        ],
+        [
+            27.832,
+            -0.0004545130299038961
+        ]
+    ],
+    "2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise": [
+        [
+            15.812,
+            0.012723270810274169
+        ],
+        [
+            25.816,
+            0.01583235397762901
+        ]
+    ],
+    "2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise": [
+        [
+            20.294,
+            0.012829628495270747
+        ],
+        [
+            30.3,
+            0.01522823686865067
+        ]
+    ],
+    "2025-06-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise": [
+        [
+            32.978,
+            -5.864868341137175e-05
+        ],
+        [
+            42.978,
+            -5.866473051039293e-05
+        ]
+    ],
+    "2025-06-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise": [
+        [
+            30.842,
+            -4.729997551630201e-05
+        ],
+        [
+            40.838,
+            0.0003562209559052431
+        ]
+    ],
+    "2025-06-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise": [
+        [
+            29.872,
+            -0.0007867080661356278
+        ],
+        [
+            39.872,
+            0.00026198320169860544
+        ]
+    ],
+    "2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise": [
+        [
+            17.22,
+            -9.857694798320403e-05
+        ],
+        [
+            27.22,
+            -9.839470920093635e-05
+        ]
+    ],
+    "2025-06-23_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_rand_walk_meas_noise": [
+        [
+            18.93,
+            -0.0023500157696723836
+        ],
+        [
+            28.948,
+            0.0035372087605822122
+        ]
+    ],
+    "2025-06-24_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise": [
+        [
+            14.51,
+            0.0005414431572888536
+        ],
+        [
+            24.51,
+            -0.0009024867842189451
+        ]
+    ],
+    "2025-06-26_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_no_dist_no_meas_noise": [
+        [
+            14.49,
+            -5.500425874012761e-05
+        ],
+        [
+            24.49,
+            -5.501433454452804e-05
+        ]
+    ],
+    "2025-06-26_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise": [
+        [
+            15.718,
+            -0.009213637025789237
+        ],
+        [
+            25.704,
+            0.003393323709177736
+        ]
+    ],
+    "2025-06-26_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_ccw_dist_meas_noise": [
+        [
+            15.706,
+            -0.009454519310336309
+        ],
+        [
+            25.726,
+            0.0028330516555815353
+        ]
+    ],
+    "2025-06-26_sim_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_dist_meas_noise": [
+        [
+            25.708,
+            -0.017336840023143583
+        ],
+        [
+            45.712,
+            -0.023280961624812618
+        ]
+    ],
+    "2025-06-26_sim_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_dist_meas_noise": [
+        [
+            15.706,
+            0.012233915872002815
+        ],
+        [
+            35.702,
+            0.014005971424789493
+        ]
+    ],
+    "2025-06-26_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise": [
+        [
+            14.51,
+            0.0005414431572888536
+        ],
+        [
+            24.51,
+            -0.0009024867842189451
+        ]
+    ],
+    "2025-06-26_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_ccw_dist_meas_noise": [
+        [
+            14.51,
+            0.0005437674700278847
+        ],
+        [
+            24.51,
+            -0.0009043863767799231
+        ]
+    ],
+    "2025-06-26_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_dist_meas_noise": [
+        [
+            14.51,
+            -0.011911014998508261
+        ],
+        [
+            34.51,
+            -0.012225536129754015
+        ]
+    ],
+    "2025-06-26_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_dist_meas_noise": [
+        [
+            14.512,
+            0.012134319572067225
+        ],
+        [
+            34.51,
+            0.012943626700348322
+        ]
+    ],
+    "2025-06-27_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_gaz_dist_meas_noise": [
+        [
+            14.49,
+            0.00018302400808822855
+        ],
+        [
+            24.49,
+            -0.0008882063562680501
+        ]
+    ],
+    "2025-06-27_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_ccw_gaz_dist_meas_noise": [
+        [
+            14.49,
+            0.00018180720739505532
+        ],
+        [
+            24.49,
+            -0.0008693092269788539
+        ]
+    ],
+    "2025-06-27_sim_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_gaz_dist_meas_noise": [
+        [
+            14.49,
+            -0.01231977387681246
+        ],
+        [
+            34.49,
+            -0.01207169374218665
+        ]
+    ],
+    "2025-06-27_sim_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_gaz_dist_meas_noise": [
+        [
+            14.492,
+            0.011295606775430995
+        ],
+        [
+            34.49,
+            0.01311749889905769
+        ]
+    ],
+    "2025-07-03_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise": [
+        [
+            14.51,
+            0.0005428919943993164
+        ],
+        [
+            24.51,
+            -0.000912014773156783
+        ]
+    ]
+}

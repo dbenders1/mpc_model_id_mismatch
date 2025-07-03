@@ -35,17 +35,12 @@ FLOAT_TOL = 1e-6
 INF = 1e8
 
 
-def subtract_eps_from_diag_and_clip_at_zero(matrix, eps):
-    """
-    Subtracts eps from the diagonal elements of the matrix and clips the result at zero.
-    """
-    # Create a copy of the matrix to avoid modifying the original
-    matrix_copy = np.copy(matrix)
-
-    # Subtract eps from the diagonal elements
-    np.fill_diagonal(matrix_copy, np.clip(np.diagonal(matrix_copy) - eps, 0, None))
-
-    return matrix_copy
+def body_to_world(vec_body, eul):
+    phi = eul[0]
+    theta = eul[1]
+    psi = eul[2]
+    R_body_to_world = get_rot_matrix_coordinates(phi, theta, psi)
+    return R_body_to_world @ vec_body
 
 
 def get_acados_status_message(status):
@@ -462,6 +457,19 @@ def solve_rk4_noise(state_update_ct_noise, state_cur, u, w, dt):
     k3 = state_update_ct_noise(state_cur + dt / 2 * k2, u, w)
     k4 = state_update_ct_noise(state_cur + dt * k3, u, w)
     return state_cur + dt * (k1 + 2 * k2 + 2 * k3 + k4) / 6
+
+
+def subtract_eps_from_diag_and_clip_at_zero(matrix, eps):
+    """
+    Subtracts eps from the diagonal elements of the matrix and clips the result at zero.
+    """
+    # Create a copy of the matrix to avoid modifying the original
+    matrix_copy = np.copy(matrix)
+
+    # Subtract eps from the diagonal elements
+    np.fill_diagonal(matrix_copy, np.clip(np.diagonal(matrix_copy) - eps, 0, None))
+
+    return matrix_copy
 
 
 class DroneAgiModel:
