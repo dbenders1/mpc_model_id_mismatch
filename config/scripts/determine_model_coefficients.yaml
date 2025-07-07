@@ -53,8 +53,12 @@ recorded_data:
   #   ]
   # json_names: [2025-05-08_sim_falcon_mpc_model_id_inertia_matrix]
   # json_names: [2025-05-08_sim_falcon_mpc_model_id_drag_coefficients]
+  # json_names:
+  #   [2025-06-26_gaz_falcon_mpc_model_id_inertia_matrix_dist_no_meas_noise]
   json_names:
-    [2025-06-26_gaz_falcon_mpc_model_id_inertia_matrix_dist_no_meas_noise]
+    [
+      2025-07-03_gaz_falcon_mpc_model_id_inertia_matrix_dist_no_meas_noise_only_thrust_dragtorque,
+    ]
   overwrite_data_sel: false
   processing:
     ts: 0.002 # interpolation time
