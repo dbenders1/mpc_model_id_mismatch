@@ -734,7 +734,8 @@ class ComputeModelMismatch:
                 self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[i, :, :]
 
             # Compute and print model mismatch bounds resulting from this iteration
-            self.compute_model_mismatch_bounds(i)
+            if not self.determine_w:
+                self.compute_model_mismatch_bounds(i)
 
             # # Print maximum likelihood costs before and after updating Q and R over a single horizon
             # print(
@@ -784,7 +785,14 @@ class ComputeModelMismatch:
                     ]
                 else:
                     w[:, i + self.stage_est] = self.w_mhe_all[0, i, :, self.stage_est]
+            print(f"\nDisturbance bounds:")
+            print(f"Min:     {np.min(w, axis=1)}")
+            print(f"Max:     {np.max(w, axis=1)}")
+
             data_w = {
+                "t": (
+                    self.times_max_begin + self.times_int[: self.mhe_n_times - 1]
+                ).tolist(),
                 "u": self.inputs_int[:, : self.mhe_n_times - 1].tolist(),
                 "y": self.outputs_int[:, : self.mhe_n_times - 1].tolist(),
                 "w": w.tolist(),
