@@ -22,9 +22,19 @@ recorded_data:
   #     2025-06-27_sim_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_gaz_dist_meas_noise,
   #     2025-06-27_sim_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_gaz_dist_meas_noise,
   #   ]
+  # bag_names:
+  #   [
+  #     2025-07-03_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
+  #     2025-07-03_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_only_thrust_drag_torque,
+  #     2025-07-03_gaz_falcon_mpc_model_id_inertia_matrix_dist_no_meas_noise_only_thrust_dragtorque,
+  #     2025-07-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_only_thrust_drag_torque,
+  #     2025-07-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_only_thrust_drag_torque_no_rotor_offset,
+  #     2025-07-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_only_thrust_drag_torque_no_rotor_offset_zero_rotor_vel,
+  #     2025-07-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_only_thrust_drag_torque_no_rotor_offset_zero_rotor_vel_rotor_mass_0dot00001,
+  #   ]
   bag_names:
     [
-      2025-07-03_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
+      2025-07-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
     ]
   topic_names: [/step_control, /falcon/ground_truth/odometry, /w, /eta]
   # bag_names:
