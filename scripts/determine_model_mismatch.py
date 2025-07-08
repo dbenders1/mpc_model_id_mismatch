@@ -475,12 +475,12 @@ class ComputeModelMismatch:
         if self.determine_w:
             self.R_cov_est_all[0, :, :] = np.eye(self.n_measurement_noises)
         else:
-            self.R_cov_est_all[0, :, :] = np.eye(self.n_measurement_noises)
+            # self.R_cov_est_all[0, :, :] = np.eye(self.n_measurement_noises)
             # if self.measurement_noises_gt_known:
             #     self.R_cov_est_all[0, :, :] = np.cov(self.measurement_noises_int)
-            # self.R_cov_est_all[0, :, :] = np.diag(
-            #     (2 * self.sim_eta_max) ** 2 / 12
-            # )  # ground truth values of uniform distribution used in simulation
+            self.R_cov_est_all[0, :, :] = np.diag(
+                (2 * self.sim_eta_max) ** 2 / 12
+            )  # ground truth values of uniform distribution used in simulation
             # with open("R_est.json", "r") as openfile:
             #     R_est_dict = json.load(openfile)
             #     self.R_cov_est_all[0, :, :] = np.array(R_est_dict["R_cov_est_all"])[
