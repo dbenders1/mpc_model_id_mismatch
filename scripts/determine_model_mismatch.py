@@ -1352,10 +1352,15 @@ if __name__ == "__main__":
 
     # User settings
     package_dir = Path(__file__).parents[1]
+    json_dir = f"{package_dir}/../rosbag2json/data/converted_bags"
+    if not path.exists(json_dir):
+        log.warning(
+            f"Directory {json_dir} does not exist! Please ensure that the rosbag2json submodule is cloned"
+        )
+        exit(1)
     config_dir = f"{package_dir}/config"
     config_path = f"{config_dir}/scripts/determine_model_mismatch.yaml"
     data_dir = f"{package_dir}/data"
-    json_dir = f"{data_dir}/converted_bags"
     data_sel_dir = f"{data_dir}/selected_data"
     data_sel_file_name = "model_mismatch_data_select.json"
     output_data_dir = f"{data_dir}/model_mismatch_results"
