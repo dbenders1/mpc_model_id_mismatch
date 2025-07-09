@@ -29,6 +29,8 @@ class ComputeModelMismatch:
         output_data_dir,
         exp_type,
         model,
+        determine_w,
+        use_predetermined_w,
         solver,
         sim_w_max,
         sim_eta_max,
@@ -55,8 +57,6 @@ class ComputeModelMismatch:
         self.cost_scaling = float(config["mhe"]["cost_scaling"])
         self.update_Q = config["mhe"]["update_Q"]
         self.update_R = config["mhe"]["update_R"]
-        self.determine_w = config["mhe"]["determine_w"]
-        self.use_predetermined_w = config["mhe"]["use_predetermined_w"]
 
         self.do_print_disturbances_min = config["printing"]["disturbances"]["min"]
         self.do_print_disturbances_max = config["printing"]["disturbances"]["max"]
@@ -113,31 +113,15 @@ class ComputeModelMismatch:
             self.mhe_n_iter = 1
 
         # Handle settings related to determining w
+        self.determine_w = determine_w
+        self.use_predetermined_w = use_predetermined_w
         if self.determine_w:
-            if self.exp_type == "sim":
-                log.warning(
-                    f"The 'determine_w' setting is only relevant for the Gazebo experiment type. It will be ignored for the simple simulation experiment type"
-                )
-                self.determine_w = False
-            elif self.exp_type == "gaz":
+            if self.exp_type == "gaz":
                 if self.mhe_n_iter > 1:
                     log.warning(
                         f"Only one MHE iteration is required to determine w. Setting 'mhe_n_iter' to 1"
                     )
                 self.mhe_n_iter = 1
-            if self.use_predetermined_w:
-                log.warning(
-                    f"The 'use_predetermined_w' setting cannot be combined with 'determine_w'. It will be set to False"
-                )
-                self.use_predetermined_w = False
-
-        if self.use_predetermined_w:
-            if self.exp_type == "sim":
-                log.warning(
-                    f"The 'use_predetermined_w' setting is only relevant for the Gazebo experiment type. It will be ignored for the simple simulation experiment type"
-                )
-                self.use_predetermined_w = False
-
         if self.determine_w or self.use_predetermined_w:
             self.w_json_path = f"{self.output_data_dir}/{self.json_name}_w.json"
 
@@ -475,12 +459,12 @@ class ComputeModelMismatch:
         if self.determine_w:
             self.R_cov_est_all[0, :, :] = np.eye(self.n_measurement_noises)
         else:
-            # self.R_cov_est_all[0, :, :] = np.eye(self.n_measurement_noises)
+            self.R_cov_est_all[0, :, :] = np.eye(self.n_measurement_noises)
             # if self.measurement_noises_gt_known:
             #     self.R_cov_est_all[0, :, :] = np.cov(self.measurement_noises_int)
-            self.R_cov_est_all[0, :, :] = np.diag(
-                (2 * self.sim_eta_max) ** 2 / 12
-            )  # ground truth values of uniform distribution used in simulation
+            # self.R_cov_est_all[0, :, :] = np.diag(
+            #     (2 * self.sim_eta_max) ** 2 / 12
+            # )  # ground truth values of uniform distribution used in simulation
             # with open("R_est.json", "r") as openfile:
             #     R_est_dict = json.load(openfile)
             #     self.R_cov_est_all[0, :, :] = np.array(R_est_dict["R_cov_est_all"])[
@@ -1400,6 +1384,9 @@ if __name__ == "__main__":
         log.fatal(f"Unknown model {quad_name}! Exiting")
         exit(1)
 
+    # Get json file names
+    json_names = config["recorded_data"]["json_names"]
+
     # Get sampling time
     ts = config["recorded_data"]["processing"]["ts"]
 
@@ -1410,11 +1397,27 @@ if __name__ == "__main__":
     eps = float(config["mhe"]["eps"])
     cost_scaling = float(config["mhe"]["cost_scaling"])
     determine_w = config["mhe"]["determine_w"]
+    use_predetermined_w = config["mhe"]["use_predetermined_w"]
 
-    # Generate MHE solver
-    solver = helpers.get_acados_mhe_solver(
-        model, M, ts, sim_eta_max, sim_eta_max_scaling, determine_w, generate_solver
-    )
+    # Handle settings related to determining w
+    if determine_w:
+        if use_predetermined_w:
+            log.warning(
+                f"The 'use_predetermined_w' setting cannot be combined with 'determine_w'. It will be set to False"
+            )
+            use_predetermined_w = False
+        if any("sim" in json_name for json_name in json_names):
+            log.warning(
+                f"The 'determine_w' setting is only relevant for the Gazebo experiment type. Detected at least one sim experiment, so it will be set to False"
+            )
+            determine_w = False
+
+    if use_predetermined_w:
+        if any("sim" in json_name for json_name in json_names):
+            log.warning(
+                f"The 'use_predetermined_w' setting is only relevant for the Gazebo experiment type. Detected at least one sim experiment, so it will be set to False"
+            )
+            use_predetermined_w = False
 
     # Get printing options
     do_print_disturbances_min = config["printing"]["disturbances"]["min"]
@@ -1446,8 +1449,12 @@ if __name__ == "__main__":
     data_model = model.get_model_data()
     data["common"] = {k: v for d in (data_general, data_model) for k, v in d.items()}
 
+    # Generate MHE solver
+    solver = helpers.get_acados_mhe_solver(
+        model, M, ts, sim_eta_max, sim_eta_max_scaling, determine_w, generate_solver
+    )
+
     # Process json data files
-    json_names = config["recorded_data"]["json_names"]
     for json_name in json_names:
         print()
         print("-" * 100)
@@ -1466,6 +1473,8 @@ if __name__ == "__main__":
             output_data_dir,
             exp_type,
             model,
+            determine_w,
+            use_predetermined_w,
             solver,
             sim_w_max,
             sim_eta_max,
