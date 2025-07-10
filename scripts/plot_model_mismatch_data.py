@@ -684,6 +684,83 @@ def plot_x_est_w_est_stage(exp_idx, x_est, w_est, stage_idx):
         axes[row_idx, col_idx].set_ylabel(f"{w_labels[w_idx]}")
 
 
+def plot_costs(
+    exp_idx,
+    t,
+    costs_w,
+    costs_eta,
+    costs_term,
+    costs_total,
+    costs_w_gt,
+    costs_eta_gt,
+    costs_total_gt,
+):
+    fig, ax = plt.subplots(1, 1, num=f"Experiment {exp_idx} - Costs over times")
+    fig.suptitle(f"Costs over times")
+    ax.plot(
+        t,
+        costs_w,
+        "-o",
+        linewidth=widths,
+        markersize=sizes,
+        label="Disturbance contribution to total cost",
+    )
+    ax.plot(
+        t,
+        costs_eta,
+        "-o",
+        linewidth=widths,
+        markersize=sizes,
+        label="Measurement noise contribution to total cost",
+    )
+    ax.plot(
+        t,
+        costs_term,
+        "-o",
+        linewidth=widths,
+        markersize=sizes,
+        label="Terminal cost",
+    )
+    ax.plot(
+        t,
+        costs_total,
+        "-o",
+        linewidth=widths,
+        markersize=sizes,
+        label="Total cost",
+    )
+    if costs_w_gt is not None:
+        ax.plot(
+            t,
+            costs_w_gt,
+            "-o",
+            linewidth=widths,
+            markersize=sizes,
+            label="Disturbance contribution to total ground truth cost",
+        )
+    if costs_eta_gt is not None:
+        ax.plot(
+            t,
+            costs_eta_gt,
+            "-o",
+            linewidth=widths,
+            markersize=sizes,
+            label="Measurement noise contribution to total ground truth cost",
+        )
+    if costs_total_gt is not None:
+        ax.plot(
+            t,
+            costs_total_gt,
+            "-o",
+            linewidth=widths,
+            markersize=sizes,
+            label="Ground truth total cost",
+        )
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("Cost")
+    fig.legend()
+
+
 def plot_Q_R_trace(exp_idx, Q_cov_est_all, R_cov_est_all):
     fig, axes = plt.subplots(
         1,
@@ -854,6 +931,7 @@ if __name__ == "__main__":
     do_plot_x_est_w_est_stage = config["do_plot"]["x_est_w_est_stage"]
     do_plot_w_est_gt_ratios = config["do_plot"]["w_est_gt_ratios"]
     do_plot_eta_est_gt_ratios = config["do_plot"]["eta_est_gt_ratios"]
+    do_plot_costs = config["do_plot"]["costs"]
     do_plot_Q_R_trace = config["do_plot"]["Q_R_trace"]
     do_plot_Q_diag = config["do_plot"]["Q_diag"]
     do_plot_R_diag = config["do_plot"]["R_diag"]
@@ -911,16 +989,24 @@ if __name__ == "__main__":
         t = np.array(data_exp["t"]).reshape((-1,))
         y = np.array(data_exp["y"])
         u = np.array(data_exp["u"])
+        costs_total = np.array(data_exp["costs_total"])
+        costs_term = np.array(data_exp["costs_term"])
+        costs_w = np.array(data_exp["costs_w"])
+        costs_eta = np.array(data_exp["costs_eta"])
         w = None
         if "w" in data_exp:
             w = np.array(data_exp["w"])
             w_min = np.array(data_exp["w_min"])
             w_max = np.array(data_exp["w_max"])
+            costs_w_gt = np.array(data_exp["costs_w_gt"])
         eta = None
         if "eta" in data_exp:
             eta = np.array(data_exp["eta"])
             eta_min = np.array(data_exp["eta_min"])
             eta_max = np.array(data_exp["eta_max"])
+            costs_eta_gt = np.array(data_exp["costs_eta_gt"])
+        if "w" in data_exp and "eta" in data_exp:
+            costs_total_gt = np.array(data_exp["costs_total_gt"])
         x_est_all = np.array(data_exp["x_est_all"])
         w_est_all = np.array(data_exp["w_est_all"])
         eta_est_all = np.array(data_exp["eta_est_all"])
@@ -945,6 +1031,16 @@ if __name__ == "__main__":
         x_est_all_last_iter = x_est_all[iter_idx, :, :, :]
         w_est_all_last_iter = w_est_all[iter_idx, :, :, :]
         eta_est_all_last_iter = eta_est_all[iter_idx, :, :, :]
+        costs_total = costs_total[iter_idx, :].reshape((-1,))
+        costs_term = costs_term[iter_idx, :].reshape((-1,))
+        costs_w = costs_w[iter_idx, :].reshape((-1,))
+        costs_eta = costs_eta[iter_idx, :].reshape((-1,))
+        if w is not None:
+            costs_w_gt = costs_w_gt[iter_idx, :].reshape((-1,))
+        if eta is not None:
+            costs_eta_gt = costs_eta_gt[iter_idx, :].reshape((-1,))
+        if w is not None and eta is not None:
+            costs_total_gt = costs_total_gt[iter_idx, :].reshape((-1,))
 
         # Print estimated disturbances and measurement noise
         # print(f"w_est = {w_est_all_last_iter[0, :, :]}")
@@ -1008,6 +1104,18 @@ if __name__ == "__main__":
         if do_plot_x_est_w_est_stage:
             plot_x_est_w_est_stage(
                 exp_idx, x_est_all_last_iter, w_est_all_last_iter, stage_idx
+            )
+        if do_plot_costs:
+            plot_costs(
+                exp_idx,
+                t,
+                costs_w,
+                costs_eta,
+                costs_term,
+                costs_total,
+                costs_w_gt,
+                costs_eta_gt,
+                costs_total_gt,
             )
         if do_plot_Q_R_trace:
             plot_Q_R_trace(exp_idx, Q_cov_est_all, R_cov_est_all)

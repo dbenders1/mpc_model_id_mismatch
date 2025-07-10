@@ -526,6 +526,12 @@ class ComputeModelMismatch:
         )
         self.costs_total = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
         self.costs_term = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
+        self.costs_w = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
+        self.costs_eta = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
+        if self.disturbances_gt_known:
+            self.costs_w_gt = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
+        if self.measurement_noises_gt_known:
+            self.costs_eta_gt = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
         if self.disturbances_gt_known and self.measurement_noises_gt_known:
             self.costs_total_gt = np.zeros((self.mhe_n_iter, self.mhe_n_times - self.M))
 
@@ -646,6 +652,48 @@ class ComputeModelMismatch:
                     ),
                     self.R_mhe_all[i, :, :],
                 )
+                self.costs_w[i, t - self.M] = helpers.get_cost_mhe(
+                    self.M,
+                    self.w_mhe_all[i, t - self.M, :, :],
+                    np.zeros(
+                        (self.n_measurement_noises, self.M + 1)
+                    ),  # no measurement noises in this case
+                    self.Q_mhe_all[i, :, :],
+                    self.R_mhe_all[i, :, :],
+                    np.arange(self.M + 1),
+                )
+                self.costs_eta[i, t - self.M] = helpers.get_cost_mhe(
+                    self.M,
+                    np.zeros(
+                        (self.n_disturbances, self.M)
+                    ),  # no disturbances in this case
+                    self.eta_mhe_all[i, t - self.M, :, :],
+                    self.Q_mhe_all[i, :, :],
+                    self.R_mhe_all[i, :, :],
+                    np.arange(self.M + 1),
+                )
+                if self.disturbances_gt_known:
+                    self.costs_w_gt[i, t - self.M] = helpers.get_cost_mhe(
+                        self.M,
+                        self.disturbances_int[:, t - self.M : t],
+                        np.zeros(
+                            (self.n_measurement_noises, self.M + 1)
+                        ),  # no measurement noises in this case
+                        self.Q_mhe_all[i, :, :],
+                        self.R_mhe_all[i, :, :],
+                        np.arange(self.M + 1),
+                    )
+                if self.measurement_noises_gt_known:
+                    self.costs_eta_gt[i, t - self.M] = helpers.get_cost_mhe(
+                        self.M,
+                        np.zeros(
+                            (self.n_disturbances, self.M)
+                        ),  # no disturbances in this case
+                        self.measurement_noises_int[:, t - self.M : t + 1],
+                        self.Q_mhe_all[i, :, :],
+                        self.R_mhe_all[i, :, :],
+                        np.arange(self.M + 1),
+                    )
                 if self.disturbances_gt_known and self.measurement_noises_gt_known:
                     self.costs_total_gt[i, t - self.M] = helpers.get_cost_mhe(
                         self.M,
@@ -755,8 +803,8 @@ class ComputeModelMismatch:
         #         f,
         #     )
 
-        # Save disturbance data
         if self.determine_w:
+            # Save disturbance data
             w = np.zeros((self.n_disturbances, self.mhe_n_times - 1))
             for i in range(self.mhe_n_times - self.M):
                 if i == 0:
@@ -902,10 +950,14 @@ class ComputeModelMismatch:
             data_gt["w"] = self.disturbances_int[:, : self.mhe_n_times].tolist()
             data_gt["w_min"] = self.disturbances_min_gt_abs.tolist()
             data_gt["w_max"] = self.disturbances_max_gt_abs.tolist()
+            data_gt["costs_w_gt"] = self.costs_w_gt.tolist()
         if self.measurement_noises_gt_known:
             data_gt["eta"] = self.measurement_noises_int[:, : self.mhe_n_times].tolist()
             data_gt["eta_min"] = self.measurement_noises_min_gt_abs.tolist()
             data_gt["eta_max"] = self.measurement_noises_max_gt_abs.tolist()
+            data_gt["costs_eta_gt"] = self.costs_eta_gt.tolist()
+        if self.disturbances_gt_known and self.measurement_noises_gt_known:
+            data_gt["total_gt_costs"] = self.costs_total_gt.tolist()
         data_mhe = {
             "x_est_all": self.x_mhe_all.tolist(),
             "w_est_all": self.w_mhe_all.tolist(),
@@ -913,6 +965,17 @@ class ComputeModelMismatch:
             "Q_cov_est_all": self.Q_cov_est_all.tolist(),
             "R_cov_est_all": self.R_cov_est_all.tolist(),
         }
+        data_costs = {}
+        data_costs["costs_total"] = (self.costs_total.tolist(),)
+        data_costs["costs_term"] = (self.costs_term.tolist(),)
+        data_costs["costs_w"] = (self.costs_w.tolist(),)
+        data_costs["costs_eta"] = (self.costs_eta.tolist(),)
+        if self.disturbances_gt_known:
+            data_costs["costs_w_gt"] = self.costs_w_gt.tolist()
+        if self.measurement_noises_gt_known:
+            data_costs["costs_eta_gt"] = self.costs_eta_gt.tolist()
+        if self.disturbances_gt_known and self.measurement_noises_gt_known:
+            data_costs["costs_total_gt"] = self.costs_total_gt.tolist()
         data_stat = {
             "w_min_est_abs": self.disturbances_min_est_abs.tolist(),
             "w_max_est_abs": self.disturbances_max_est_abs.tolist(),
@@ -921,7 +984,7 @@ class ComputeModelMismatch:
         }
         data = {
             k: v
-            for d in (data_general, data_gt, data_mhe, data_stat)
+            for d in (data_general, data_gt, data_mhe, data_costs, data_stat)
             for k, v in d.items()
         }
         return data
