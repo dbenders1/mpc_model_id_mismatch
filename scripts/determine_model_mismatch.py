@@ -780,6 +780,7 @@ class ComputeModelMismatch:
                 "u": self.inputs_int[:, : self.mhe_n_times - 1].tolist(),
                 "y": self.outputs_int[:, : self.mhe_n_times - 1].tolist(),
                 "w": w.tolist(),
+                "w_mhe_all": self.w_mhe_all[-1, :, :, :].tolist(),
             }
             with open(self.w_json_path, "w") as f:
                 json.dump(
