@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Usage: ./setup.sh [/path/to/acados_template]
+# Usage: ./setup_venv.sh [/path/to/acados_template]
 
 # Define color codes
 YELLOW='\033[1;33m'
