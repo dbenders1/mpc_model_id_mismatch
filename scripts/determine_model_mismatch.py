@@ -137,11 +137,11 @@ class ComputeModelMismatch:
         self.inputs = np.zeros((4, n_inputs_times))
         for i in range(n_inputs_times):
             self.inputs[:, i] = self.model.motor_speeds_to_thrusts(wmc[:, i])
-        self.outputs_times = np.array(json_data["/falcon/ground_truth/odometry"]["t"])
-        p = np.array(json_data["/falcon/ground_truth/odometry"]["p"])
-        q = np.array(json_data["/falcon/ground_truth/odometry"]["q"])
-        v = np.array(json_data["/falcon/ground_truth/odometry"]["v"])
-        wb = np.array(json_data["/falcon/ground_truth/odometry"]["wb"])
+        self.outputs_times = np.array(json_data["/falcon/odometry"]["t"])
+        p = np.array(json_data["/falcon/odometry"]["p"])
+        q = np.array(json_data["/falcon/odometry"]["q"])
+        v = np.array(json_data["/falcon/odometry"]["v"])
+        wb = np.array(json_data["/falcon/odometry"]["wb"])
         # Convert quaternion to Euler angles
         eul = np.zeros((3, q.shape[1]))
         for t in range(q.shape[1]):
