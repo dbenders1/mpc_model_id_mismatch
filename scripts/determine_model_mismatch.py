@@ -36,6 +36,7 @@ class ComputeModelMismatch:
         sim_eta_max,
     ) -> None:
         # Process config
+        self.time_precision = config["recorded_data"]["time_precision"]
         self.overwrite_data_sel = config["recorded_data"]["data_sel"]["overwrite"]
         self.automatic_data_sel = config["recorded_data"]["data_sel"]["automatic"]
         self.automatic_data_sel_first_offset_dist = config["recorded_data"]["data_sel"][
@@ -155,6 +156,22 @@ class ComputeModelMismatch:
         self.measurement_noises = np.array(json_data["/eta"]["eta"])
         if self.measurement_noises_times.size > 0:
             self.measurement_noises_gt_known = True
+        # -------------------------------------------------------------------------------
+
+        # REMOVE ALL NON-IDEALITIES FROM TIME VECTORS
+        # NOTE: this is necessary to avoid floating point precision errors to have an effect on the zero model mismatch results
+        # -------------------------------------------------------------------------------
+        # Round time arrays
+        self.inputs_times = np.round(self.inputs_times, self.time_precision)
+        self.outputs_times = np.round(self.outputs_times, self.time_precision)
+        if self.disturbances_gt_known:
+            self.disturbances_times = np.round(
+                self.disturbances_times, self.time_precision
+            )
+        if self.measurement_noises_gt_known:
+            self.measurement_noises_times = np.round(
+                self.measurement_noises_times, self.time_precision
+            )
         # -------------------------------------------------------------------------------
 
         # SELECT DATA
@@ -329,10 +346,9 @@ class ComputeModelMismatch:
         self.times_max_begin = max(self.outputs_times[0], self.inputs_times[0])
         self.times_min_end = min(self.outputs_times[-1], self.inputs_times[-1])
         self.times_int = np.arange(self.times_max_begin, self.times_min_end, self.ts)
-        if self.exp_type == "sim" or self.exp_type == "gaz":
-            self.times_int = np.round(
-                self.times_int, 5
-            )  # NOTE: same argument as before with inputs times
+        self.times_int = np.round(
+            self.times_int, self.time_precision
+        )  # NOTE: same argument as before with all time vectors
 
         f = interpolate.interp1d(self.inputs_times, self.inputs, kind="previous")
         self.inputs_int = f(self.times_int)
