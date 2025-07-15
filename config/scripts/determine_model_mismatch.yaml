@@ -171,8 +171,6 @@ recorded_data:
     overwrite: false
     automatic: true
     automatic_first_offset_dist: 0.5
-    automatic_crossings_idc_to_sel: [0, 1] # use for circle
-    # automatic_crossings_idc_to_sel: [0, 2] # use for lemniscate
 
   processing:
     ts: 0.002 # interpolation time

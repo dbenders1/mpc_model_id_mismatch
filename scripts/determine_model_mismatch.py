@@ -42,9 +42,6 @@ class ComputeModelMismatch:
         self.automatic_data_sel_first_offset_dist = config["recorded_data"]["data_sel"][
             "automatic_first_offset_dist"
         ]
-        self.automatic_data_sel_crossing_idc_to_sel = config["recorded_data"][
-            "data_sel"
-        ]["automatic_crossings_idc_to_sel"]
         self.ts = config["recorded_data"]["processing"]["ts"]
 
         self.model_name = config["model"]["name"]
@@ -227,8 +224,24 @@ class ComputeModelMismatch:
                     ]
                 )
 
+                # Determine automatic_data_sel_crossing_idc_to_sel based on the type of trajectory
+                if "circle" in self.json_name:
+                    automatic_data_sel_crossing_idc_to_sel = [
+                        0,
+                        1,
+                    ]  # use for circle
+                elif "lemniscate" in self.json_name:
+                    automatic_data_sel_crossing_idc_to_sel = [
+                        0,
+                        2,
+                    ]  # use for lemniscate
+                else:
+                    raise ValueError(
+                        f"Unknown trajectory type in json_name: {self.json_name} for automatically selecting data"
+                    )
+
                 # Determine the selected points
-                min_n_crossings = self.automatic_data_sel_crossing_idc_to_sel[1] + 1
+                min_n_crossings = automatic_data_sel_crossing_idc_to_sel[1] + 1
                 if np.isscalar(crossing_idc):
                     crossing_idc = np.array([crossing_idc])
                 n_crossings = len(crossing_idc)
@@ -243,10 +256,10 @@ class ComputeModelMismatch:
                             f"INFO: Automatic data selection: expected at least {min_n_crossings} detected crossings, found {n_crossings}"
                         )
                     crossing_idx_0 = crossing_idc[
-                        self.automatic_data_sel_crossing_idc_to_sel[0]
+                        automatic_data_sel_crossing_idc_to_sel[0]
                     ]
                     crossing_idx_1 = crossing_idc[
-                        self.automatic_data_sel_crossing_idc_to_sel[1]
+                        automatic_data_sel_crossing_idc_to_sel[1]
                     ]
                     sel = [
                         (
