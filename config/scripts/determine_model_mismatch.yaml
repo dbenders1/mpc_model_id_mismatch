@@ -173,14 +173,14 @@ recorded_data:
   #   ]
   # json_names:
   #   [
-  #     2025-07-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
+  #     2025-07-15_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
+  #     2025-07-15_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_ccw_dist_meas_noise,
+  #     2025-07-15_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_dist_meas_noise,
+  #     2025-07-15_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_dist_meas_noise,
   #   ]
   json_names:
     [
-      2025-07-15_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
-      2025-07-15_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_ccw_dist_meas_noise,
-      2025-07-15_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_dist_meas_noise,
-      2025-07-15_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_dist_meas_noise,
+      2025-07-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
     ]
   time_precision: 5 # rounding precision for time vectors
   data_sel:
@@ -197,7 +197,7 @@ model:
 
 mhe:
   generate_solver: true
-  n_iter: 1
+  n_iter: 4
   n_times: 0
   M: 40
   stage_est: 20
