@@ -1,7 +1,11 @@
 mhe_json_name: falcon_t
 time_idx: 0
 
-gazebo_w_json_names: []
+# gazebo_w_json_names: []
+gazebo_w_json_names:
+  [
+    2025-07-15_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_w,
+  ]
 # gazebo_w_json_names:
 #   [
 #     2025-06-26_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_w,
@@ -28,7 +32,7 @@ do_plot:
   x_est_w_est_stage: false
   w_est_gt_ratios: false
   eta_est_gt_ratios: false
-  costs: true
+  costs: false
   Q_R_trace: false
   Q_diag: false
   R_diag: false
