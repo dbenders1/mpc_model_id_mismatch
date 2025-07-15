@@ -780,9 +780,25 @@ class ComputeModelMismatch:
             else:
                 self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[i, :, :]
 
+            # Compute disturbance values
+            if self.determine_w:
+                self.w = np.zeros((self.n_disturbances, self.mhe_n_times - 1))
+                for idx in range(self.mhe_n_times - self.M):
+                    if idx == 0:
+                        self.w[:, : self.stage_est + 1] = self.w_mhe_all[
+                            0, idx, :, : self.stage_est + 1
+                        ]
+                    elif idx == self.mhe_n_times - self.M - 1:
+                        self.w[:, idx + self.stage_est :] = self.w_mhe_all[
+                            0, idx, :, self.stage_est :
+                        ]
+                    else:
+                        self.w[:, idx + self.stage_est] = self.w_mhe_all[
+                            0, idx, :, self.stage_est
+                        ]
+
             # Compute and print model mismatch bounds resulting from this iteration
-            if not self.determine_w:
-                self.compute_model_mismatch_bounds(i)
+            self.compute_model_mismatch_bounds(i)
 
             # # Print maximum likelihood costs before and after updating Q and R over a single horizon
             # print(
@@ -818,31 +834,15 @@ class ComputeModelMismatch:
         #         f,
         #     )
 
+        # Store disturbance data in json file
         if self.determine_w:
-            # Save disturbance data
-            w = np.zeros((self.n_disturbances, self.mhe_n_times - 1))
-            for i in range(self.mhe_n_times - self.M):
-                if i == 0:
-                    w[:, : self.stage_est + 1] = self.w_mhe_all[
-                        0, i, :, : self.stage_est + 1
-                    ]
-                elif i == self.mhe_n_times - self.M - 1:
-                    w[:, i + self.stage_est :] = self.w_mhe_all[
-                        0, i, :, self.stage_est :
-                    ]
-                else:
-                    w[:, i + self.stage_est] = self.w_mhe_all[0, i, :, self.stage_est]
-            print(f"\nDisturbance bounds:")
-            print(f"Min:     {np.min(w, axis=1)}")
-            print(f"Max:     {np.max(w, axis=1)}")
-
             data_w = {
                 "t": (
                     self.times_max_begin + self.times_int[: self.mhe_n_times - 1]
                 ).tolist(),
                 "u": self.inputs_int[:, : self.mhe_n_times - 1].tolist(),
                 "y": self.outputs_int[:, : self.mhe_n_times - 1].tolist(),
-                "w": w.tolist(),
+                "w": self.w.tolist(),
                 "w_mhe_all": self.w_mhe_all[-1, :, :, :].tolist(),
             }
             with open(self.w_json_path, "w") as f:
@@ -850,7 +850,7 @@ class ComputeModelMismatch:
                     data_w,
                     f,
                 )
-            print(f"Disturbance data stored in {self.w_json_path}")
+            print(f"\nDisturbance data stored in {self.w_json_path}")
 
     def compute_model_mismatch_bounds(self, iter_idx):
         # Compute ground truth disturbance and measurement noise bounds
@@ -875,23 +875,27 @@ class ComputeModelMismatch:
             )
 
         # Compute estimated disturbance and measurement noise bounds
-        self.disturbances_min_est_abs = np.min(
-            self.w_mhe_all[iter_idx, :, :, self.stage_est], axis=0
-        )
-        self.disturbances_max_est_abs = np.max(
-            self.w_mhe_all[iter_idx, :, :, self.stage_est], axis=0
-        )
-        # self.disturbances_min_est_abs = np.min(self.w_mhe_all[-1, :, :, :], axis=(0, 2))
-        # self.disturbances_max_est_abs = np.max(self.w_mhe_all[-1, :, :, :], axis=(0, 2))
-        self.disturbances_bias_est = (
-            self.disturbances_max_est_abs + self.disturbances_min_est_abs
-        ) / 2
-        self.disturbances_min_est_rel = (
-            self.disturbances_min_est_abs - self.disturbances_bias_est
-        )
-        self.disturbances_max_est_rel = (
-            self.disturbances_max_est_abs - self.disturbances_bias_est
-        )
+        if self.determine_w:
+            self.disturbances_min_est_abs = np.min(self.w, axis=1)
+            self.disturbances_max_est_abs = np.max(self.w, axis=1)
+        else:
+            self.disturbances_min_est_abs = np.min(
+                self.w_mhe_all[iter_idx, :, :, self.stage_est], axis=0
+            )
+            self.disturbances_max_est_abs = np.max(
+                self.w_mhe_all[iter_idx, :, :, self.stage_est], axis=0
+            )
+            # self.disturbances_min_est_abs = np.min(self.w_mhe_all[-1, :, :, :], axis=(0, 2))
+            # self.disturbances_max_est_abs = np.max(self.w_mhe_all[-1, :, :, :], axis=(0, 2))
+            self.disturbances_bias_est = (
+                self.disturbances_max_est_abs + self.disturbances_min_est_abs
+            ) / 2
+            self.disturbances_min_est_rel = (
+                self.disturbances_min_est_abs - self.disturbances_bias_est
+            )
+            self.disturbances_max_est_rel = (
+                self.disturbances_max_est_abs - self.disturbances_bias_est
+            )
         self.meas_noises_min_est_abs = np.min(
             self.eta_mhe_all[iter_idx, :, :, self.stage_est], axis=0
         )
@@ -927,10 +931,11 @@ class ComputeModelMismatch:
                         print(
                             f"Max ratio:  {self.disturbances_max_est_abs / self.disturbances_max_gt_abs}"
                         )
-            if self.do_print_disturbances_bias:
-                print(f"Bias:    {self.disturbances_bias_est}")
-                if self.disturbances_gt_known:
-                    print(f"Bias GT: {self.disturbances_bias_gt}")
+            if not self.determine_w:
+                if self.do_print_disturbances_bias:
+                    print(f"Bias:    {self.disturbances_bias_est}")
+                    if self.disturbances_gt_known:
+                        print(f"Bias GT: {self.disturbances_bias_gt}")
 
         do_print_meas_noises = (
             self.do_print_meas_noises_min or self.do_print_meas_noises_max
@@ -1567,12 +1572,12 @@ if __name__ == "__main__":
         compute_model_mismatch.compute_model_mismatch_mhe()
         if not determine_w:
             compute_model_mismatch.create_plots()
-            data[exp_details] = compute_model_mismatch.get_json_specific_data()
+        data[exp_details] = compute_model_mismatch.get_json_specific_data()
         print("-" * 100)
 
-    if not determine_w:
-        compute_absolute_w_eta_bounds(data, do_print_w_eta)
+    compute_absolute_w_eta_bounds(data, do_print_w_eta)
 
+    if not determine_w:
         # Save data to json file for plotting
         output_data_json_path = f"{output_data_dir}/{model_name}.json"
         with open(output_data_json_path, "w") as json_file:
