@@ -323,33 +323,6 @@ def get_rot_matrix_rates(phi, theta):
     )
 
 
-def quaternion_to_zyx_euler(q):
-    """
-    Convert a quaternion into ZYX Euler angles (roll, pitch, yaw)
-    q = [qw, qx, qy, qz]
-    """
-    qw, qx, qy, qz = q
-
-    # Roll (x-axis rotation)
-    sinr_cosp = 2 * (qw * qx + qy * qz)
-    cosr_cosp = 1 - 2 * (qx * qx + qy * qy)
-    roll = math.atan2(sinr_cosp, cosr_cosp)
-
-    # Pitch (y-axis rotation)
-    sinp = 2 * (qw * qy - qz * qx)
-    if abs(sinp) >= 1:
-        pitch = math.copysign(math.pi / 2, sinp)  # use 90 degrees if out of range
-    else:
-        pitch = math.asin(sinp)
-
-    # Yaw (z-axis rotation)
-    siny_cosp = 2 * (qw * qz + qx * qy)
-    cosy_cosp = 1 - 2 * (qy * qy + qz * qz)
-    yaw = math.atan2(siny_cosp, cosy_cosp)
-
-    return roll, pitch, yaw
-
-
 def quat_mult(q1, q2):
     ans = vertcat(
         q2[0, :] * q1[0, :]

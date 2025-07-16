@@ -506,20 +506,14 @@ class DetermineModelCoefficients:
         with open(f"{self.json_dir}/{self.json_name}.json", "r") as openfile:
             json_data = json.load(openfile)
         self.inputs_times = np.array(json_data["/step_control"]["t"])
-        wmc = np.array(json_data["/step_control"]["u"])
+        wmc = np.array(json_data["/step_control"]["u"]).T
         n_inputs_times = len(self.inputs_times)
         self.inputs = np.zeros((4, n_inputs_times))
         for i in range(n_inputs_times):
             self.inputs[:, i] = self.model.motor_speeds_to_thrusts(wmc[:, i])
+
         self.outputs_times = np.array(json_data["/falcon/odometry"]["t"])
-        p = np.array(json_data["/falcon/odometry"]["p"])
-        q = np.array(json_data["/falcon/odometry"]["q"])
-        v = np.array(json_data["/falcon/odometry"]["v"])
-        wb = np.array(json_data["/falcon/odometry"]["wb"])
-        eul = np.zeros((3, q.shape[1]))
-        for t in range(q.shape[1]):
-            eul[:, t] = helpers.quaternion_to_zyx_euler(q[:, t])
-        self.outputs = np.concatenate((p, eul, v, wb), axis=0)
+        self.outputs = np.array(json_data["/falcon/odometry"]["y"]).T
         # -------------------------------------------------------------------------------
 
         # SELECT DATA

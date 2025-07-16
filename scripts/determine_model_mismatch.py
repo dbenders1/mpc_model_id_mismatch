@@ -128,29 +128,24 @@ class ComputeModelMismatch:
         with open(f"{self.json_dir}/{self.json_name}.json", "r") as openfile:
             json_data = json.load(openfile)
         self.time_precision = json_data["time_precision"]
+
         self.inputs_times = np.array(json_data["/step_control"]["t"])
-        wmc = np.array(json_data["/step_control"]["u"])
+        wmc = np.array(json_data["/step_control"]["u"]).T
         n_inputs_times = len(self.inputs_times)
         self.inputs = np.zeros((4, n_inputs_times))
         for i in range(n_inputs_times):
             self.inputs[:, i] = self.model.motor_speeds_to_thrusts(wmc[:, i])
+
         self.outputs_times = np.array(json_data["/falcon/odometry"]["t"])
-        p = np.array(json_data["/falcon/odometry"]["p"])
-        q = np.array(json_data["/falcon/odometry"]["q"])
-        v = np.array(json_data["/falcon/odometry"]["v"])
-        wb = np.array(json_data["/falcon/odometry"]["wb"])
-        # Convert quaternion to Euler angles
-        eul = np.zeros((3, q.shape[1]))
-        for t in range(q.shape[1]):
-            eul[:, t] = helpers.quaternion_to_zyx_euler(q[:, t])
-        self.outputs = np.concatenate((p, eul, v, wb), axis=0)
+        self.outputs = np.array(json_data["/falcon/odometry"]["y"]).T
 
         self.disturbances_times = np.array(json_data["/w"]["t"])
-        self.disturbances = np.array(json_data["/w"]["w"])
+        self.disturbances = np.array(json_data["/w"]["w"]).T
         if self.disturbances_times.size > 0:
             self.disturbances_gt_known = True
+
         self.measurement_noises_times = np.array(json_data["/eta"]["t"])
-        self.measurement_noises = np.array(json_data["/eta"]["eta"])
+        self.measurement_noises = np.array(json_data["/eta"]["eta"]).T
         if self.measurement_noises_times.size > 0:
             self.measurement_noises_gt_known = True
         # -------------------------------------------------------------------------------
