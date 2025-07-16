@@ -36,7 +36,6 @@ class ComputeModelMismatch:
         sim_eta_max,
     ) -> None:
         # Process config
-        self.time_precision = config["recorded_data"]["time_precision"]
         self.overwrite_data_sel = config["recorded_data"]["data_sel"]["overwrite"]
         self.automatic_data_sel = config["recorded_data"]["data_sel"]["automatic"]
         self.automatic_data_sel_first_offset_dist = config["recorded_data"]["data_sel"][
@@ -128,6 +127,7 @@ class ComputeModelMismatch:
         # -------------------------------------------------------------------------------
         with open(f"{self.json_dir}/{self.json_name}.json", "r") as openfile:
             json_data = json.load(openfile)
+        self.time_precision = json_data["time_precision"]
         self.inputs_times = np.array(json_data["/step_control"]["t"])
         wmc = np.array(json_data["/step_control"]["u"])
         n_inputs_times = len(self.inputs_times)

@@ -182,7 +182,6 @@ recorded_data:
     [
       2025-07-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
     ]
-  time_precision: 5 # rounding precision for time vectors
   data_sel:
     overwrite: false
     automatic: true
