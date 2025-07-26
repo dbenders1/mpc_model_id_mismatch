@@ -608,13 +608,16 @@ class DroneAgiModel:
         # Set system constraint bounds
         self.p_max = 4
         self.p_min = -self.p_max
-        self.att_max = 0.05
+        # self.att_max = 0.05
+        self.att_max = 0.5
         self.att_min = -self.att_max
-        self.v_max = 1
+        # self.v_max = 1
+        self.v_max = 2
         self.v_min = -self.v_max
-        self.wb_max = 0.08
+        # self.wb_max = 0.08
+        self.wb_max = 0.7
         self.wb_min = -self.wb_max
-        self.t_var = 0.05
+        self.t_var = 0.12
         self.t_hover = self.mass * self.g / 4
         self.t_min = np.max(
             [self.t_hover - self.t_var, self.thrust_map[0] * self.motor_omega_min**2]

@@ -4,7 +4,8 @@ constants:
 simulation:
   # w_max: [0.0017, 0.0017, 0.039, 0.97, 0.97, 0.00017]
   # w_max: [0.0000084, 0.0000084, 0.00000067, 0.016, 0.016, 0.0015]
-  w_max: [0.0000072, 0.0000072, 0.00000032, 0.014, 0.014, 0.0013]
+  # w_max: [0.0000072, 0.0000072, 0.00000032, 0.014, 0.014, 0.0013]
+  w_max: [0.0000086, 0.0000086, 0.0000034, 0.027, 0.027, 0.0014]
   eta_max:
     [
       0.0005,
@@ -178,10 +179,12 @@ recorded_data:
   #     2025-07-15_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_dist_meas_noise,
   #     2025-07-15_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_dist_meas_noise,
   #   ]
+  # json_names:
+  #   [
+  #     2025-07-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
+  #   ]
   json_names:
-    [
-      2025-07-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
-    ]
+    [2025-07-22_gaz_meas_noise_falcon_mpc_model_mismatch_circle_r1_f0dot3_cw]
   data_sel:
     overwrite: false
     automatic: true
