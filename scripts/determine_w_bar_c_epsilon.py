@@ -42,6 +42,8 @@ if __name__ == "__main__":
     # Read configuration parameters
     with open(config_path) as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
+    g = config["constants"]["g"]
+
     runtime_json_names = config["data"]["runtime_json_names"]
     ros_rec_json_names = config["data"]["ros_rec_json_names"]
     n_idx_ignore = config["data"]["n_idx_ignore"]
@@ -55,6 +57,8 @@ if __name__ == "__main__":
     do_plot_epsilon_time = do_plot["epsilon_time"]
     do_plot_epsilon_sorted = do_plot["epsilon_sorted"]
 
+    quad_name = config["model"]["name"]
+
     plot_settings = config["plot_settings"]
     n_rows_plot = plot_settings["n_rows"]
     n_cols_plot = plot_settings["n_cols"]
@@ -67,6 +71,21 @@ if __name__ == "__main__":
         raise ValueError(
             f"Number of runtime_json_names ({n_runtime_json_names}) and ros_rec_json_names ({n_ros_rec_json_names}) must match"
         )
+
+    # Create model
+    quad_name = config["model"]["name"]
+    g = config["constants"]["g"]
+    params_file = f"{config_dir}/systems/{quad_name}.yaml"
+    if path.exists(params_file):
+        log.warning(f"Selected {quad_name} params file")
+    else:
+        log.fatal(f"Unknown quad name {quad_name}! Exiting")
+        exit(1)
+    if quad_name == "falcon":
+        model = helpers.DroneAgiModel(quad_name, g, params_file)
+    else:
+        log.fatal(f"Unknown model {quad_name}! Exiting")
+        exit(1)
 
     # Iterate over all runtime and ros recording json names
     for file_idx in range(n_runtime_json_names):
@@ -144,46 +163,68 @@ if __name__ == "__main__":
         print(f"t end: {t_x_cur_est[-1]}")
 
         # When computing rho_c, we want to compute w_bar_c over a uniform grid of rho_c values
-        if compute_rho_c:
-            rho_c_all = np.linspace(0.01, 100, 10)
-        else:
+        if not compute_rho_c:
             rho_c_all = np.array([rho_c])
-        n_rho_c_all = len(rho_c_all)
-
-        # Compute w_bar_c for all rho_c values (either uniform grid or single value)
-        # n_forward_sim = int(1 / dt_tmpc)
-        n_forward_sim = N_tmpc
-        # x_forward_sim = np.zeros((1 + n_forward_sim, nx))
-        x_err = np.zeros((n_tmpc - n_idx_ignore - n_forward_sim, n_forward_sim, nx))
-        lyap_err = np.zeros((n_tmpc - n_idx_ignore - n_forward_sim, n_forward_sim))
-        w_bar_c_all = np.zeros(
-            (len(rho_c_all), n_tmpc - n_idx_ignore - n_forward_sim, n_forward_sim)
-        )
-        rpi_tightening_per_rho_c = np.zeros(n_rho_c_all)
-        for rho_c_idx, rho_c in enumerate(rho_c_all):
-            if rho_c_idx < n_rho_c_all - 1:
-                print(f"rho_c iter {rho_c_idx}/{n_rho_c_all - 1}", end="\r")
-            else:
-                print(f"rho_c iter {rho_c_idx}/{n_rho_c_all - 1}")
-            for t_idx in range(n_tmpc - n_idx_ignore - n_forward_sim):
-                # x_forward_sim[0] = x_cur_est[n_idx_ignore + t_idx]
+        else:
+            # Forward-simulate the system for n_forward_sim steps
+            t_forward_sim = dt_tmpc
+            n_forward_sim = int(t_forward_sim / dt_tmpc)
+            n_times = n_tmpc - n_idx_ignore - n_forward_sim
+            # n_times = 50
+            x_forward_sim = np.zeros((n_times, 1 + n_forward_sim, nx))
+            for t_idx in range(n_times):
+                if t_idx < n_times - 1:
+                    print(
+                        f"Forward simulating time iter {t_idx}/{n_times - 1}", end="\r"
+                    )
+                else:
+                    print(f"Forward simulating time iter {t_idx}/{n_times - 1}")
+                x_forward_sim[t_idx, 0] = x_cur_est[n_idx_ignore + t_idx]
                 for k_idx in range(n_forward_sim):
-                    # x_forward_sim[k_idx] = helpers.solve_rk4()
-                    x_err[t_idx, k_idx] = (
-                        x_cur_est[n_idx_ignore + t_idx + 1 + k_idx]
-                        - x_pred_traj[n_idx_ignore + t_idx, 1 + k_idx]
-                    )
-                    lyap_err[t_idx, k_idx] = np.sqrt(
-                        x_err[t_idx, k_idx].T @ P_delta @ x_err[t_idx, k_idx]
-                    )
-                    w_bar_c_all[rho_c_idx, t_idx, k_idx] = (
-                        lyap_err[t_idx, k_idx]
-                        * rho_c
-                        / (1 - math.exp(-rho_c * (1 + k_idx) * dt_tmpc))
-                    )
-            rpi_tightening_per_rho_c[rho_c_idx] = np.max(w_bar_c_all[rho_c_idx] / rho_c)
-        w_bar_c = np.min(rpi_tightening_per_rho_c)
-        print(f"{ros_rec_json_name} - w_bar_c: {w_bar_c}")
+                    x_forward_sim[t_idx, k_idx + 1] = np.array(
+                        helpers.solve_rk4(
+                            model.state_update_ct,
+                            x_forward_sim[t_idx, k_idx],
+                            u_pred_traj[n_idx_ignore + t_idx, 0],
+                            dt_tmpc,
+                        )
+                    ).flatten()
+
+            # Compute w_bar_c for all rho_c, t, and tau values
+            n_rho_c_all = 10
+            rho_c_all = np.linspace(0.01, 100, n_rho_c_all)
+            x_err = np.zeros((n_times, n_forward_sim, nx))
+            lyap_err = np.zeros((n_times, n_forward_sim))
+            w_bar_c_all = np.zeros((len(rho_c_all), n_times, n_forward_sim))
+            rpi_tightening_per_rho_c = np.zeros(n_rho_c_all)
+            for rho_c_idx, rho_c in enumerate(rho_c_all):
+                if rho_c_idx < n_rho_c_all - 1:
+                    print(f"rho_c iter {rho_c_idx}/{n_rho_c_all - 1}", end="\r")
+                else:
+                    print(f"rho_c iter {rho_c_idx}/{n_rho_c_all - 1}")
+                for t_idx in range(n_times):
+                    for k_idx in range(n_forward_sim):
+                        # x_err[t_idx, k_idx] = (
+                        #     x_cur_est[n_idx_ignore + t_idx + 1 + k_idx]
+                        #     - x_pred_traj[n_idx_ignore + t_idx, 1 + k_idx]
+                        # )
+                        x_err[t_idx, k_idx] = (
+                            x_cur_est[n_idx_ignore + t_idx + 1 + k_idx]
+                            - x_forward_sim[t_idx, 1 + k_idx]
+                        )
+                        lyap_err[t_idx, k_idx] = np.sqrt(
+                            x_err[t_idx, k_idx].T @ P_delta @ x_err[t_idx, k_idx]
+                        )
+                        w_bar_c_all[rho_c_idx, t_idx, k_idx] = (
+                            lyap_err[t_idx, k_idx]
+                            * rho_c
+                            / (1 - math.exp(-rho_c * (1 + k_idx) * dt_tmpc))
+                        )
+                rpi_tightening_per_rho_c[rho_c_idx] = np.max(
+                    w_bar_c_all[rho_c_idx] / rho_c
+                )
+            w_bar_c = np.min(rpi_tightening_per_rho_c)
+            print(f"{ros_rec_json_name} - w_bar_c: {w_bar_c}")
 
         rho_c_idx = 0
         if compute_rho_c:

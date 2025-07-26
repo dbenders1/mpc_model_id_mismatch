@@ -1,3 +1,6 @@
+constants:
+  g: 9.8124
+
 data:
   # runtime_json_names:
   #   [
@@ -42,6 +45,9 @@ do_plot:
   rho_c_w_bar_c: false
   epsilon_time: false
   epsilon_sorted: false
+
+model:
+  name: "falcon"
 
 plot_settings:
   n_rows: 3
