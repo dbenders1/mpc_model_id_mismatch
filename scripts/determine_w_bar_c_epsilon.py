@@ -167,10 +167,9 @@ if __name__ == "__main__":
             rho_c_all = np.array([rho_c])
         else:
             # Forward-simulate the system for n_forward_sim steps
-            t_forward_sim = dt_tmpc
+            t_forward_sim = 1
             n_forward_sim = int(t_forward_sim / dt_tmpc)
             n_times = n_tmpc - n_idx_ignore - n_forward_sim
-            # n_times = 50
             x_forward_sim = np.zeros((n_times, 1 + n_forward_sim, nx))
             for t_idx in range(n_times):
                 if t_idx < n_times - 1:
@@ -191,11 +190,11 @@ if __name__ == "__main__":
                     ).flatten()
 
             # Compute w_bar_c for all rho_c, t, and tau values
-            n_rho_c_all = 10
+            n_rho_c_all = 1000
             rho_c_all = np.linspace(0.01, 100, n_rho_c_all)
             x_err = np.zeros((n_times, n_forward_sim, nx))
             lyap_err = np.zeros((n_times, n_forward_sim))
-            w_bar_c_all = np.zeros((len(rho_c_all), n_times, n_forward_sim))
+            w_bar_c_all = np.zeros((n_rho_c_all, n_times, n_forward_sim))
             rpi_tightening_per_rho_c = np.zeros(n_rho_c_all)
             for rho_c_idx, rho_c in enumerate(rho_c_all):
                 if rho_c_idx < n_rho_c_all - 1:
