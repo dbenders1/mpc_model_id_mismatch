@@ -40,6 +40,8 @@ compute_settings:
   rho_c: true
 
 do_plot:
+  lyap_err: true
+  rpi_tightening_over_rho_c: true
   w_bar_c_time: false
   w_bar_c_sorted: false
   rho_c_w_bar_c: false
@@ -50,6 +52,7 @@ model:
   name: "falcon"
 
 plot_settings:
+  linewidth: 4
   n_rows: 3
   n_cols: 4
   plot_stage_idx_at_ax_idx: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, null, null]

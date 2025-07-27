@@ -52,6 +52,8 @@ if __name__ == "__main__":
     compute_rho_c = compute_settings["rho_c"]
 
     do_plot = config["do_plot"]
+    do_plot_lyap_err = do_plot["lyap_err"]
+    do_plot_rpi_tightening_over_rho_c = do_plot["rpi_tightening_over_rho_c"]
     do_plot_w_bar_c_time = do_plot["w_bar_c_time"]
     do_plot_w_bar_c_sorted = do_plot["w_bar_c_sorted"]
     do_plot_epsilon_time = do_plot["epsilon_time"]
@@ -60,6 +62,7 @@ if __name__ == "__main__":
     quad_name = config["model"]["name"]
 
     plot_settings = config["plot_settings"]
+    linewidth = plot_settings["linewidth"]
     n_rows_plot = plot_settings["n_rows"]
     n_cols_plot = plot_settings["n_cols"]
     plot_stage_idx_at_ax_idx = plot_settings["plot_stage_idx_at_ax_idx"]
@@ -244,11 +247,17 @@ if __name__ == "__main__":
             w_bar_c = np.min(rpi_tightening_per_rho_c)
             print(f"{ros_rec_json_name} - w_bar_c: {w_bar_c}")
 
+        # Compute optimal rho_c value
         rho_c_idx = 0
         if compute_rho_c:
             rho_c_idx = np.argmin(rpi_tightening_per_rho_c)
             rho_c = rho_c_all[rho_c_idx]
             print(f"rho_c: {rho_c} at rho_c index: {rho_c_idx}")
+
+        # Compute tube size over time
+        s = np.zeros(1 + n_forward_sim)
+        for k_idx in range(1 + n_forward_sim):
+            s[k_idx] = (1 - math.exp(-rho_c * k_idx * dt_tmpc)) * w_bar_c / rho_c
 
         # Determine epsilon at all time steps
         epsilon_all = np.zeros(n_tmpc)
@@ -262,22 +271,45 @@ if __name__ == "__main__":
 
         # Create (rho_c,w_bar_c) figure
         if compute_rho_c:
-            fig, ax = plt.subplots()
-            fig.suptitle(f"{ros_rec_json_name} - Lyapunov error over prediction stages")
-            ax.scatter(
-                np.arange(n_forward_sim),
-                np.max(lyap_err, axis=0),
-                label=r"$\sqrt{V^\delta(x_{t+\tau},z_{\tau|t})}$",
-            )
-            ax.set_xlabel(f"Prediction stage k")
-            ax.set_ylabel(r"$\sqrt{V^\delta(x_{t+\tau},z_{\tau|t})}$")
-            ax.legend()
+            if do_plot_lyap_err:
+                fig, ax = plt.subplots()
+                fig.suptitle(
+                    f"{ros_rec_json_name} - Lyapunov error and tube over prediction stages"
+                )
+                for t_idx in range(n_times):
+                    ax.plot(
+                        np.arange(1, 1 + n_forward_sim),
+                        lyap_err[t_idx],
+                    )
+                ax.plot(
+                    np.arange(1, 1 + n_forward_sim),
+                    np.max(lyap_err, axis=0),
+                    linewidth=linewidth,
+                    label=r"$max(\sqrt{V^\delta(x_{t+\tau},z_{\tau|t})})$",
+                )
+                ax.plot(
+                    np.arange(1 + n_forward_sim),
+                    s,
+                    linewidth=linewidth,
+                    label=r"$s$",
+                )
+                ax.axhline(
+                    y=w_bar_c / rho_c,
+                    color="red",
+                    linestyle="--",
+                    linewidth=linewidth,
+                    label=r"$\frac{\bar{w}^\mathrm{c}}{\rho^\mathrm{c}}$",
+                )
+                ax.set_xlabel(f"Prediction stage k")
+                ax.set_ylabel(r"$\sqrt{V^\delta(x_{t+\tau},z_{\tau|t})}$")
+                ax.legend()
 
-            fig, ax = plt.subplots()
-            fig.suptitle(f"{ros_rec_json_name} - RPI tightening vs. rho_c")
-            ax.plot(rho_c_all, rpi_tightening_per_rho_c)
-            ax.set_xlabel(r"$\rho^\mathrm{c}$")
-            ax.set_ylabel(r"$\frac{\bar{w}^\mathrm{c}}{\rho^\mathrm{c}}$")
+            if do_plot_rpi_tightening_over_rho_c:
+                fig, ax = plt.subplots()
+                fig.suptitle(f"{ros_rec_json_name} - RPI tightening vs. rho_c")
+                ax.plot(rho_c_all, rpi_tightening_per_rho_c)
+                ax.set_xlabel(r"$\rho^\mathrm{c}$")
+                ax.set_ylabel(r"$\frac{\bar{w}^\mathrm{c}}{\rho^\mathrm{c}}$")
 
         # Create w_bar_c figure
         if do_plot_w_bar_c_time:
