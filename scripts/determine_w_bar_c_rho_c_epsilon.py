@@ -46,6 +46,7 @@ if __name__ == "__main__":
 
     runtime_json_names = config["data"]["runtime_json_names"]
     ros_rec_json_names = config["data"]["ros_rec_json_names"]
+    use_nominal_reference = config["data"]["use_nominal_reference"]
     n_idx_ignore = config["data"]["n_idx_ignore"]
 
     compute_settings = config["compute_settings"]
@@ -134,13 +135,23 @@ if __name__ == "__main__":
         u_pred_traj = np.array(data_pred_traj["u_pred"])
         x_pred_traj = np.array(data_pred_traj["x_pred"])
 
+        if use_nominal_reference:
+            data_nom_ref = ros_rec_data["/mpc/rec/nominal_reference"]
+            t_nom_ref = np.array(data_nom_ref["t"])
+            x_nom_ref = np.array(data_nom_ref["x_ref"])
+            u_nom_ref = np.array(data_nom_ref["u_ref"])
+
         # Set times to a specific precision
         t_x_cur_est = np.round(t_x_cur_est, time_precision)
         t_pred_traj = np.round(t_pred_traj, time_precision)
+        if use_nominal_reference:
+            t_nom_ref = np.round(t_nom_ref, time_precision)
 
         # Determine various parameters of runtime data
         nx = x_cur.shape[1]
         n_tmpc = min(len(t_x_cur_est), len(t_pred_traj))
+        if use_nominal_reference:
+            n_tmpc = min(len(t_x_cur_est), len(t_pred_traj), len(t_nom_ref))
         N_tmpc = x_pred_traj.shape[1] - 1
         dt_tmpc = steps_tmpc * stepsize_tmpc
 
@@ -151,17 +162,25 @@ if __name__ == "__main__":
         t_pred_traj = t_pred_traj[:n_tmpc]
         u_pred_traj = u_pred_traj[:n_tmpc, :, :]
         x_pred_traj = x_pred_traj[:n_tmpc, :, :]
+        if use_nominal_reference:
+            t_nom_ref = t_nom_ref[:n_tmpc]
+            x_nom_ref = x_nom_ref[:n_tmpc]
+            u_nom_ref = u_nom_ref[:n_tmpc]
 
         # Ensure that all times are aligned
         if t_x_cur_est[-1] > t_x_cur[-1]:
             log.warning(
-                "The estimated state has a recording after the ground truth state. Shrinking t_x_cur_est, x_cur_est, t_pred_traj, u_pred_traj, and x_pred_traj to the last time of t_x_cur"
+                "The estimated state has a recording after the ground truth state. Shrinking t_x_cur_est, x_cur_est, and (t_pred_traj, u_pred_traj, x_pred_traj) or (t_nom_ref, u_nom_ref, x_nom_ref) to the last time of t_x_cur"
             )
             t_x_cur_est = t_x_cur_est[t_x_cur_est <= t_x_cur[-1]]
             x_cur_est = x_cur_est[: len(t_x_cur_est)]
             t_pred_traj = t_pred_traj[t_pred_traj <= t_x_cur[-1]]
             u_pred_traj = u_pred_traj[: len(t_pred_traj)]
             x_pred_traj = x_pred_traj[: len(t_pred_traj)]
+            if use_nominal_reference:
+                t_nom_ref = t_nom_ref[t_nom_ref <= t_x_cur[-1]]
+                u_nom_ref = u_nom_ref[: len(t_nom_ref)]
+                x_nom_ref = x_nom_ref[: len(t_nom_ref)]
         print(f"t start: {t_x_cur_est[0]}")
         print(f"t end: {t_x_cur_est[-1]}")
 
@@ -169,39 +188,51 @@ if __name__ == "__main__":
         if not compute_rho_c:
             rho_c_all = np.array([rho_c])
         else:
-            # # Forward-simulate the system for n_forward_sim steps
-            # t_forward_sim = 1
-            # n_forward_sim = int(t_forward_sim / dt_tmpc)
-            # n_times = n_tmpc - n_idx_ignore - n_forward_sim
-            # x_forward_sim = np.zeros((n_times, 1 + n_forward_sim, nx))
-            # for t_idx in range(n_times):
-            #     if t_idx < n_times - 1:
-            #         print(
-            #             f"Forward simulating time iter {t_idx}/{n_times - 1}", end="\r"
-            #         )
-            #     else:
-            #         print(f"Forward simulating time iter {t_idx}/{n_times - 1}")
-            #     x_forward_sim[t_idx, 0] = x_cur_est[n_idx_ignore + t_idx]
-            #     for k_idx in range(n_forward_sim):
-            #         x_forward_sim[t_idx, k_idx + 1] = np.array(
-            #             helpers.solve_rk4(
-            #                 model.state_update_ct,
-            #                 x_forward_sim[t_idx, k_idx],
-            #                 u_pred_traj[n_idx_ignore + t_idx, 0],
-            #                 dt_tmpc,
-            #             )
-            #         ).flatten()
-            # data_x_fs = {"x_forward_sim": x_forward_sim.tolist()}
-            # with open("x_forward_sim.json", "w") as f:
-            #     json.dump(
-            #         data_x_fs,
-            #         f,
-            #     )
-            with open("x_forward_sim.json", "r") as openfile:
-                x_forward_sim_dict = json.load(openfile)
-                x_forward_sim = np.array(x_forward_sim_dict["x_forward_sim"])
-            n_times = x_forward_sim.shape[0]
-            n_forward_sim = x_forward_sim.shape[1] - 1
+            # Forward-simulate the system for n_forward_sim steps
+            t_forward_sim = 1
+            n_forward_sim = int(t_forward_sim / dt_tmpc)
+            n_times = n_tmpc - n_idx_ignore - n_forward_sim
+            x_forward_sim = np.zeros((n_times, 1 + n_forward_sim, nx))
+            for t_idx in range(n_times):
+                if t_idx < n_times - 1:
+                    print(
+                        f"Forward simulating time iter {t_idx}/{n_times - 1}", end="\r"
+                    )
+                else:
+                    print(f"Forward simulating time iter {t_idx}/{n_times - 1}")
+                if not use_nominal_reference:
+                    x_forward_sim[t_idx, 0] = x_cur_est[n_idx_ignore + t_idx]
+                    for k_idx in range(n_forward_sim):
+                        x_forward_sim[t_idx, k_idx + 1] = np.array(
+                            helpers.solve_rk4(
+                                model.state_update_ct,
+                                x_forward_sim[t_idx, k_idx],
+                                u_pred_traj[n_idx_ignore + t_idx, 0],
+                                dt_tmpc,
+                            )
+                        ).flatten()
+                else:
+                    x_forward_sim[t_idx, 0] = x_nom_ref[n_idx_ignore + t_idx]
+                    for k_idx in range(n_forward_sim):
+                        x_forward_sim[t_idx, k_idx + 1] = np.array(
+                            helpers.solve_rk4(
+                                model.state_update_ct,
+                                x_forward_sim[t_idx, k_idx],
+                                u_nom_ref[n_idx_ignore + t_idx],
+                                dt_tmpc,
+                            )
+                        ).flatten()
+            data_x_fs = {"x_forward_sim": x_forward_sim.tolist()}
+            with open("x_forward_sim.json", "w") as f:
+                json.dump(
+                    data_x_fs,
+                    f,
+                )
+            # with open("x_forward_sim.json", "r") as openfile:
+            #     x_forward_sim_dict = json.load(openfile)
+            #     x_forward_sim = np.array(x_forward_sim_dict["x_forward_sim"])
+            # n_times = x_forward_sim.shape[0]
+            # n_forward_sim = x_forward_sim.shape[1] - 1
 
             # Compute x_err and lyap_err over times and prediction steps
             x_err = np.zeros((n_times, n_forward_sim, nx))
