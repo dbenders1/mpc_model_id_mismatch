@@ -141,6 +141,18 @@ if __name__ == "__main__":
             x_nom_ref = np.array(data_nom_ref["x_ref"])
             u_nom_ref = np.array(data_nom_ref["u_ref"])
 
+            # # Cut data when reference input contains a sudden change
+            first_u_norm = np.linalg.norm(u_nom_ref[0])
+            for t_idx in range(len(t_nom_ref)):
+                if abs(np.linalg.norm(u_nom_ref[t_idx]) - first_u_norm) > 2:
+                    log.warning(
+                        f"Cutting nominal reference data after time {t_nom_ref[t_idx - 1]} because input norm exceeds threshold value"
+                    )
+                    t_nom_ref = t_nom_ref[:t_idx]
+                    x_nom_ref = x_nom_ref[:t_idx]
+                    u_nom_ref = u_nom_ref[:t_idx]
+                    break
+
         # Set times to a specific precision
         t_x_cur_est = np.round(t_x_cur_est, time_precision)
         t_pred_traj = np.round(t_pred_traj, time_precision)
