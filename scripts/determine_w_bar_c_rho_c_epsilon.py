@@ -218,7 +218,7 @@ if __name__ == "__main__":
                             helpers.solve_rk4(
                                 model.state_update_ct,
                                 x_forward_sim[t_idx, k_idx],
-                                u_nom_ref[n_idx_ignore + t_idx],
+                                u_nom_ref[n_idx_ignore + t_idx + k_idx],
                                 dt_tmpc,
                             )
                         ).flatten()
