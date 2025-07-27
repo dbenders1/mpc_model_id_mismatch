@@ -218,7 +218,7 @@ if __name__ == "__main__":
                         - x_forward_sim[t_idx, 1 + k_idx]
                     )
                     lyap_err[t_idx, k_idx] = np.sqrt(
-                        x_err[t_idx, k_idx].T @ P_delta @ x_err[t_idx, k_idx]
+                        x_err[t_idx, k_idx] @ P_delta @ x_err[t_idx, k_idx]
                     )
 
             # Compute w_bar_c for all rho_c, t, and tau values
