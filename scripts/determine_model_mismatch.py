@@ -94,7 +94,6 @@ class ComputeModelMismatch:
         self.hidden_state_idc = self.model.get_hidden_state_idc()
         self.n_disturbances = self.model.get_n_disturbances()
         self.disturbance_idc = self.model.get_disturbance_idc()
-        self.E = self.model.get_disturbance_prop_matrix()
         self.n_measurement_noises = self.model.get_n_measurement_noises()
         self.F = self.model.get_measurement_noise_prop_matrix()
         self.F_transpose = self.model.get_measurement_noise_sel_matrix()
