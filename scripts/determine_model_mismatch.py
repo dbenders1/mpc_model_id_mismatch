@@ -449,36 +449,30 @@ class ComputeModelMismatch:
         )
 
         # Initialize Q_cov
-        if self.determine_w:
-            self.Q_cov_est_all[0, :, :] = 1 / self.eps * np.eye(self.n_disturbances)
-        else:
-            self.Q_cov_est_all[0, :, :] = np.eye(self.n_disturbances)
-            # if self.disturbances_gt_known:
-            #     self.Q_cov_est_all[0, :, :] = np.cov(self.disturbances_int)
-            # self.Q_cov_est_all[0, :, :] = np.diag(
-            #     (2 * self.sim_w_max) ** 2 / 12
-            # )  # ground truth values of uniform distribution used in simulation
-            # with open("Q_est.json", "r") as openfile:
-            #     Q_est_dict = json.load(openfile)
-            #     self.Q_cov_est_all[0, :, :] = np.array(Q_est_dict["Q_cov_est_all"])[
-            #         -1, :, :
-            #     ]
+        self.Q_cov_est_all[0, :, :] = np.eye(self.n_disturbances)
+        # if self.disturbances_gt_known:
+        #     self.Q_cov_est_all[0, :, :] = np.cov(self.disturbances_int)
+        # self.Q_cov_est_all[0, :, :] = np.diag(
+        #     (2 * self.sim_w_max) ** 2 / 12
+        # )  # ground truth values of uniform distribution used in simulation
+        # with open("Q_est.json", "r") as openfile:
+        #     Q_est_dict = json.load(openfile)
+        #     self.Q_cov_est_all[0, :, :] = np.array(Q_est_dict["Q_cov_est_all"])[
+        #         -1, :, :
+        #     ]
 
         # Initialize R_cov
-        if self.determine_w:
-            self.R_cov_est_all[0, :, :] = np.eye(self.n_measurement_noises)
-        else:
-            self.R_cov_est_all[0, :, :] = np.eye(self.n_measurement_noises)
-            # if self.measurement_noises_gt_known:
-            #     self.R_cov_est_all[0, :, :] = np.cov(self.measurement_noises_int)
-            # self.R_cov_est_all[0, :, :] = np.diag(
-            #     (2 * self.sim_eta_max) ** 2 / 12
-            # )  # ground truth values of uniform distribution used in simulation
-            # with open("R_est.json", "r") as openfile:
-            #     R_est_dict = json.load(openfile)
-            #     self.R_cov_est_all[0, :, :] = np.array(R_est_dict["R_cov_est_all"])[
-            #         -1, :, :
-            #     ]
+        self.R_cov_est_all[0, :, :] = np.eye(self.n_measurement_noises)
+        # if self.measurement_noises_gt_known:
+        #     self.R_cov_est_all[0, :, :] = np.cov(self.measurement_noises_int)
+        # self.R_cov_est_all[0, :, :] = np.diag(
+        #     (2 * self.sim_eta_max) ** 2 / 12
+        # )  # ground truth values of uniform distribution used in simulation
+        # with open("R_est.json", "r") as openfile:
+        #     R_est_dict = json.load(openfile)
+        #     self.R_cov_est_all[0, :, :] = np.array(R_est_dict["R_cov_est_all"])[
+        #         -1, :, :
+        #     ]
 
         # Initialize parameters, cost and initial guess
         p = np.zeros((self.n_inputs + self.n_outputs,))
