@@ -52,7 +52,8 @@ if __name__ == "__main__":
     compute_settings = config["compute_settings"]
     compute_rho_c = compute_settings["rho_c"]
     compute_x_in_eps_ball = compute_settings["x_in_eps_ball"]
-    x_in_eps_ball_vec = np.array(compute_settings["x_in_eps_ball_vec"])
+    x_in_eps_ball_nom = np.array(compute_settings["x_in_eps_ball_nom"])
+    x_in_eps_ball_dir = np.array(compute_settings["x_in_eps_ball_dir"])
 
     do_plot = config["do_plot"]
     do_plot_lyap_err = do_plot["lyap_err"]
@@ -320,9 +321,9 @@ if __name__ == "__main__":
 
         if compute_x_in_eps_ball:
             scaling = np.sqrt(
-                epsilon**2 / (x_in_eps_ball_vec @ P_delta @ x_in_eps_ball_vec)
+                epsilon**2 / (x_in_eps_ball_dir @ P_delta @ x_in_eps_ball_dir)
             )
-            x_in_eps_ball = scaling * x_in_eps_ball_vec
+            x_in_eps_ball = x_in_eps_ball_nom + scaling * x_in_eps_ball_dir
             print(f"x_in_eps_ball: {x_in_eps_ball}")
 
         # Create (rho_c,w_bar_c) figure

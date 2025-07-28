@@ -52,7 +52,8 @@ data:
 compute_settings:
   rho_c: true
   x_in_eps_ball: true
-  x_in_eps_ball_vec: [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0]
+  x_in_eps_ball_nom: [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  x_in_eps_ball_dir: [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0]
 
 do_plot:
   lyap_err: true
