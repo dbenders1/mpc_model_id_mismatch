@@ -477,7 +477,7 @@ class ComputeModelMismatch:
         # Initialize parameters, cost and initial guess
         p = np.zeros((self.n_inputs + self.n_outputs,))
         if self.determine_w:
-            yref = np.zeros((self.n_disturbances,))
+            yref = np.zeros((self.n_states,))
         else:
             yref = np.zeros((self.n_disturbances + self.n_measurement_noises,))
         x_warmstart = np.zeros(
@@ -502,9 +502,14 @@ class ComputeModelMismatch:
         #             self.ts,
         #         )
         #     ).flatten()
-        u_warmstart = np.zeros(
-            (self.mhe_n_iter, self.mhe_n_times, self.n_disturbances, self.M)
-        )
+        if self.determine_w:
+            u_warmstart = np.zeros(
+                (self.mhe_n_iter, self.mhe_n_times, self.n_states, self.M)
+            )
+        else:
+            u_warmstart = np.zeros(
+                (self.mhe_n_iter, self.mhe_n_times, self.n_disturbances, self.M)
+            )
 
         # Create storage for saving optimization results
         self.Q_mhe_all = np.zeros(
@@ -516,9 +521,19 @@ class ComputeModelMismatch:
         self.x_mhe_all = np.zeros(
             (self.mhe_n_iter, self.mhe_n_times - self.M, self.n_states, self.M + 1)
         )
-        self.w_mhe_all = np.zeros(
-            (self.mhe_n_iter, self.mhe_n_times - self.M, self.n_disturbances, self.M)
-        )
+        if self.determine_w:
+            self.w_mhe_all = np.zeros(
+                (self.mhe_n_iter, self.mhe_n_times - self.M, self.n_states, self.M)
+            )
+        else:
+            self.w_mhe_all = np.zeros(
+                (
+                    self.mhe_n_iter,
+                    self.mhe_n_times - self.M,
+                    self.n_disturbances,
+                    self.M,
+                )
+            )
         self.eta_mhe_all = np.zeros(
             (
                 self.mhe_n_iter,
@@ -576,7 +591,10 @@ class ComputeModelMismatch:
                 for k in range(self.M):
                     # Update cost terms
                     if self.determine_w:
-                        W = self.Q_mhe_all[i, :, :]
+                        W = block_diag(
+                            10 * np.eye(self.n_states - self.n_disturbances),
+                            self.Q_mhe_all[i, :, :],
+                        )
                     else:
                         W = block_diag(self.Q_mhe_all[i, :, :], self.R_mhe_all[i, :, :])
                     self.solver.cost_set(k, "W", W, api="new")
@@ -657,7 +675,7 @@ class ComputeModelMismatch:
                 )
                 self.costs_w[i, t - self.M] = helpers.get_cost_mhe(
                     self.M,
-                    self.w_mhe_all[i, t - self.M, :, :],
+                    self.w_mhe_all[i, t - self.M, -self.n_disturbances :, :],
                     np.zeros(
                         (self.n_measurement_noises, self.M + 1)
                     ),  # no measurement noises in this case
@@ -678,7 +696,7 @@ class ComputeModelMismatch:
                 if self.disturbances_gt_known:
                     self.costs_w_gt[i, t - self.M] = helpers.get_cost_mhe(
                         self.M,
-                        self.disturbances_int[:, t - self.M : t],
+                        self.disturbances_int[-self.n_disturbances :, t - self.M : t],
                         np.zeros(
                             (self.n_measurement_noises, self.M + 1)
                         ),  # no measurement noises in this case
@@ -700,7 +718,7 @@ class ComputeModelMismatch:
                 if self.disturbances_gt_known and self.measurement_noises_gt_known:
                     self.costs_total_gt[i, t - self.M] = helpers.get_cost_mhe(
                         self.M,
-                        self.disturbances_int[:, t - self.M : t],
+                        self.disturbances_int[-self.n_disturbances :, t - self.M : t],
                         self.measurement_noises_int[:, t - self.M : t + 1],
                         self.Q_mhe_all[i, :, :],
                         self.R_mhe_all[i, :, :],
@@ -718,9 +736,14 @@ class ComputeModelMismatch:
                                 i, t - self.M, :, k + 1
                             ]
                         else:
-                            u_warmstart[i, t - self.M + 1, :, k] = np.zeros(
-                                (self.n_disturbances,)
-                            )
+                            if self.determine_w:
+                                u_warmstart[i, t - self.M + 1, :, k] = np.zeros(
+                                    (self.n_states,)
+                                )
+                            else:
+                                u_warmstart[i, t - self.M + 1, :, k] = np.zeros(
+                                    (self.n_disturbances,)
+                                )
                     x_warmstart[i, t - self.M + 1, :, self.M] = np.array(
                         helpers.solve_rk4(
                             self.model.state_update_ct,
@@ -759,18 +782,19 @@ class ComputeModelMismatch:
             # )
 
             # Update covariance matrices Q and R if desired
-            if self.update_Q:
-                self.Q_cov_est_all[i + 1, :, :] = Q_est
-            else:
-                self.Q_cov_est_all[i + 1, :, :] = self.Q_cov_est_all[i, :, :]
-            if self.update_R:
-                self.R_cov_est_all[i + 1, :, :] = R_est
-            else:
-                self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[i, :, :]
+            if not determine_w:
+                if self.update_Q:
+                    self.Q_cov_est_all[i + 1, :, :] = Q_est
+                else:
+                    self.Q_cov_est_all[i + 1, :, :] = self.Q_cov_est_all[i, :, :]
+                if self.update_R:
+                    self.R_cov_est_all[i + 1, :, :] = R_est
+                else:
+                    self.R_cov_est_all[i + 1, :, :] = self.R_cov_est_all[i, :, :]
 
             # Compute disturbance values
             if self.determine_w:
-                self.w = np.zeros((self.n_disturbances, self.mhe_n_times - 1))
+                self.w = np.zeros((self.n_states, self.mhe_n_times - 1))
                 for idx in range(self.mhe_n_times - self.M):
                     if idx == 0:
                         self.w[:, : self.stage_est + 1] = self.w_mhe_all[
@@ -905,25 +929,35 @@ class ComputeModelMismatch:
                 print(f"Min:     {self.disturbances_min_est_abs}")
                 # print(f"Min:     {self.disturbances_min_est_rel}")
                 if self.disturbances_gt_known:
-                    print(f"Min GT:  {self.disturbances_min_gt_abs}")
-                    if np.all(self.disturbances_min_gt_abs != 0):
+                    print(
+                        f"Min GT:  {self.disturbances_min_gt_abs[-self.n_disturbances :]}"
+                    )
+                    if np.all(
+                        self.disturbances_min_gt_abs[-self.n_disturbances :] != 0
+                    ):
                         print(
-                            f"Min ratio:  {self.disturbances_min_est_abs / self.disturbances_min_gt_abs}"
+                            f"Min ratio:  {self.disturbances_min_est_abs / self.disturbances_min_gt_abs[-self.n_disturbances :]}"
                         )
             if self.do_print_disturbances_max:
                 print(f"Max:     {self.disturbances_max_est_abs}")
                 # print(f"Max:     {self.disturbances_max_est_rel}")
                 if self.disturbances_gt_known:
-                    print(f"Max GT:  {self.disturbances_max_gt_abs}")
-                    if np.all(self.disturbances_max_gt_abs != 0):
+                    print(
+                        f"Max GT:  {self.disturbances_max_gt_abs[-self.n_disturbances :]}"
+                    )
+                    if np.all(
+                        self.disturbances_max_gt_abs[-self.n_disturbances :] != 0
+                    ):
                         print(
-                            f"Max ratio:  {self.disturbances_max_est_abs / self.disturbances_max_gt_abs}"
+                            f"Max ratio:  {self.disturbances_max_est_abs / self.disturbances_max_gt_abs[-self.n_disturbances :]}"
                         )
             if not self.determine_w:
                 if self.do_print_disturbances_bias:
                     print(f"Bias:    {self.disturbances_bias_est}")
                     if self.disturbances_gt_known:
-                        print(f"Bias GT: {self.disturbances_bias_gt}")
+                        print(
+                            f"Bias GT: {self.disturbances_bias_gt[-self.n_disturbances :]}"
+                        )
 
         do_print_meas_noises = (
             self.do_print_meas_noises_min or self.do_print_meas_noises_max
@@ -1336,10 +1370,14 @@ class ComputeModelMismatch:
             self.plot_raw_interp_meas_noises()
 
 
-def compute_absolute_w_eta_bounds(data, do_print_w_eta):
+def compute_absolute_w_eta_bounds(data, determine_w, do_print_w_eta):
     # Store all absolute disturbance and measurement noise bounds
-    w_min_all = np.zeros((len(data) - 1, data["common"]["nw"]))
-    w_max_all = np.zeros((len(data) - 1, data["common"]["nw"]))
+    if determine_w:
+        nw = data["common"]["nx"]
+    else:
+        nw = data["common"]["nw"]
+    w_min_all = np.zeros((len(data) - 1, nw))
+    w_max_all = np.zeros((len(data) - 1, nw))
     eta_min_all = np.zeros((len(data) - 1, data["common"]["neta"]))
     eta_max_all = np.zeros((len(data) - 1, data["common"]["neta"]))
     idx = 0
@@ -1563,7 +1601,7 @@ if __name__ == "__main__":
         data[exp_details] = compute_model_mismatch.get_json_specific_data()
         print("-" * 100)
 
-    compute_absolute_w_eta_bounds(data, do_print_w_eta)
+    compute_absolute_w_eta_bounds(data, determine_w, do_print_w_eta)
 
     if not determine_w:
         # Save data to json file for plotting

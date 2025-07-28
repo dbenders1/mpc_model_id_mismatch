@@ -73,9 +73,11 @@ def get_acados_mhe_solver(
     nx = model.get_n_states()
     nu = model.get_n_inputs()
     ny = model.get_n_outputs()
-    nw = model.get_n_disturbances()
+    if determine_w:
+        nw = model.get_n_states()
+    else:
+        nw = model.get_n_disturbances()
     neta = model.get_n_measurement_noises()
-    E_transpose = model.get_disturbance_sel_matrix()
     F_transpose = model.get_measurement_noise_sel_matrix()
     # F_complement = model.get_wm_sel_matrix()
 
@@ -98,15 +100,17 @@ def get_acados_mhe_solver(
     acados_model.u = vertcat(w_est)
     acados_model.p = vertcat(u_applied, y_meas)
     # state update equality constraint
-    acados_model.f_expl_expr = model.state_update_ct_noise(x_est, u_applied, w_est)
+    acados_model.f_expl_expr = model.state_update_ct_noise(
+        x_est, u_applied, w_est, determine_w
+    )
     if determine_w:
         # symbolic cost terms
         acados_model.cost_y_expr_0 = w_est
         acados_model.cost_y_expr = w_est
         # symbolic constraint terms
-        acados_model.con_h_expr_0 = mtimes(E_transpose, y_meas - x_est)
-        acados_model.con_h_expr = mtimes(E_transpose, y_meas - x_est)
-        acados_model.con_h_expr_e = mtimes(E_transpose, y_meas - x_est)
+        acados_model.con_h_expr_0 = y_meas - x_est
+        acados_model.con_h_expr = y_meas - x_est
+        acados_model.con_h_expr_e = y_meas - x_est
     else:
         # symbolic cost terms
         acados_model.cost_y_expr_0 = vertcat(
@@ -916,8 +920,11 @@ class DroneAgiModel:
     def state_update_ct_compute_torque_wm(self, x, u):
         return mtimes(self.B_allocation[1:, :], self.motor_speeds_to_thrusts(x[12:16]))
 
-    def state_update_ct_noise(self, x, u, w):
-        return self.state_update_ct(x, u) + self.E @ w
+    def state_update_ct_noise(self, x, u, w, all_states_disturbed=False):
+        if all_states_disturbed:
+            return self.state_update_ct(x, u) + np.eye(self.nx) @ w
+        else:
+            return self.state_update_ct(x, u) + self.E @ w
 
     def state_update_ct_v(self, x, u, kd):
         # Extract states from states vector
