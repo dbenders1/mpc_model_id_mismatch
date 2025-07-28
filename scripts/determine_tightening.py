@@ -167,7 +167,9 @@ if __name__ == "__main__":
         nx = x_cur.shape[1]
         n_tmpc = min(len(t_x_cur_est), len(t_pred_traj))
         if compute_rho_c:
-            n_tmpc = min(len(t_x_cur_est), len(t_pred_traj), len(t_nom_ref))
+            n_tmpc = min(len(t_x_cur_est), len(t_nom_ref))
+        else:
+            n_tmpc = min(len(t_x_cur_est), len(t_pred_traj))
         N_tmpc = x_pred_traj.shape[1] - 1
         dt_tmpc = steps_tmpc * stepsize_tmpc
 
