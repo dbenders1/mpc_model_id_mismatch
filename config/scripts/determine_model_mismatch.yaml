@@ -186,8 +186,12 @@ recorded_data:
   #   ]
   # json_names:
   #   [2025-07-22_gaz_meas_noise_falcon_mpc_model_mismatch_circle_r1_f0dot3_cw]
+  # json_names:
+  #   [2025-07-28_gaz_meas_noise_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw]
   json_names:
-    [2025-07-28_gaz_meas_noise_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw]
+    [
+      2025-07-28_sim_dist_meas_noise_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw,
+    ]
   data_sel:
     overwrite: false
     automatic: true
