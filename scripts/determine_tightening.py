@@ -46,12 +46,14 @@ if __name__ == "__main__":
 
     runtime_json_names = config["data"]["runtime_json_names"]
     ros_rec_json_names = config["data"]["ros_rec_json_names"]
-    use_nominal_reference = config["data"]["use_nominal_reference"]
     n_idx_ignore = config["data"]["n_idx_ignore"]
 
     compute_settings = config["compute_settings"]
-    compute_rho_c = compute_settings["rho_c"]
-    compute_x_in_eps_ball = compute_settings["x_in_eps_ball"]
+    rho_c = compute_settings["rho_c"]
+    compute_rho_c = False
+    if rho_c == 0:
+        compute_rho_c = True
+    compute_x_in_eps_ball = compute_settings["compute_x_in_eps_ball"]
     x_in_eps_ball_nom = np.array(compute_settings["x_in_eps_ball_nom"])
     x_in_eps_ball_dir = np.array(compute_settings["x_in_eps_ball_dir"])
 
@@ -111,7 +113,6 @@ if __name__ == "__main__":
         stepsize_tmpc = runtime_static_data["stepsize"]
         steps_tmpc = runtime_static_data["steps"]
         P_delta = np.array(runtime_static_data["P_delta"])
-        rho_c = np.array(runtime_static_data["rho_c"])
 
         # Read ROS recording json data
         ros_rec_json_path = f"{ros_rec_json_dir}/{ros_rec_json_name}.json"
@@ -138,7 +139,7 @@ if __name__ == "__main__":
         u_pred_traj = np.array(data_pred_traj["u_pred"])
         x_pred_traj = np.array(data_pred_traj["x_pred"])
 
-        if use_nominal_reference:
+        if compute_rho_c:
             data_nom_ref = ros_rec_data["/mpc/rec/nominal_reference"]
             t_nom_ref = np.array(data_nom_ref["t"])
             x_nom_ref = np.array(data_nom_ref["x_ref"])
@@ -159,13 +160,13 @@ if __name__ == "__main__":
         # Set times to a specific precision
         t_x_cur_est = np.round(t_x_cur_est, time_precision)
         t_pred_traj = np.round(t_pred_traj, time_precision)
-        if use_nominal_reference:
+        if compute_rho_c:
             t_nom_ref = np.round(t_nom_ref, time_precision)
 
         # Determine various parameters of runtime data
         nx = x_cur.shape[1]
         n_tmpc = min(len(t_x_cur_est), len(t_pred_traj))
-        if use_nominal_reference:
+        if compute_rho_c:
             n_tmpc = min(len(t_x_cur_est), len(t_pred_traj), len(t_nom_ref))
         N_tmpc = x_pred_traj.shape[1] - 1
         dt_tmpc = steps_tmpc * stepsize_tmpc
@@ -177,7 +178,7 @@ if __name__ == "__main__":
         t_pred_traj = t_pred_traj[:n_tmpc]
         u_pred_traj = u_pred_traj[:n_tmpc, :, :]
         x_pred_traj = x_pred_traj[:n_tmpc, :, :]
-        if use_nominal_reference:
+        if compute_rho_c:
             t_nom_ref = t_nom_ref[:n_tmpc]
             x_nom_ref = x_nom_ref[:n_tmpc]
             u_nom_ref = u_nom_ref[:n_tmpc]
@@ -192,122 +193,107 @@ if __name__ == "__main__":
             t_pred_traj = t_pred_traj[t_pred_traj <= t_x_cur[-1]]
             u_pred_traj = u_pred_traj[: len(t_pred_traj)]
             x_pred_traj = x_pred_traj[: len(t_pred_traj)]
-            if use_nominal_reference:
+            if compute_rho_c:
                 t_nom_ref = t_nom_ref[t_nom_ref <= t_x_cur[-1]]
                 u_nom_ref = u_nom_ref[: len(t_nom_ref)]
                 x_nom_ref = x_nom_ref[: len(t_nom_ref)]
         print(f"t start: {t_x_cur_est[0]}")
         print(f"t end: {t_x_cur_est[-1]}")
 
-        # When computing rho_c, we want to compute w_bar_c over a uniform grid of rho_c values
-        if not compute_rho_c:
-            rho_c_all = np.array([rho_c])
-        else:
-            # Forward-simulate the system for n_forward_sim steps
-            if not use_nominal_reference:
-                t_forward_sim = 1
-                n_forward_sim = int(t_forward_sim / dt_tmpc)
-                n_times = n_tmpc - n_idx_ignore - n_forward_sim
-            else:
-                n_forward_sim = n_tmpc - 1
-                n_times = 1
-            x_forward_sim = np.zeros((n_times, 1 + n_forward_sim, nx))
-            for t_idx in range(n_times):
-                if t_idx < n_times - 1:
-                    print(
-                        f"Forward simulating time iter {t_idx}/{n_times - 1}", end="\r"
-                    )
-                else:
-                    print(f"Forward simulating time iter {t_idx}/{n_times - 1}")
-                if not use_nominal_reference:
-                    x_forward_sim[t_idx, 0] = x_cur_est[n_idx_ignore + t_idx]
-                    for k_idx in range(n_forward_sim):
-                        x_forward_sim[t_idx, k_idx + 1] = np.array(
-                            helpers.solve_rk4(
-                                model.state_update_ct,
-                                x_forward_sim[t_idx, k_idx],
-                                u_pred_traj[n_idx_ignore + t_idx, 0],
-                                dt_tmpc,
-                            )
-                        ).flatten()
-                else:
-                    x_forward_sim[t_idx, 0] = x_nom_ref[n_idx_ignore + t_idx]
-                    for k_idx in range(n_forward_sim):
-                        x_forward_sim[t_idx, k_idx + 1] = np.array(
-                            helpers.solve_rk4(
-                                model.state_update_ct,
-                                x_forward_sim[t_idx, k_idx],
-                                u_nom_ref[n_idx_ignore + t_idx + k_idx],
-                                dt_tmpc,
-                            )
-                        ).flatten()
-            data_x_fs = {"x_forward_sim": x_forward_sim.tolist()}
-            with open("x_forward_sim.json", "w") as f:
-                json.dump(
-                    data_x_fs,
-                    f,
-                )
-            # with open("x_forward_sim.json", "r") as openfile:
-            #     x_forward_sim_dict = json.load(openfile)
-            #     x_forward_sim = np.array(x_forward_sim_dict["x_forward_sim"])
-            # n_times = x_forward_sim.shape[0]
-            # n_forward_sim = x_forward_sim.shape[1] - 1
-
-            # Compute x_err and lyap_err over times and prediction steps
-            x_err = np.zeros((n_times, 1 + n_forward_sim, nx))
-            lyap_err = np.zeros((n_times, 1 + n_forward_sim))
-            for t_idx in range(n_times):
-                if t_idx < n_times - 1:
-                    print(f"Time iter {t_idx}/{n_times - 1}", end="\r")
-                else:
-                    print(f"Time iter {t_idx}/{n_times - 1}")
-                for k_idx in range(1 + n_forward_sim):
-                    # x_err[t_idx, k_idx] = (
-                    #     x_cur_est[n_idx_ignore + t_idx + 1 + k_idx]
-                    #     - x_pred_traj[n_idx_ignore + t_idx, 1 + k_idx]
-                    # )
-                    x_err[t_idx, k_idx] = (
-                        x_cur_est[n_idx_ignore + t_idx + k_idx]
-                        - x_forward_sim[t_idx, k_idx]
-                    )
-                    lyap_err[t_idx, k_idx] = np.sqrt(
-                        x_err[t_idx, k_idx] @ P_delta @ x_err[t_idx, k_idx]
-                    )
-
-            # Compute w_bar_c for all rho_c, t, and tau values
+        # When computing rho_c, we want to compute w_bar_c over a uniform grid of rho_c values, otherwise just use the given rho_c
+        # Forward-simulate the system for n_forward_sim steps
+        if compute_rho_c:
             n_rho_c_all = 1000
             rho_c_all = np.linspace(0.01, 100, n_rho_c_all)
-            w_bar_c_all = np.zeros((n_rho_c_all, n_times, n_forward_sim))
-            rpi_tightening_per_rho_c = np.zeros(n_rho_c_all)
-            for rho_c_idx, rho_c in enumerate(rho_c_all):
-                if rho_c_idx < n_rho_c_all - 1:
-                    print(f"rho_c iter {rho_c_idx}/{n_rho_c_all - 1}", end="\r")
-                else:
-                    print(f"rho_c iter {rho_c_idx}/{n_rho_c_all - 1}")
-                for t_idx in range(n_times):
-                    for k_idx in range(1, 1 + n_forward_sim):
-                        w_bar_c_all[rho_c_idx, t_idx, k_idx - 1] = (
-                            lyap_err[t_idx, k_idx]
-                            * rho_c
-                            / (1 - math.exp(-rho_c * k_idx * dt_tmpc))
+            n_forward_sim = n_tmpc - 1
+            n_times = 1
+        else:
+            n_rho_c_all = 1
+            rho_c_all = np.array([rho_c])
+            n_forward_sim = 1
+            n_times = n_tmpc - n_idx_ignore - n_forward_sim
+        x_forward_sim = np.zeros((n_times, 1 + n_forward_sim, nx))
+        for t_idx in range(n_times):
+            if t_idx < n_times - 1:
+                print(f"Forward simulating time iter {t_idx}/{n_times - 1}", end="\r")
+            else:
+                print(f"Forward simulating time iter {t_idx}/{n_times - 1}")
+            if compute_rho_c:
+                x_forward_sim[t_idx, 0] = x_nom_ref[n_idx_ignore + t_idx]
+                for k_idx in range(n_forward_sim):
+                    x_forward_sim[t_idx, k_idx + 1] = np.array(
+                        helpers.solve_rk4(
+                            model.state_update_ct,
+                            x_forward_sim[t_idx, k_idx],
+                            u_nom_ref[n_idx_ignore + t_idx + k_idx],
+                            dt_tmpc,
                         )
-                rpi_tightening_per_rho_c[rho_c_idx] = np.max(
-                    w_bar_c_all[rho_c_idx] / rho_c
+                    ).flatten()
+            else:
+                x_forward_sim[t_idx, 0] = x_cur_est[n_idx_ignore + t_idx]
+                for k_idx in range(n_forward_sim):
+                    x_forward_sim[t_idx, k_idx + 1] = np.array(
+                        helpers.solve_rk4(
+                            model.state_update_ct,
+                            x_forward_sim[t_idx, k_idx],
+                            u_pred_traj[n_idx_ignore + t_idx, 0],
+                            dt_tmpc,
+                        )
+                    ).flatten()
+
+        # Compute x_err and lyap_err over times and prediction steps
+        x_err = np.zeros((n_times, 1 + n_forward_sim, nx))
+        lyap_err = np.zeros((n_times, 1 + n_forward_sim))
+        for t_idx in range(n_times):
+            if t_idx < n_times - 1:
+                print(f"Time iter {t_idx}/{n_times - 1}", end="\r")
+            else:
+                print(f"Time iter {t_idx}/{n_times - 1}")
+            for k_idx in range(1 + n_forward_sim):
+                # x_err[t_idx, k_idx] = (
+                #     x_cur_est[n_idx_ignore + t_idx + k_idx]
+                #     - x_pred_traj[n_idx_ignore + t_idx, k_idx]
+                # )
+                x_err[t_idx, k_idx] = (
+                    x_cur_est[n_idx_ignore + t_idx + k_idx]
+                    - x_forward_sim[t_idx, k_idx]
+                )
+                lyap_err[t_idx, k_idx] = np.sqrt(
+                    x_err[t_idx, k_idx] @ P_delta @ x_err[t_idx, k_idx]
                 )
 
-        # Compute optimal rho_c value
+        # Compute w_bar_c and corresponding RPI tightening for all rho_c, t, and tau
+        w_bar_c_all = np.zeros((n_rho_c_all, n_times, n_forward_sim))
+        rpi_tightening_per_rho_c = np.zeros(n_rho_c_all)
+        for rho_c_idx, rho_c in enumerate(rho_c_all):
+            if rho_c_idx < n_rho_c_all - 1:
+                print(f"rho_c iter {rho_c_idx}/{n_rho_c_all - 1}", end="\r")
+            else:
+                print(f"rho_c iter {rho_c_idx}/{n_rho_c_all - 1}")
+            for t_idx in range(n_times):
+                for k_idx in range(1, 1 + n_forward_sim):
+                    w_bar_c_all[rho_c_idx, t_idx, k_idx - 1] = (
+                        lyap_err[t_idx, k_idx]
+                        * rho_c
+                        / (1 - math.exp(-rho_c * k_idx * dt_tmpc))
+                    )
+            rpi_tightening_per_rho_c[rho_c_idx] = np.max(w_bar_c_all[rho_c_idx] / rho_c)
+
+        # Compute optimal rho_c, if desired, and corresponding w_bar_c
         rho_c_idx = 0
         if compute_rho_c:
             rho_c_idx = np.argmin(rpi_tightening_per_rho_c)
-            rho_c = rho_c_all[rho_c_idx]
-            print(f"rho_c: {rho_c} at rho_c index: {rho_c_idx}")
-            w_bar_c = rpi_tightening_per_rho_c[rho_c_idx] * rho_c
-            print(f"w_bar_c: {w_bar_c}")
+            print(f"Optimal rho_c index: {rho_c_idx}/{n_rho_c_all - 1}")
+        rho_c = rho_c_all[rho_c_idx]
+        print(f"rho_c: {rho_c}")
+        w_bar_c = rpi_tightening_per_rho_c[rho_c_idx] * rho_c
+        print(f"w_bar_c: {w_bar_c}")
 
         # Compute tube size over time
-        s = np.zeros(1 + n_forward_sim)
-        for k_idx in range(1 + n_forward_sim):
-            s[k_idx] = (1 - math.exp(-rho_c * k_idx * dt_tmpc)) * w_bar_c / rho_c
+        if compute_rho_c:
+            s = np.zeros(1 + n_forward_sim)
+            for k_idx in range(1 + n_forward_sim):
+                s[k_idx] = (1 - math.exp(-rho_c * k_idx * dt_tmpc)) * w_bar_c / rho_c
 
         # Determine epsilon at all time steps
         epsilon_all = np.zeros(n_tmpc)
@@ -373,7 +359,12 @@ if __name__ == "__main__":
         if do_plot_w_bar_c_time:
             fig, ax = plt.subplots()
             fig.suptitle(f"{ros_rec_json_name} - computed w_bar_c over time")
-            ax.plot(t_x_cur_est[n_idx_ignore + 1 :], w_bar_c_all[50, :])
+            ax.plot(
+                t_x_cur_est[n_idx_ignore + 1 :],
+                w_bar_c_all[rho_c_idx].reshape(
+                    -1,
+                ),
+            )
             ax.set_xlabel("Time (s)")
             ax.set_ylabel(r"$\bar{w}^\mathrm{c}$")
 
@@ -382,7 +373,8 @@ if __name__ == "__main__":
             fig, ax = plt.subplots()
             fig.suptitle(f"{ros_rec_json_name} - computed w_bar_c sorted")
             ax.plot(
-                np.arange(n_idx_ignore + 1, n_tmpc), sorted(w_bar_c_all[rho_c_idx, :])
+                np.arange(n_idx_ignore + 1, n_tmpc),
+                sorted(w_bar_c_all[rho_c_idx].reshape(-1)),
             )
             ax.set_xlabel("Index")
             ax.set_ylabel(r"$\bar{w}^\mathrm{c}$")
