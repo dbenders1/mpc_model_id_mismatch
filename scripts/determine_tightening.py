@@ -35,7 +35,7 @@ if __name__ == "__main__":
         )
         exit(1)
     config_dir = f"{package_dir}/config"
-    config_path = f"{config_dir}/scripts/determine_w_bar_c_rho_c_epsilon.yaml"
+    config_path = f"{config_dir}/scripts/determine_tightening.yaml"
     data_dir = f"{package_dir}/data"
     data_sel_dir = f"{data_dir}/selected_data"
 
