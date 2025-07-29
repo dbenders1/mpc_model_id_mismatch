@@ -80,7 +80,7 @@ data:
 
 compute_settings:
   # rho_c: 0
-  rho_c: 10
+  rho_c: 10.0
   compute_x_in_eps_ball: false
   x_in_eps_ball_nom: [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
   x_in_eps_ball_dir: [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0]

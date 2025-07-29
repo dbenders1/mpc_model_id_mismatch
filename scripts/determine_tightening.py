@@ -38,6 +38,7 @@ if __name__ == "__main__":
     config_path = f"{config_dir}/scripts/determine_tightening.yaml"
     data_dir = f"{package_dir}/data"
     data_sel_dir = f"{data_dir}/selected_data"
+    output_data_dir = f"{data_dir}/tightening_results"
 
     # Read configuration parameters
     with open(config_path) as file:
@@ -396,5 +397,16 @@ if __name__ == "__main__":
             ax.plot(np.arange(n_idx_ignore, n_tmpc), sorted(epsilon_all))
             ax.set_xlabel("Index")
             ax.set_ylabel("$\epsilon$")
+
+    # Save epsilon, rho_c, and w_bar_c to a json file
+    tightening_data = {
+        "epsilon": epsilon,
+        "rho_c": rho_c,
+        "w_bar_c": w_bar_c,
+    }
+    output_data_json_path = f"{output_data_dir}/tightening.json"
+    with open(output_data_json_path, "w") as file:
+        json.dump(tightening_data, file, indent=4)
+    print(f"Saved tightening data to {output_data_json_path}")
 
     plt.show()
