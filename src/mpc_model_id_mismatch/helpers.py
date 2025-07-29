@@ -556,7 +556,8 @@ class DroneAgiModel:
         # self.disturbance_names = self.state_names
         # self.E = np.eye(self.nx)
         # Get disturbances by selecting from state vector the indices that correspond to row indices in E that contain a 1
-        self.nw = 6
+        # self.nw = 6
+        self.nw = self.nx
         # self.nw = 10
         self.E = np.concatenate(
             (np.zeros((self.nx - self.nw, self.nw)), np.eye(self.nw))
@@ -612,17 +613,19 @@ class DroneAgiModel:
         # Set system constraint bounds
         self.p_max = 4
         self.p_min = -self.p_max
-        self.att_max = 0.05
-        # self.att_max = 0.5
+        # self.att_max = 0.05
+        # self.att_max = 0.5 # actual value for traj_circle_r1_f0dot3_cw
+        self.att_max = 0.1  # tuned value for feasible sdp for traj_circle_r1_f0dot3_cw
         self.att_min = -self.att_max
-        self.v_max = 0.7
-        # self.v_max = 2
+        # self.v_max = 0.7
+        self.v_max = 2
         self.v_min = -self.v_max
-        self.wb_max = 0.06
-        # self.wb_max = 0.7
+        # self.wb_max = 0.06
+        # self.wb_max = 1  # actual value for traj_circle_r1_f0dot3_cw
+        self.wb_max = 0.3  # tuned value for feasible sdp for traj_circle_r1_f0dot3_cw
         self.wb_min = -self.wb_max
-        self.t_var = 0.02
-        # self.t_var = 0.12
+        # self.t_var = 0.02
+        self.t_var = 0.12
         self.t_hover = self.mass * self.g / 4
         self.t_min = np.max(
             [self.t_hover - self.t_var, self.thrust_map[0] * self.motor_omega_min**2]
