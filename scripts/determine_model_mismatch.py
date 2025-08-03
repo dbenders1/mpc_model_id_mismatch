@@ -1004,6 +1004,8 @@ class ComputeModelMismatch:
             "x_est_all": self.x_mhe_all.tolist(),
             "w_est_all": self.w_mhe_all.tolist(),
             "eta_est_all": self.eta_mhe_all.tolist(),
+            "Q_mhe_all": self.Q_mhe_all.tolist(),
+            "R_mhe_all": self.R_mhe_all.tolist(),
             "Q_cov_est_all": self.Q_cov_est_all.tolist(),
             "R_cov_est_all": self.R_cov_est_all.tolist(),
         }

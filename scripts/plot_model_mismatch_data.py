@@ -37,6 +37,26 @@ def get_eta_est_gt_ratios(eta_min, eta_max, eta_est_all, stage_idx):
     return eta_est_gt_ratios_min, eta_est_gt_ratios_max
 
 
+def get_likelihood_over_runs(
+    w_est_all, eta_est_all, Q_mhe_all, R_mhe_all, Q_cov_est_all, R_cov_est_all, time_idx
+):
+    n_iter = w_est_all.shape[0]
+    M = w_est_all.shape[3]
+    likelihood = np.zeros(n_iter)
+    for iter_idx in range(n_iter):
+        likelihood[iter_idx] = helpers.get_cost_mle(
+            M,
+            w_est_all[iter_idx, time_idx, :, :],
+            eta_est_all[iter_idx, time_idx, :, :],
+            Q_mhe_all[iter_idx, :, :],
+            R_mhe_all[iter_idx, :, :],
+            Q_cov_est_all[iter_idx, :, :],
+            R_cov_est_all[iter_idx, :, :],
+            np.arange(M + 1),
+        )
+    return likelihood
+
+
 def get_w_est_gt_ratios(w_min, w_max, w_est_all, stage_idx):
     n_iter = w_est_all.shape[0]
     n_w = w_est_all.shape[2]
@@ -761,6 +781,23 @@ def plot_costs(
     fig.legend()
 
 
+def plot_likelihood(exp_idx, likelihood):
+    n_iter = likelihood.shape[0]
+    fig, ax = plt.subplots(
+        1, 1, num=f"Experiment {exp_idx} - Likelihood over iterations"
+    )
+    fig.suptitle(f"Likelihood over iterations")
+    ax.plot(
+        np.arange(0, n_iter),
+        likelihood,
+        "-o",
+        linewidth=widths,
+        markersize=sizes,
+    )
+    ax.set_xlabel("Iteration")
+    ax.set_ylabel("-log(likelihood)")
+
+
 def plot_Q_R_trace(exp_idx, Q_cov_est_all, R_cov_est_all):
     fig, axes = plt.subplots(
         1,
@@ -932,6 +969,7 @@ if __name__ == "__main__":
     do_plot_w_est_gt_ratios = config["do_plot"]["w_est_gt_ratios"]
     do_plot_eta_est_gt_ratios = config["do_plot"]["eta_est_gt_ratios"]
     do_plot_costs = config["do_plot"]["costs"]
+    do_plot_likelihood = config["do_plot"]["likelihood"]
     do_plot_Q_R_trace = config["do_plot"]["Q_R_trace"]
     do_plot_Q_diag = config["do_plot"]["Q_diag"]
     do_plot_R_diag = config["do_plot"]["R_diag"]
@@ -1010,6 +1048,10 @@ if __name__ == "__main__":
         x_est_all = np.array(data_exp["x_est_all"])
         w_est_all = np.array(data_exp["w_est_all"])
         eta_est_all = np.array(data_exp["eta_est_all"])
+        Q_mhe_all = np.array(data_exp["Q_mhe_all"])
+        R_mhe_all = np.array(data_exp["R_mhe_all"])
+        Q_cov_est_all = np.array(data_exp["Q_cov_est_all"])
+        R_cov_est_all = np.array(data_exp["R_cov_est_all"])
         n_iter = x_est_all.shape[0]
         n_t = x_est_all.shape[1]
         t = t[stage_est : stage_est + n_t]
@@ -1020,12 +1062,6 @@ if __name__ == "__main__":
         # Set data indices to use
         iter_idx = n_iter - 1
         stage_idx = stage_est
-
-        # Print estimated Q and R matrices
-        Q_cov_est_all = np.array(data_exp["Q_cov_est_all"])
-        R_cov_est_all = np.array(data_exp["R_cov_est_all"])
-        # print(f"Q_est = {Q_cov_est_all[iter_idx + 1, :, :]}")
-        # print(f"R_est = {R_cov_est_all[iter_idx + 1, :, :]}")
 
         # Select data for the selected iteration
         x_est_all_last_iter = x_est_all[iter_idx, :, :, :]
@@ -1117,6 +1153,17 @@ if __name__ == "__main__":
                 costs_eta_gt,
                 costs_total_gt,
             )
+        if do_plot_likelihood:
+            likelihood = get_likelihood_over_runs(
+                w_est_all,
+                eta_est_all,
+                Q_mhe_all,
+                R_mhe_all,
+                Q_cov_est_all,
+                R_cov_est_all,
+                time_idx,
+            )
+            plot_likelihood(exp_idx, likelihood)
         if do_plot_Q_R_trace:
             plot_Q_R_trace(exp_idx, Q_cov_est_all, R_cov_est_all)
         if do_plot_Q_diag:
