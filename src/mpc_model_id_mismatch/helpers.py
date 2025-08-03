@@ -327,6 +327,13 @@ def get_rot_matrix_rates(phi, theta):
     )
 
 
+def get_tube_size_over_time(n_pred_steps, dt, w_bar_c, rho_c):
+    s = np.zeros(n_pred_steps)
+    for k_idx in range(n_pred_steps):
+        s[k_idx] = (1 - math.exp(-rho_c * k_idx * dt)) * w_bar_c / rho_c
+    return s
+
+
 def quat_mult(q1, q2):
     ans = vertcat(
         q2[0, :] * q1[0, :]
