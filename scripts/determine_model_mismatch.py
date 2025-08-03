@@ -1010,10 +1010,10 @@ class ComputeModelMismatch:
             "R_cov_est_all": self.R_cov_est_all.tolist(),
         }
         data_costs = {}
-        data_costs["costs_total"] = (self.costs_total.tolist(),)
-        data_costs["costs_term"] = (self.costs_term.tolist(),)
-        data_costs["costs_w"] = (self.costs_w.tolist(),)
-        data_costs["costs_eta"] = (self.costs_eta.tolist(),)
+        data_costs["costs_total"] = self.costs_total.tolist()
+        data_costs["costs_term"] = self.costs_term.tolist()
+        data_costs["costs_w"] = self.costs_w.tolist()
+        data_costs["costs_eta"] = self.costs_eta.tolist()
         if self.disturbances_gt_known:
             data_costs["costs_w_gt"] = self.costs_w_gt.tolist()
         if self.measurement_noises_gt_known:
