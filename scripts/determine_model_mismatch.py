@@ -1370,7 +1370,7 @@ class ComputeModelMismatch:
             self.plot_raw_interp_meas_noises()
 
 
-def compute_absolute_w_eta_bounds(data, determine_w, do_print_w_eta):
+def compute_absolute_w_eta_bounds(data, determine_w, sim_eta_max, do_print_w_eta):
     # Store all absolute disturbance and measurement noise bounds
     if determine_w:
         nw = data["common"]["nx"]
@@ -1417,6 +1417,11 @@ def compute_absolute_w_eta_bounds(data, determine_w, do_print_w_eta):
     data["common"]["eta_bias"] = eta_bias.tolist()
     data["common"]["eta_min_rel"] = eta_min_rel.tolist()
     data["common"]["eta_max_rel"] = eta_max_rel.tolist()
+
+    # Compute and store the ground truth measurement noise bounds
+    sim_eta_min = -sim_eta_max
+    data["common"]["eta_min_abs_gt"] = sim_eta_min.tolist()
+    data["common"]["eta_max_abs_gt"] = sim_eta_max.tolist()
 
     # Print overall relative disturbance and measurement noise bounds
     do_print_disturbances_min = do_print_w_eta[0]
@@ -1601,7 +1606,7 @@ if __name__ == "__main__":
         data[exp_details] = compute_model_mismatch.get_json_specific_data()
         print("-" * 100)
 
-    compute_absolute_w_eta_bounds(data, determine_w, do_print_w_eta)
+    compute_absolute_w_eta_bounds(data, determine_w, sim_eta_max, do_print_w_eta)
 
     if not determine_w:
         # Save data to json file for plotting
