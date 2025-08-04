@@ -867,7 +867,7 @@ def plot_likelihood(exp_idx, likelihood, likelihood_gt=None):
     n_iter = likelihood.shape[0]
     ax.plot(
         np.arange(1, 1 + n_iter),
-        likelihood,
+        -likelihood,
         "-o",
         linewidth=widths,
         markersize=sizes,
@@ -875,7 +875,7 @@ def plot_likelihood(exp_idx, likelihood, likelihood_gt=None):
     )
     if likelihood_gt is not None:
         ax.axhline(
-            y=likelihood_gt,
+            y=-likelihood_gt,
             color="red",
             linestyle="--",
             linewidth=widths,
@@ -883,7 +883,7 @@ def plot_likelihood(exp_idx, likelihood, likelihood_gt=None):
         )
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.set_xlabel("Iteration")
-    ax.set_ylabel("-log(likelihood)")
+    ax.set_ylabel("log(likelihood)")
     ax.legend()
 
 
