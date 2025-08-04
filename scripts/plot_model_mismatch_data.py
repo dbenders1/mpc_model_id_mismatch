@@ -746,7 +746,7 @@ def plot_x_est_w_est_stage(exp_idx, x_est, w_est, stage_idx):
         col_idx = ax_idx % n_cols_states
         w_idx = plot_w_idx_at_ax_idx[ax_idx]
         axes[row_idx, col_idx].scatter(
-            x_est[:, 6 + w_idx, stage_idx],
+            x_est[:, w_idx, stage_idx],
             w_est[:, w_idx, stage_idx],
             s=sizes,
             linewidth=widths,
