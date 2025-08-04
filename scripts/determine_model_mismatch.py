@@ -1001,13 +1001,14 @@ class ComputeModelMismatch:
         if self.disturbances_gt_known and self.measurement_noises_gt_known:
             data_gt["total_gt_costs"] = self.costs_total_gt.tolist()
         data_mhe = {
+            "Q_cov_est_all": self.Q_cov_est_all.tolist(),
+            "R_cov_est_all": self.R_cov_est_all.tolist(),
+            "eps": self.eps,
+            "Q_mhe_all": self.Q_mhe_all.tolist(),
+            "R_mhe_all": self.R_mhe_all.tolist(),
             "x_est_all": self.x_mhe_all.tolist(),
             "w_est_all": self.w_mhe_all.tolist(),
             "eta_est_all": self.eta_mhe_all.tolist(),
-            "Q_mhe_all": self.Q_mhe_all.tolist(),
-            "R_mhe_all": self.R_mhe_all.tolist(),
-            "Q_cov_est_all": self.Q_cov_est_all.tolist(),
-            "R_cov_est_all": self.R_cov_est_all.tolist(),
         }
         data_costs = {}
         data_costs["costs_total"] = self.costs_total.tolist()
