@@ -208,6 +208,10 @@ recorded_data:
   #   [2025-08-01_gaz_meas_noise_falcon_mpc_model_mismatch_circle_r1_f0dot3_cw]
   # json_names:
   #   [
+  #     2025-08-01_gaz_meas_noise_div10_falcon_mpc_model_mismatch_circle_r1_f0dot3_cw,
+  #   ]
+  # json_names:
+  #   [
   #     2025-08-01_gaz_meas_noise_div10_falcon_mpc_model_mismatch_lemniscate_r1_f0dot3_cw,
   #   ]
   # json_names:
