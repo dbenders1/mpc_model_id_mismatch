@@ -1,7 +1,11 @@
 mhe_json_name: falcon_t
 time_idx: 0
 
-gazebo_w_json_names: []
+# gazebo_w_json_names: []
+gazebo_w_json_names:
+  [
+    2025-08-01_gaz_meas_noise_div10_falcon_mpc_model_mismatch_circle_r1_f0dot3_cw_w,
+  ]
 # gazebo_w_json_names:
 #   [
 #     2025-07-15_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_w,
@@ -17,7 +21,7 @@ gazebo_w_json_names: []
 #     2025-06-26_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_dist_meas_noise_w,
 #     2025-06-26_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_dist_meas_noise_w,
 #   ]
-gazebo_w_idx: 4
+gazebo_w_idx: 9
 
 do_plot:
   y_y_fs_over_horizon: false
