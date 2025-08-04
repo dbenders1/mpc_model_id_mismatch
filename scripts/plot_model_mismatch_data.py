@@ -2,6 +2,7 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 import yaml
+from matplotlib.ticker import MaxNLocator
 from mpc_model_id_mismatch import helpers
 from pathlib import Path
 
@@ -539,9 +540,9 @@ def plot_w_est_gt_ratios(exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_max):
     fig, axes = plt.subplots(
         n_rows_states,
         n_cols_states,
-        num=f"Experiment {exp_idx} - Min/max disturbance ratios",
+        num=f"Experiment {exp_idx} - Min/max disturbance ratios over iterations",
     )
-    fig.suptitle(f"Min/max disturbance ratios")
+    fig.suptitle(f"Min/max disturbance ratios over iterations")
     n_iter = w_est_gt_ratios_min.shape[0]
     for ax_idx in range(n_rows_states * n_cols_states):
         if plot_w_idx_at_ax_idx[ax_idx] == None:
@@ -551,19 +552,20 @@ def plot_w_est_gt_ratios(exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_max):
         col_idx = ax_idx % n_cols_states
         w_idx = plot_w_idx_at_ax_idx[ax_idx]
         axes[row_idx, col_idx].plot(
-            np.arange(0, n_iter),
+            np.arange(1, 1 + n_iter),
             w_est_gt_ratios_min[:, w_idx],
             "-o",
             linewidth=widths,
             markersize=sizes,
         )
         axes[row_idx, col_idx].plot(
-            np.arange(0, n_iter),
+            np.arange(1, 1 + n_iter),
             w_est_gt_ratios_max[:, w_idx],
             "-o",
             linewidth=widths,
             markersize=sizes,
         )
+        axes[row_idx, col_idx].xaxis.set_major_locator(MaxNLocator(integer=True))
         axes[row_idx, col_idx].set_xlabel("Iteration")
         axes[row_idx, col_idx].set_ylabel(f"Disturbance ratio {w_labels[w_idx]}")
     fig.legend(["Min ratios", "Max ratios"])
@@ -571,15 +573,15 @@ def plot_w_est_gt_ratios(exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_max):
 
 def plot_w_est_gt_ratios_combined(exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_max):
     fig, ax = plt.subplots(
-        num=f"Experiment {exp_idx} - Combined min/max disturbance ratios",
+        num=f"Experiment {exp_idx} - Combined min/max disturbance ratios over iterations",
     )
-    fig.suptitle(f"Combined min/max disturbance ratios")
+    fig.suptitle(f"Combined min/max disturbance ratios over iterations")
     n_iter = w_est_gt_ratios_min.shape[0]
     n_w = w_est_gt_ratios_min.shape[1]
     avg_min = np.mean(w_est_gt_ratios_min, axis=1)
     avg_max = np.mean(w_est_gt_ratios_max, axis=1)
     ax.plot(
-        np.arange(0, n_iter),
+        np.arange(1, 1 + n_iter),
         avg_min,
         "-v",
         linewidth=5 * widths,
@@ -587,7 +589,7 @@ def plot_w_est_gt_ratios_combined(exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_
         label="Average min",
     )
     ax.plot(
-        np.arange(0, n_iter),
+        np.arange(1, 1 + n_iter),
         avg_max,
         "-^",
         linewidth=5 * widths,
@@ -596,7 +598,7 @@ def plot_w_est_gt_ratios_combined(exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_
     )
     for w_idx in range(n_w):
         ax.plot(
-            np.arange(0, n_iter),
+            np.arange(1, 1 + n_iter),
             w_est_gt_ratios_min[:, w_idx],
             "-v",
             linewidth=widths,
@@ -604,13 +606,14 @@ def plot_w_est_gt_ratios_combined(exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_
             label=f"{w_labels[w_idx]} min",
         )
         ax.plot(
-            np.arange(0, n_iter),
+            np.arange(1, 1 + n_iter),
             w_est_gt_ratios_max[:, w_idx],
             "-^",
             linewidth=widths,
             markersize=2 * sizes,
             label=f"{w_labels[w_idx]} max",
         )
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.set_xlabel("Iteration")
     ax.set_ylabel(f"Disturbance ratio")
     fig.legend()
@@ -693,9 +696,9 @@ def plot_eta_est_gt_ratios(exp_idx, eta_est_gt_ratios_min, eta_est_gt_ratios_max
     fig, axes = plt.subplots(
         n_rows_states,
         n_cols_states,
-        num=f"Experiment {exp_idx} - Min/max measurement noise ratios",
+        num=f"Experiment {exp_idx} - Min/max measurement noise ratios over iterations",
     )
-    fig.suptitle(f"Min/max measurement noise ratios")
+    fig.suptitle(f"Min/max measurement noise ratios over iterations")
     n_iter = eta_est_gt_ratios_min.shape[0]
     for ax_idx in range(n_rows_states * n_cols_states):
         if plot_eta_idx_at_ax_idx[ax_idx] == None:
@@ -705,19 +708,20 @@ def plot_eta_est_gt_ratios(exp_idx, eta_est_gt_ratios_min, eta_est_gt_ratios_max
         col_idx = ax_idx % n_cols_states
         eta_idx = plot_eta_idx_at_ax_idx[ax_idx]
         axes[row_idx, col_idx].plot(
-            np.arange(0, n_iter),
+            np.arange(1, 1 + n_iter),
             eta_est_gt_ratios_min[:, eta_idx],
             "-o",
             linewidth=widths,
             markersize=sizes,
         )
         axes[row_idx, col_idx].plot(
-            np.arange(0, n_iter),
+            np.arange(1, 1 + n_iter),
             eta_est_gt_ratios_max[:, eta_idx],
             "-o",
             linewidth=widths,
             markersize=sizes,
         )
+        axes[row_idx, col_idx].xaxis.set_major_locator(MaxNLocator(integer=True))
         axes[row_idx, col_idx].set_xlabel("Iteration")
         axes[row_idx, col_idx].set_ylabel(
             f"Measurement noise ratio {y_labels[eta_idx]}"
@@ -747,7 +751,7 @@ def plot_x_est_w_est_stage(exp_idx, x_est, w_est, stage_idx):
             s=sizes,
             linewidth=widths,
         )
-        axes[row_idx, col_idx].set_xlabel(f"{x_labels[6 + w_idx]}")
+        axes[row_idx, col_idx].set_xlabel(f"{x_labels[w_idx]}")
         axes[row_idx, col_idx].set_ylabel(f"{w_labels[w_idx]}")
 
 
@@ -829,18 +833,19 @@ def plot_costs(
 
 
 def plot_likelihood(exp_idx, likelihood):
-    n_iter = likelihood.shape[0]
     fig, ax = plt.subplots(
         1, 1, num=f"Experiment {exp_idx} - Likelihood over iterations"
     )
     fig.suptitle(f"Likelihood over iterations")
+    n_iter = likelihood.shape[0]
     ax.plot(
-        np.arange(0, n_iter),
+        np.arange(1, 1 + n_iter),
         likelihood,
         "-o",
         linewidth=widths,
         markersize=sizes,
     )
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.set_xlabel("Iteration")
     ax.set_ylabel("-log(likelihood)")
 
@@ -853,24 +858,27 @@ def plot_Q_R_trace(exp_idx, Q_cov_est_all, R_cov_est_all):
     )
     fig.suptitle(f"Trace of Q and R matrices over iterations")
     fig.subplots_adjust(wspace=0.4)
+    n_iter = Q_cov_est_all.shape[0]
     axes[0].plot(
-        np.arange(0, Q_cov_est_all.shape[0]),
+        np.arange(1, 1 + n_iter),
         np.trace(Q_cov_est_all, axis1=1, axis2=2),
         "-o",
         linewidth=widths,
         markersize=sizes,
     )
     axes[0].set_title("trace(Q)")
+    axes[0].xaxis.set_major_locator(MaxNLocator(integer=True))
     axes[0].set_xlabel("Iteration")
     axes[0].set_ylabel("Value")
     axes[1].plot(
-        np.arange(0, R_cov_est_all.shape[0]),
+        np.arange(1, 1 + n_iter),
         np.trace(R_cov_est_all, axis1=1, axis2=2),
         "-o",
         linewidth=widths,
         markersize=sizes,
     )
     axes[1].set_title("trace(R)")
+    axes[1].xaxis.set_major_locator(MaxNLocator(integer=True))
     axes[1].set_xlabel("Iteration")
     axes[1].set_ylabel("Value")
 
@@ -882,6 +890,7 @@ def plot_Q_diag(exp_idx, Q_cov_est_all):
         num=f"Experiment {exp_idx} - Diagonal of Q matrix over iterations",
     )
     fig.suptitle(f"Diagonal of Q matrix over iterations")
+    n_iter = Q_cov_est_all.shape[0]
     for ax_idx in range(n_rows_states * n_cols_states):
         if plot_w_idx_at_ax_idx[ax_idx] == None:
             axes.flat[ax_idx].axis("off")
@@ -890,12 +899,13 @@ def plot_Q_diag(exp_idx, Q_cov_est_all):
         col_idx = ax_idx % n_cols_states
         w_idx = plot_w_idx_at_ax_idx[ax_idx]
         axes[row_idx, col_idx].plot(
-            np.arange(0, Q_cov_est_all.shape[0]),
+            np.arange(1, 1 + n_iter),
             Q_cov_est_all[:, w_idx, w_idx],
             "-o",
             linewidth=widths,
             markersize=sizes,
         )
+        axes[row_idx, col_idx].xaxis.set_major_locator(MaxNLocator(integer=True))
         axes[row_idx, col_idx].set_xlabel("Iteration")
         axes[row_idx, col_idx].set_ylabel(f"Q[{w_idx}, {w_idx}]")
 
@@ -907,6 +917,7 @@ def plot_R_diag(exp_idx, R_cov_est_all):
         num=f"Experiment {exp_idx} - Diagonal of R matrix over iterations",
     )
     fig.suptitle(f"Diagonal of R matrix over iterations")
+    n_iter = R_cov_est_all.shape[0]
     for ax_idx in range(n_rows_states * n_cols_states):
         if plot_eta_idx_at_ax_idx[ax_idx] == None:
             axes.flat[ax_idx].axis("off")
@@ -915,12 +926,13 @@ def plot_R_diag(exp_idx, R_cov_est_all):
         col_idx = ax_idx % n_cols_states
         eta_idx = plot_eta_idx_at_ax_idx[ax_idx]
         axes[row_idx, col_idx].plot(
-            np.arange(0, R_cov_est_all.shape[0]),
+            np.arange(1, 1 + n_iter),
             R_cov_est_all[:, eta_idx, eta_idx],
             "-o",
             linewidth=widths,
             markersize=sizes,
         )
+        axes[row_idx, col_idx].xaxis.set_major_locator(MaxNLocator(integer=True))
         axes[row_idx, col_idx].set_xlabel("Iteration")
         axes[row_idx, col_idx].set_ylabel(f"R[{eta_idx}, {eta_idx}]")
 
@@ -932,6 +944,7 @@ def plot_Q_eig_vals(exp_idx, Q_cov_est_all):
         num=f"Experiment {exp_idx} - Eigenvalues of Q matrix over iterations",
     )
     fig.suptitle(f"Eigenvalues of Q matrix over iterations")
+    n_iter = Q_cov_est_all.shape[0]
     eig_vals = np.zeros((Q_cov_est_all.shape[1], Q_cov_est_all.shape[0]))
     for i in range(Q_cov_est_all.shape[0]):
         eig_vals[:, i] = np.linalg.eigvals(Q_cov_est_all[i, :, :])
@@ -943,12 +956,13 @@ def plot_Q_eig_vals(exp_idx, Q_cov_est_all):
         col_idx = ax_idx % n_cols_states
         w_idx = plot_w_idx_at_ax_idx[ax_idx]
         axes[row_idx, col_idx].plot(
-            np.arange(0, eig_vals.shape[1]),
+            np.arange(1, 1 + n_iter),
             eig_vals[w_idx, :],
             "-o",
             linewidth=widths,
             markersize=sizes,
         )
+        axes[row_idx, col_idx].xaxis.set_major_locator(MaxNLocator(integer=True))
         axes[row_idx, col_idx].set_xlabel("Iteration")
         axes[row_idx, col_idx].set_ylabel(f"Eigenvalue {w_idx}")
 
@@ -960,6 +974,7 @@ def plot_R_eig_vals(exp_idx, R_cov_est_all):
         num=f"Experiment {exp_idx} - Eigenvalues of R matrix over iterations",
     )
     fig.suptitle(f"Eigenvalues of R matrix over iterations")
+    n_iter = R_cov_est_all.shape[0]
     eig_vals = np.zeros((R_cov_est_all.shape[1], R_cov_est_all.shape[0]))
     for i in range(R_cov_est_all.shape[0]):
         eig_vals[:, i] = np.linalg.eigvals(R_cov_est_all[i, :, :])
@@ -971,12 +986,13 @@ def plot_R_eig_vals(exp_idx, R_cov_est_all):
         col_idx = ax_idx % n_cols_states
         eta_idx = plot_eta_idx_at_ax_idx[ax_idx]
         axes[row_idx, col_idx].plot(
-            np.arange(0, eig_vals.shape[1]),
+            np.arange(1, 1 + n_iter),
             eig_vals[eta_idx, :],
             "-o",
             linewidth=widths,
             markersize=sizes,
         )
+        axes[row_idx, col_idx].xaxis.set_major_locator(MaxNLocator(integer=True))
         axes[row_idx, col_idx].set_xlabel("Iteration")
         axes[row_idx, col_idx].set_ylabel(f"Eigenvalue {eta_idx}")
 
