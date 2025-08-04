@@ -1374,7 +1374,7 @@ class ComputeModelMismatch:
 
 
 def compute_absolute_w_eta_bounds(data, determine_w, sim_eta_max, do_print_w_eta):
-    # Store all absolute disturbance and measurement noise bounds
+    # Store all absolute estimated disturbance and measurement noise bounds
     if determine_w:
         nw = data["common"]["nx"]
     else:
@@ -1421,6 +1421,42 @@ def compute_absolute_w_eta_bounds(data, determine_w, sim_eta_max, do_print_w_eta
     data["common"]["eta_min_rel"] = eta_min_rel.tolist()
     data["common"]["eta_max_rel"] = eta_max_rel.tolist()
 
+    # Compute and store the ground truth disturbance noise bounds
+    disturbances_gt_known = True
+    for key in data.keys():
+        if key == "common":
+            continue
+        if "w" not in data[key]:
+            log.warning(
+                f"Key {key} does not contain ground truth disturbance data. Skipping storing and printing this data"
+            )
+            disturbances_gt_known = False
+            break
+
+    if disturbances_gt_known:
+        w_min_all_gt = np.zeros((len(data) - 1, nw))
+        w_max_all_gt = np.zeros((len(data) - 1, nw))
+        idx = 0
+        for key in data.keys():
+            if key == "common":
+                continue
+            if "w" in data[key]:
+                w_min_all_gt[idx, :] = data[key]["w_min"]
+                w_max_all_gt[idx, :] = data[key]["w_max"]
+            else:
+                log.warning(
+                    f"Key {key} does not contain ground truth disturbance data. Setting to zero"
+                )
+                w_min_all_gt[idx, :] = np.zeros(nw)
+                w_max_all_gt[idx, :] = np.zeros(nw)
+            idx += 1
+        data["common"]["w_min_all_gt"] = w_min_all_gt.tolist()
+        data["common"]["w_max_all_gt"] = w_max_all_gt.tolist()
+        w_min_gt = np.min(w_min_all_gt, axis=0)
+        w_max_gt = np.max(w_max_all_gt, axis=0)
+        data["common"]["w_min_gt"] = w_min_gt.tolist()
+        data["common"]["w_max_gt"] = w_max_gt.tolist()
+
     # Compute and store the ground truth measurement noise bounds
     sim_eta_min = -sim_eta_max
     data["common"]["eta_min_abs_gt"] = sim_eta_min.tolist()
@@ -1442,8 +1478,20 @@ def compute_absolute_w_eta_bounds(data, determine_w, sim_eta_max, do_print_w_eta
         print(f"\nOverall disturbance bounds:")
         if do_print_disturbances_min:
             print(f'Min:     {data["common"]["w_min_abs"]}')
+            if disturbances_gt_known:
+                print(f'Min GT:  {data["common"]["w_min_gt"]}')
+                if np.all(data["common"]["w_min_gt"] != 0):
+                    print(
+                        f'Min ratio:  {np.array(data["common"]["w_min_abs"]) / np.array(data["common"]["w_min_gt"])}'
+                    )
         if do_print_disturbances_max:
             print(f'Max:     {data["common"]["w_max_abs"]}')
+            if disturbances_gt_known:
+                print(f'Max GT:  {data["common"]["w_max_gt"]}')
+                if np.all(data["common"]["w_max_gt"] != 0):
+                    print(
+                        f'Max ratio:  {np.array(data["common"]["w_max_abs"]) / np.array(data["common"]["w_max_gt"])}'
+                    )
         # if do_print_disturbances_bias:
         #     print(f'Bias:    {data["common"]["w_bias"]}')
     if do_print_meas_noises:
