@@ -38,6 +38,27 @@ def get_eta_est_gt_ratios(eta_min, eta_max, eta_est_all, stage_idx):
     return eta_est_gt_ratios_min, eta_est_gt_ratios_max
 
 
+def get_likelihood_gt(w, eta, M, time_idx):
+    w_sel = w[:, time_idx : time_idx + M]
+    eta_sel = eta[:, time_idx : time_idx + M + 1]
+    Q_cov = np.cov(w_sel, rowvar=True)
+    R_cov = np.cov(eta_sel, rowvar=True)
+    Q_mhe = np.linalg.inv(Q_cov)
+    R_mhe = np.linalg.inv(R_cov)
+    return float(
+        helpers.get_cost_mle(
+            M,
+            w_sel,
+            eta_sel,
+            Q_mhe,
+            R_mhe,
+            Q_cov,
+            R_cov,
+            np.arange(M + 1),
+        )
+    )
+
+
 def get_likelihood_over_runs(
     w_est_all, eta_est_all, Q_mhe_all, R_mhe_all, Q_cov_est_all, R_cov_est_all, time_idx
 ):
@@ -838,7 +859,7 @@ def plot_costs(
     fig.legend()
 
 
-def plot_likelihood(exp_idx, likelihood):
+def plot_likelihood(exp_idx, likelihood, likelihood_gt=None):
     fig, ax = plt.subplots(
         1, 1, num=f"Experiment {exp_idx} - Likelihood over iterations"
     )
@@ -850,10 +871,20 @@ def plot_likelihood(exp_idx, likelihood):
         "-o",
         linewidth=widths,
         markersize=sizes,
+        label="Likelihood",
     )
+    if likelihood_gt is not None:
+        ax.axhline(
+            y=likelihood_gt,
+            color="red",
+            linestyle="--",
+            linewidth=widths,
+            label="Ground truth likelihood",
+        )
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.set_xlabel("Iteration")
     ax.set_ylabel("-log(likelihood)")
+    ax.legend()
 
 
 def plot_Q_R_trace(exp_idx, Q_cov_est_all, R_cov_est_all):
@@ -1247,7 +1278,11 @@ if __name__ == "__main__":
                 R_cov_est_all,
                 time_idx,
             )
-            plot_likelihood(exp_idx, likelihood)
+            if w is not None and eta is not None:
+                likelihood_gt = get_likelihood_gt(w, eta, M, time_idx)
+            else:
+                likelihood_gt = None
+            plot_likelihood(exp_idx, likelihood, likelihood_gt)
         if do_plot_Q_R_trace:
             plot_Q_R_trace(exp_idx, Q_cov_est_all, R_cov_est_all)
         if do_plot_Q_diag:
