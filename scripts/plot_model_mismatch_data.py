@@ -177,7 +177,7 @@ def plot_y_y_fs_over_horizon(exp_idx, t, y, y_fs, M, time_idx):
                 markersize=sizes,
             )
         axes[row_idx, col_idx].set_xlabel("Time (s)")
-        axes[row_idx, col_idx].set_ylabel(y_labels[y_idx])
+        axes[row_idx, col_idx].set_ylabel(f"{y_labels[y_idx]} ({y_unit_labels[y_idx]})")
     fig.legend(["Measured", "Forward-simulated"])
 
 
@@ -223,7 +223,7 @@ def plot_y_x_est_u_over_time(exp_idx, t, x_est, y, u, stage_idx):
                 markersize=sizes,
             )
         axes[row_idx, col_idx].set_xlabel("Time (s)")
-        axes[row_idx, col_idx].set_ylabel(x_labels[x_idx])
+        axes[row_idx, col_idx].set_ylabel(f"{x_labels[x_idx]} ({x_unit_labels[x_idx]})")
     fig.legend(["Measured outputs", "Estimated states", "Applied inputs"])
 
 
@@ -271,7 +271,7 @@ def plot_y_x_est_u_over_horizon(exp_idx, t, x_est_all_last_iter, y, u, time_idx)
                 markersize=sizes,
             )
         axes[row_idx, col_idx].set_xlabel("Time (s)")
-        axes[row_idx, col_idx].set_ylabel(x_labels[x_idx])
+        axes[row_idx, col_idx].set_ylabel(f"{x_labels[x_idx]} ({x_unit_labels[x_idx]})")
     fig.legend(["Measured outputs", "Estimated states", "Applied inputs"])
 
 
@@ -389,7 +389,7 @@ def plot_gazebo_w_over_time(name, w):
             markersize=sizes,
         )
         axes[row_idx, col_idx].set_xlabel("Time index")
-        axes[row_idx, col_idx].set_ylabel(w_labels[w_idx])
+        axes[row_idx, col_idx].set_ylabel(f"{w_labels[w_idx]} ({w_unit_labels[w_idx]})")
 
 
 def plot_gazebo_u_w(name, u, w, w_idx):
@@ -408,8 +408,10 @@ def plot_gazebo_u_w(name, u, w, w_idx):
             w[w_idx, :],
             s=sizes,
         )
-        axes[row_idx, col_idx].set_xlabel(f"{u_labels[ax_idx]}")
-        axes[row_idx, col_idx].set_ylabel(f"{w_labels[w_idx]}")
+        axes[row_idx, col_idx].set_xlabel(
+            f"{u_labels[ax_idx]} ({u_unit_labels[ax_idx]})"
+        )
+        axes[row_idx, col_idx].set_ylabel(f"{w_labels[w_idx]} ({w_unit_labels[w_idx]})")
     fig.legend(["Disturbances over inputs"])
 
 
@@ -433,8 +435,8 @@ def plot_gazebo_y_w(name, y, w, w_idx):
             w[w_idx, :],
             s=sizes,
         )
-        axes[row_idx, col_idx].set_xlabel(f"{y_labels[y_idx]}")
-        axes[row_idx, col_idx].set_ylabel(f"{w_labels[w_idx]}")
+        axes[row_idx, col_idx].set_xlabel(f"{y_labels[y_idx]} ({y_unit_labels[y_idx]})")
+        axes[row_idx, col_idx].set_ylabel(f"{w_labels[w_idx]} ({w_unit_labels[w_idx]})")
     fig.legend(["Disturbances over outputs"])
 
 
@@ -459,7 +461,7 @@ def plot_gazebo_w_sorted(name, w):
             w_idc, w_sorted, "-o", linewidth=widths, markersize=sizes
         )
         axes[row_idx, col_idx].set_xlabel("Index")
-        axes[row_idx, col_idx].set_ylabel(f"{w_labels[w_idx]}")
+        axes[row_idx, col_idx].set_ylabel(f"{w_labels[w_idx]} ({w_unit_labels[w_idx]})")
     fig.legend(["Disturbances sorted"])
 
 
@@ -493,7 +495,7 @@ def plot_w_est_over_time(exp_idx, t, w, w_est, stage_idx):
             markersize=sizes,
         )
         axes[row_idx, col_idx].set_xlabel("Time (s)")
-        axes[row_idx, col_idx].set_ylabel(w_labels[w_idx])
+        axes[row_idx, col_idx].set_ylabel(f"{w_labels[w_idx]} ({w_unit_labels[w_idx]})")
     if w is not None:
         fig.legend(["Ground truth", "Estimated"])
 
@@ -531,7 +533,7 @@ def plot_w_est_over_horizon(exp_idx, t, ts, w, w_est, time_idx):
             markersize=sizes,
         )
         axes[row_idx, col_idx].set_xlabel("Time (s)")
-        axes[row_idx, col_idx].set_ylabel(w_labels[w_idx])
+        axes[row_idx, col_idx].set_ylabel(f"{w_labels[w_idx]} ({w_unit_labels[w_idx]})")
     if w is not None:
         fig.legend(["Ground truth", "Estimated"])
 
@@ -649,7 +651,9 @@ def plot_eta_est_over_time(exp_idx, t, eta, eta_est, stage_idx):
             markersize=sizes,
         )
         axes[row_idx, col_idx].set_xlabel("Time (s)")
-        axes[row_idx, col_idx].set_ylabel(y_labels[eta_idx])
+        axes[row_idx, col_idx].set_ylabel(
+            f"{eta_labels[eta_idx]} ({eta_unit_labels[eta_idx]})"
+        )
     if eta is not None:
         fig.legend(["Ground truth", "Estimated"])
 
@@ -687,7 +691,9 @@ def plot_eta_est_over_horizon(exp_idx, t, ts, eta, eta_est, time_idx):
             markersize=sizes,
         )
         axes[row_idx, col_idx].set_xlabel("Time (s)")
-        axes[row_idx, col_idx].set_ylabel(y_labels[eta_idx])
+        axes[row_idx, col_idx].set_ylabel(
+            f"{eta_labels[eta_idx]} ({eta_unit_labels[eta_idx]})"
+        )
     if eta is not None:
         fig.legend(["Ground truth", "Estimated"])
 
@@ -724,7 +730,7 @@ def plot_eta_est_gt_ratios(exp_idx, eta_est_gt_ratios_min, eta_est_gt_ratios_max
         axes[row_idx, col_idx].xaxis.set_major_locator(MaxNLocator(integer=True))
         axes[row_idx, col_idx].set_xlabel("Iteration")
         axes[row_idx, col_idx].set_ylabel(
-            f"Measurement noise ratio {y_labels[eta_idx]}"
+            f"Measurement noise ratio {eta_labels[eta_idx]}"
         )
     fig.legend(["Min ratios", "Max ratios"])
 
@@ -751,8 +757,8 @@ def plot_x_est_w_est_stage(exp_idx, x_est, w_est, stage_idx):
             s=sizes,
             linewidth=widths,
         )
-        axes[row_idx, col_idx].set_xlabel(f"{x_labels[w_idx]}")
-        axes[row_idx, col_idx].set_ylabel(f"{w_labels[w_idx]}")
+        axes[row_idx, col_idx].set_xlabel(f"{x_labels[w_idx]} ({x_unit_labels[w_idx]})")
+        axes[row_idx, col_idx].set_ylabel(f"{w_labels[w_idx]} ({w_unit_labels[w_idx]})")
 
 
 def plot_costs(
@@ -1052,9 +1058,15 @@ if __name__ == "__main__":
     plot_w_idx_at_ax_idx = config["plot_settings"]["plot_w_idx_at_ax_idx"]
     plot_eta_idx_at_ax_idx = config["plot_settings"]["plot_eta_idx_at_ax_idx"]
     u_labels = config["plot_settings"]["u_labels"]
+    u_unit_labels = config["plot_settings"]["u_unit_labels"]
     x_labels = config["plot_settings"]["x_labels"]
+    x_unit_labels = config["plot_settings"]["x_unit_labels"]
     y_labels = config["plot_settings"]["y_labels"]
+    y_unit_labels = config["plot_settings"]["y_unit_labels"]
     w_labels = config["plot_settings"]["w_labels"]
+    w_unit_labels = config["plot_settings"]["w_unit_labels"]
+    eta_labels = config["plot_settings"]["eta_labels"]
+    eta_unit_labels = config["plot_settings"]["eta_unit_labels"]
 
     # Read data
     with open(f"{model_mismatch_results_dir}/{mhe_json_name}.json", "r") as f:

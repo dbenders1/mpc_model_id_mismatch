@@ -1,11 +1,11 @@
 mhe_json_name: falcon_t
 time_idx: 0
 
-# gazebo_w_json_names: []
-gazebo_w_json_names:
-  [
-    2025-08-01_gaz_meas_noise_div10_falcon_mpc_model_mismatch_circle_r1_f0dot3_cw_w,
-  ]
+gazebo_w_json_names: []
+# gazebo_w_json_names:
+#   [
+#     2025-08-01_gaz_meas_noise_div10_falcon_mpc_model_mismatch_circle_r1_f0dot3_cw_w,
+#   ]
 # gazebo_w_json_names:
 #   [
 #     2025-07-15_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_w,
@@ -95,35 +95,69 @@ plot_settings:
     [0, 1, 2, null, 3, 4, 5, null, 6, 7, 8, null, 9, 10, 11, null]
   plot_eta_idx_at_ax_idx:
     [0, 1, 2, null, 3, 4, 5, null, 6, 7, 8, null, 9, 10, 11, null]
-  u_labels: [t0 (N), t1 (N), t2 (N), t3 (N)]
+  u_labels: [t0, t1, t2, t3]
+  u_unit_labels: [N, N, N, N]
   x_labels:
     &my_x_labels [
-      px (m),
-      py (m),
-      pz (m),
-      $\phi$ (rad),
-      "$\\theta$ (rad)",
-      $\psi$ (rad),
-      vx (m/s),
-      vy (m/s),
-      vz (m/s),
-      wbx (rad/s),
-      wby (rad/s),
-      wbz (rad/s),
+      px,
+      py,
+      pz,
+      $\phi$,
+      "$\\theta$",
+      $\psi$,
+      vx,
+      vy,
+      vz,
+      wbx,
+      wby,
+      wbz,
+    ]
+  x_unit_labels:
+    &my_x_unit_labels [
+      "$m$",
+      "$m$",
+      "$m$",
+      "$rad$",
+      "$rad$",
+      "$rad$",
+      "$m/s$",
+      "$m/s$",
+      "$m/s$",
+      "$rad/s$",
+      "$rad/s$",
+      "$rad/s$",
     ]
   y_labels: *my_x_labels
+  y_unit_labels: *my_x_unit_labels
   w_labels:
     [
-      "$w_{px} (m / s)$",
-      "$w_{py} (m / s)$",
-      "$w_{pz} (m / s)$",
-      "$w_{\\phi} (rad / s)$",
-      "$w_{\\theta} (rad / s)$",
-      "$w_{\\psi} (rad / s)$",
-      "$w_{vx} (m/s / s)$",
-      "$w_{vy} (m/s / s)$",
-      "$w_{vz} (m/s / s)$",
-      "$w_{wbx} (rad/s / s)$",
-      "$w_{wby} (rad/s / s)$",
-      "$w_{wbz} (rad/s / s)$",
+      "$w_{px}$",
+      "$w_{py}$",
+      "$w_{pz}$",
+      "$w_{\\phi}$",
+      "$w_{\\theta}$",
+      "$w_{\\psi}$",
+      "$w_{vx}$",
+      "$w_{vy}$",
+      "$w_{vz}$",
+      "$w_{wbx}$",
+      "$w_{wby}$",
+      "$w_{wbz}$",
     ]
+  w_unit_labels:
+    [
+      "m / s",
+      "m / s",
+      "m / s",
+      "rad / s",
+      "rad / s",
+      "rad / s",
+      "m/s / s",
+      "m/s / s",
+      "m/s / s",
+      "rad/s / s",
+      "rad/s / s",
+      "rad/s / s",
+    ]
+  eta_labels: *my_x_labels
+  eta_unit_labels: *my_x_unit_labels
