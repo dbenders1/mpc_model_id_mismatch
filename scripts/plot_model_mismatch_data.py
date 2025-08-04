@@ -569,6 +569,53 @@ def plot_w_est_gt_ratios(exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_max):
     fig.legend(["Min ratios", "Max ratios"])
 
 
+def plot_w_est_gt_ratios_combined(exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_max):
+    fig, ax = plt.subplots(
+        num=f"Experiment {exp_idx} - Combined min/max disturbance ratios",
+    )
+    fig.suptitle(f"Combined min/max disturbance ratios")
+    n_iter = w_est_gt_ratios_min.shape[0]
+    n_w = w_est_gt_ratios_min.shape[1]
+    avg_min = np.mean(w_est_gt_ratios_min, axis=1)
+    avg_max = np.mean(w_est_gt_ratios_max, axis=1)
+    ax.plot(
+        np.arange(0, n_iter),
+        avg_min,
+        "-v",
+        linewidth=5 * widths,
+        markersize=3 * sizes,
+        label="Average min",
+    )
+    ax.plot(
+        np.arange(0, n_iter),
+        avg_max,
+        "-^",
+        linewidth=5 * widths,
+        markersize=3 * sizes,
+        label="Average max",
+    )
+    for w_idx in range(n_w):
+        ax.plot(
+            np.arange(0, n_iter),
+            w_est_gt_ratios_min[:, w_idx],
+            "-v",
+            linewidth=widths,
+            markersize=2 * sizes,
+            label=f"{w_labels[w_idx]} min",
+        )
+        ax.plot(
+            np.arange(0, n_iter),
+            w_est_gt_ratios_max[:, w_idx],
+            "-^",
+            linewidth=widths,
+            markersize=2 * sizes,
+            label=f"{w_labels[w_idx]} max",
+        )
+    ax.set_xlabel("Iteration")
+    ax.set_ylabel(f"Disturbance ratio")
+    fig.legend()
+
+
 def plot_eta_est_over_time(exp_idx, t, eta, eta_est, stage_idx):
     fig, axes = plt.subplots(
         n_rows_states,
@@ -967,6 +1014,7 @@ if __name__ == "__main__":
     do_plot_eta_est_over_horizon = config["do_plot"]["eta_est_over_horizon"]
     do_plot_x_est_w_est_stage = config["do_plot"]["x_est_w_est_stage"]
     do_plot_w_est_gt_ratios = config["do_plot"]["w_est_gt_ratios"]
+    do_plot_w_est_gt_ratios_combined = config["do_plot"]["w_est_gt_ratios_combined"]
     do_plot_eta_est_gt_ratios = config["do_plot"]["eta_est_gt_ratios"]
     do_plot_costs = config["do_plot"]["costs"]
     do_plot_likelihood = config["do_plot"]["likelihood"]
@@ -1123,6 +1171,14 @@ if __name__ == "__main__":
                     w_min, w_max, w_est_all, stage_idx
                 )
                 plot_w_est_gt_ratios(exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_max)
+        if do_plot_w_est_gt_ratios_combined:
+            if w is not None:
+                w_est_gt_ratios_min, w_est_gt_ratios_max = get_w_est_gt_ratios(
+                    w_min, w_max, w_est_all, stage_idx
+                )
+                plot_w_est_gt_ratios_combined(
+                    exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_max
+                )
         if do_plot_eta_est_over_time:
             plot_eta_est_over_time(exp_idx, t, eta, eta_est_all_last_iter, stage_idx)
         if do_plot_eta_est_over_horizon:

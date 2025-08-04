@@ -30,7 +30,8 @@ do_plot:
   eta_est_over_time: false
   eta_est_over_horizon: false
   x_est_w_est_stage: false
-  w_est_gt_ratios: true
+  w_est_gt_ratios: false
+  w_est_gt_ratios_combined: true
   eta_est_gt_ratios: false
   costs: false
   likelihood: false
