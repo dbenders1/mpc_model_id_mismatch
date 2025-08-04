@@ -30,10 +30,10 @@ do_plot:
   eta_est_over_time: false
   eta_est_over_horizon: false
   x_est_w_est_stage: false
-  w_est_gt_ratios: false
+  w_est_gt_ratios: true
   eta_est_gt_ratios: false
   costs: false
-  likelihood: true
+  likelihood: false
   Q_R_trace: false
   Q_diag: false
   R_diag: false
@@ -87,24 +87,7 @@ plot_settings:
       3,
     ]
   plot_w_idx_at_ax_idx:
-    [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      0,
-      1,
-      2,
-      null,
-      3,
-      4,
-      5,
-      null,
-    ]
+    [0, 1, 2, null, 3, 4, 5, null, 6, 7, 8, null, 9, 10, 11, null]
   plot_eta_idx_at_ax_idx:
     [0, 1, 2, null, 3, 4, 5, null, 6, 7, 8, null, 9, 10, 11, null]
   u_labels: [t0 (N), t1 (N), t2 (N), t3 (N)]
@@ -126,6 +109,12 @@ plot_settings:
   y_labels: *my_x_labels
   w_labels:
     [
+      "$w_{px} (m / s)$",
+      "$w_{py} (m / s)$",
+      "$w_{pz} (m / s)$",
+      "$w_{\\phi} (rad / s)$",
+      "$w_{\\theta} (rad / s)$",
+      "$w_{\\psi} (rad / s)$",
       "$w_{vx} (m/s / s)$",
       "$w_{vy} (m/s / s)$",
       "$w_{vz} (m/s / s)$",
