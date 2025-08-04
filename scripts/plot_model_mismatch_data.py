@@ -596,50 +596,46 @@ def plot_w_est_gt_ratios(exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_max):
 
 def plot_w_est_gt_ratios_combined(exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_max):
     fig, ax = plt.subplots(
-        num=f"Experiment {exp_idx} - Combined min/max disturbance ratios over iterations",
+        num=f"Experiment {exp_idx} - Average disturbance ratios over iterations",
     )
-    fig.suptitle(f"Combined min/max disturbance ratios over iterations")
+    fig.suptitle(f"Average disturbance ratios over iterations")
     n_iter = w_est_gt_ratios_min.shape[0]
     n_w = w_est_gt_ratios_min.shape[1]
-    avg_min = np.mean(w_est_gt_ratios_min, axis=1)
-    avg_max = np.mean(w_est_gt_ratios_max, axis=1)
-    ax.plot(
-        np.arange(1, 1 + n_iter),
-        avg_min,
-        "-v",
-        linewidth=5 * widths,
-        markersize=3 * sizes,
-        label="Average min",
+    w_est_gt_ratios_avg = (w_est_gt_ratios_min + w_est_gt_ratios_max) / 2
+    gt_ratios_avg = np.mean(w_est_gt_ratios_avg, axis=1)
+    gt_ratios_std = np.std(w_est_gt_ratios_avg, axis=1)
+    ax.axhline(
+        1.0,
+        color="green",
+        linestyle="--",
+        linewidth=3 * widths,
+        label="Desired ratio",
     )
-    ax.plot(
+    ax.errorbar(
         np.arange(1, 1 + n_iter),
-        avg_max,
-        "-^",
-        linewidth=5 * widths,
-        markersize=3 * sizes,
-        label="Average max",
+        gt_ratios_avg,
+        yerr=gt_ratios_std,
+        elinewidth=3 * widths,
+        capsize=10,
+        capthick=3 * widths,
+        barsabove=True,
+        linewidth=3 * widths,
+        markersize=2 * sizes,
+        label="Mean and std deviation",
     )
     for w_idx in range(n_w):
         ax.plot(
             np.arange(1, 1 + n_iter),
-            w_est_gt_ratios_min[:, w_idx],
-            "-v",
+            w_est_gt_ratios_avg[:, w_idx],
+            "-.o",
             linewidth=widths,
-            markersize=2 * sizes,
-            label=f"{w_labels[w_idx]} min",
-        )
-        ax.plot(
-            np.arange(1, 1 + n_iter),
-            w_est_gt_ratios_max[:, w_idx],
-            "-^",
-            linewidth=widths,
-            markersize=2 * sizes,
-            label=f"{w_labels[w_idx]} max",
+            markersize=sizes,
+            label=f"{w_labels[w_idx]}",
         )
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.set_yscale("log")
     ax.set_xlabel("Iteration")
     ax.set_ylabel(f"Disturbance ratio")
-    fig.legend()
 
 
 def plot_eta_est_over_time(exp_idx, t, eta, eta_est, stage_idx):

@@ -35,10 +35,10 @@ do_plot:
   eta_est_over_horizon: false
   x_est_w_est_stage: false
   w_est_gt_ratios: false
-  w_est_gt_ratios_combined: false
+  w_est_gt_ratios_combined: true
   eta_est_gt_ratios: false
   costs: false
-  likelihood: true
+  likelihood: false
   Q_R_trace: false
   Q_diag: false
   R_diag: false
