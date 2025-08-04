@@ -13,6 +13,7 @@ from pathlib import Path
 from os import path
 from scipy import interpolate, stats
 from scipy.linalg import block_diag
+from sklearn.metrics import mean_squared_error
 
 # Logging functionality
 log = logging.getLogger(__name__)
@@ -58,6 +59,15 @@ class ComputeModelMismatch:
         self.do_print_disturbances_min = config["printing"]["disturbances"]["min"]
         self.do_print_disturbances_max = config["printing"]["disturbances"]["max"]
         self.do_print_disturbances_bias = config["printing"]["disturbances"]["bias"]
+        self.do_print_disturbances_min_rmse = config["printing"]["disturbances"][
+            "min_rmse"
+        ]
+        self.do_print_disturbances_max_rmse = config["printing"]["disturbances"][
+            "max_rmse"
+        ]
+        self.do_print_disturbances_total_rmse = config["printing"]["disturbances"][
+            "total_rmse"
+        ]
         self.do_print_meas_noises_min = config["printing"]["meas_noises"]["min"]
         self.do_print_meas_noises_max = config["printing"]["meas_noises"]["max"]
 
@@ -908,6 +918,39 @@ class ComputeModelMismatch:
             self.disturbances_max_est_rel = (
                 self.disturbances_max_est_abs - self.disturbances_bias_est
             )
+            if self.disturbances_gt_known:
+                self.disturbances_min_abs_rmse = mean_squared_error(
+                    self.disturbances_min_gt_abs,
+                    self.disturbances_min_est_abs,
+                    squared=False,
+                )
+                self.disturbances_max_abs_rmse = mean_squared_error(
+                    self.disturbances_max_gt_abs,
+                    self.disturbances_max_est_abs,
+                    squared=False,
+                )
+                self.disturbances_total_abs_rmse = mean_squared_error(
+                    np.concatenate(
+                        [
+                            self.disturbances_min_gt_abs,
+                            self.disturbances_max_gt_abs,
+                        ]
+                    ),
+                    np.concatenate(
+                        [
+                            self.disturbances_min_est_abs,
+                            self.disturbances_max_est_abs,
+                        ]
+                    ),
+                    squared=False,
+                )
+            else:
+                log.warning(
+                    "Ground truth disturbances are not known. Cannot compute RMSE for lower, upper, and total disturbance bounds. Setting printing to False"
+                )
+                self.do_print_disturbances_min_rmse = False
+                self.do_print_disturbances_max_rmse = False
+                self.do_print_disturbances_total_rmse = False
         self.meas_noises_min_est_abs = np.min(
             self.eta_mhe_all[iter_idx, :, :, self.stage_est], axis=0
         )
@@ -922,6 +965,9 @@ class ComputeModelMismatch:
             self.do_print_disturbances_min
             or self.do_print_disturbances_max
             or self.do_print_disturbances_bias
+            or self.do_print_disturbances_min_rmse
+            or self.do_print_disturbances_max_rmse
+            or self.do_print_disturbances_total_rmse
         )
         if do_print_disturbances:
             print(f"\nDisturbance bounds:")
@@ -958,6 +1004,12 @@ class ComputeModelMismatch:
                         print(
                             f"Bias GT: {self.disturbances_bias_gt[-self.n_disturbances :]}"
                         )
+            if self.do_print_disturbances_min_rmse:
+                print(f"Min RMSE: {self.disturbances_min_abs_rmse}")
+            if self.do_print_disturbances_max_rmse:
+                print(f"Max RMSE: {self.disturbances_max_abs_rmse}")
+            if self.do_print_disturbances_total_rmse:
+                print(f"Total RMSE: {self.disturbances_total_abs_rmse}")
 
         do_print_meas_noises = (
             self.do_print_meas_noises_min or self.do_print_meas_noises_max
@@ -1024,6 +1076,9 @@ class ComputeModelMismatch:
         data_stat = {
             "w_min_est_abs": self.disturbances_min_est_abs.tolist(),
             "w_max_est_abs": self.disturbances_max_est_abs.tolist(),
+            "w_min_abs_rmse": self.disturbances_min_abs_rmse,
+            "w_max_abs_rmse": self.disturbances_max_abs_rmse,
+            "w_total_abs_rmse": self.disturbances_total_abs_rmse,
             "eta_min_est_abs": self.meas_noises_min_est_abs.tolist(),
             "eta_max_est_abs": self.meas_noises_max_est_abs.tolist(),
         }
@@ -1456,6 +1511,24 @@ def compute_absolute_w_eta_bounds(data, determine_w, sim_eta_max, do_print_w_eta
         w_max_gt = np.max(w_max_all_gt, axis=0)
         data["common"]["w_min_gt"] = w_min_gt.tolist()
         data["common"]["w_max_gt"] = w_max_gt.tolist()
+        data["common"]["w_min_abs_rmse"] = mean_squared_error(
+            w_min_gt, w_min_abs, squared=False
+        )
+        data["common"]["w_max_abs_rmse"] = mean_squared_error(
+            w_max_gt, w_max_abs, squared=False
+        )
+        data["common"]["w_total_abs_rmse"] = mean_squared_error(
+            np.concatenate([w_min_gt, w_max_gt]),
+            np.concatenate([w_min_abs, w_max_abs]),
+            squared=False,
+        )
+    else:
+        log.warning(
+            "Ground truth disturbances are not known. Cannot compute RMSE for overall lower, upper, and total disturbance bounds. Setting printing to False"
+        )
+        do_print_disturbances_min_rmse = False
+        do_print_disturbances_max_rmse = False
+        do_print_disturbances_total_rmse = False
 
     # Compute and store the ground truth measurement noise bounds
     sim_eta_min = -sim_eta_max
@@ -1466,12 +1539,18 @@ def compute_absolute_w_eta_bounds(data, determine_w, sim_eta_max, do_print_w_eta
     do_print_disturbances_min = do_print_w_eta[0]
     do_print_disturbances_max = do_print_w_eta[1]
     do_print_disturbances_bias = do_print_w_eta[2]
-    do_print_meas_noises_min = do_print_w_eta[3]
-    do_print_meas_noises_max = do_print_w_eta[4]
+    do_print_disturbances_min_rmse = do_print_w_eta[3]
+    do_print_disturbances_max_rmse = do_print_w_eta[4]
+    do_print_disturbances_total_rmse = do_print_w_eta[5]
+    do_print_meas_noises_min = do_print_w_eta[6]
+    do_print_meas_noises_max = do_print_w_eta[7]
     do_print_disturbances = (
         do_print_disturbances_min
         or do_print_disturbances_max
         or do_print_disturbances_bias
+        or do_print_disturbances_min_rmse
+        or do_print_disturbances_max_rmse
+        or do_print_disturbances_total_rmse
     )
     do_print_meas_noises = do_print_meas_noises_min or do_print_meas_noises_max
     if do_print_disturbances:
@@ -1494,6 +1573,12 @@ def compute_absolute_w_eta_bounds(data, determine_w, sim_eta_max, do_print_w_eta
                     )
         # if do_print_disturbances_bias:
         #     print(f'Bias:    {data["common"]["w_bias"]}')
+        if do_print_disturbances_min_rmse:
+            print(f'Min RMSE: {data["common"]["w_min_abs_rmse"]}')
+        if do_print_disturbances_max_rmse:
+            print(f'Max RMSE: {data["common"]["w_max_abs_rmse"]}')
+        if do_print_disturbances_total_rmse:
+            print(f'Total RMSE: {data["common"]["w_total_abs_rmse"]}')
     if do_print_meas_noises:
         print(f"\nOverall measurement noise bounds:")
         if do_print_meas_noises_min:
@@ -1594,12 +1679,18 @@ if __name__ == "__main__":
     do_print_disturbances_min = config["printing"]["disturbances"]["min"]
     do_print_disturbances_max = config["printing"]["disturbances"]["max"]
     do_print_disturbances_bias = config["printing"]["disturbances"]["bias"]
+    do_print_disturbances_min_rmse = config["printing"]["disturbances"]["min_rmse"]
+    do_print_disturbances_max_rmse = config["printing"]["disturbances"]["max_rmse"]
+    do_print_disturbances_total_rmse = config["printing"]["disturbances"]["total_rmse"]
     do_print_meas_noises_min = config["printing"]["meas_noises"]["min"]
     do_print_meas_noises_max = config["printing"]["meas_noises"]["max"]
     do_print_w_eta = [
         do_print_disturbances_min,
         do_print_disturbances_max,
         do_print_disturbances_bias,
+        do_print_disturbances_min_rmse,
+        do_print_disturbances_max_rmse,
+        do_print_disturbances_total_rmse,
         do_print_meas_noises_min,
         do_print_meas_noises_max,
     ]

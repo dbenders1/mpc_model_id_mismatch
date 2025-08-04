@@ -255,6 +255,9 @@ printing:
     min: true
     max: true
     bias: true
+    min_rmse: true
+    max_rmse: true
+    total_rmse: true
   meas_noises:
     min: true
     max: true
