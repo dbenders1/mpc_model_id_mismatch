@@ -163,5 +163,5 @@ plot_settings:
   eta_unit_labels: *my_x_unit_labels
 
 save_settings:
-  likelihood: false
+  likelihood: true
   w_est_gt_ratios_combined: true
