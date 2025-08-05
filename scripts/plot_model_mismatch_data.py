@@ -855,11 +855,15 @@ def plot_costs(
     fig.legend()
 
 
-def plot_likelihood(exp_idx, likelihood, likelihood_gt=None):
+def plot_likelihood(exp_idx, likelihood, likelihood_gt=None, do_save_likelihood=False):
+    if do_save_likelihood:
+        helpers.set_plt_properties()
+        props = helpers.set_fig_properties()
     fig, ax = plt.subplots(
-        1, 1, num=f"Experiment {exp_idx} - Likelihood over iterations"
+        figsize=(6.4, 3), num=f"Experiment {exp_idx} - Likelihood over iterations"
     )
-    fig.suptitle(f"Likelihood over iterations")
+    if not do_save_likelihood:
+        fig.suptitle(f"Likelihood over iterations")
     n_iter = likelihood.shape[0]
     ax.plot(
         np.arange(1, 1 + n_iter),
@@ -867,7 +871,7 @@ def plot_likelihood(exp_idx, likelihood, likelihood_gt=None):
         "-o",
         linewidth=widths,
         markersize=sizes,
-        label="Likelihood",
+        label="MLE",
     )
     if likelihood_gt is not None:
         ax.axhline(
@@ -879,8 +883,24 @@ def plot_likelihood(exp_idx, likelihood, likelihood_gt=None):
         )
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.set_xlabel("Iteration")
-    ax.set_ylabel("log(likelihood)")
-    ax.legend()
+    if do_save_likelihood:
+        ax.set_ylabel("log(MLE)")
+        ax.xaxis.labelpad = props["xlabelpad"]
+        ax.yaxis.labelpad = props["ylabelpad"]
+        ax.tick_params(pad=props["tickpad"])
+        ax.set_axisbelow(True)
+        ax.grid(True)
+
+        # Resize figure
+        helpers.resize_fig(fig, scale=1)
+        fig.subplots_adjust(right=0.99, top=0.99, bottom=0.14, left=0.14)
+
+        # Save figure
+        if do_save_likelihood:
+            fig_path = f"{fig_dir}/likelihood.pdf"
+            helpers.save_fig(fig, fig_path)
+    else:
+        ax.set_ylabel("log(likelihood)")
 
 
 def plot_Q_R_trace(exp_idx, Q_cov_est_all, R_cov_est_all):
@@ -1040,6 +1060,7 @@ if __name__ == "__main__":
     config_path = f"{config_dir}/scripts/plot_model_mismatch_data.yaml"
     data_dir = f"{package_dir}/data"
     model_mismatch_results_dir = f"{data_dir}/model_mismatch_results"
+    fig_dir = f"{data_dir}/figures/model_mismatch"
 
     # Read configuration parameters
     with open(config_path) as file:
@@ -1094,6 +1115,10 @@ if __name__ == "__main__":
     w_unit_labels = config["plot_settings"]["w_unit_labels"]
     eta_labels = config["plot_settings"]["eta_labels"]
     eta_unit_labels = config["plot_settings"]["eta_unit_labels"]
+
+    do_save_likelihood = config["save_settings"]["likelihood"]
+    if do_save_likelihood:
+        do_plot_likelihood = True
 
     # Read data
     with open(f"{model_mismatch_results_dir}/{mhe_json_name}.json", "r") as f:
@@ -1278,7 +1303,7 @@ if __name__ == "__main__":
                 likelihood_gt = get_likelihood_gt(w, eta, M, time_idx)
             else:
                 likelihood_gt = None
-            plot_likelihood(exp_idx, likelihood, likelihood_gt)
+            plot_likelihood(exp_idx, likelihood, None, do_save_likelihood)
         if do_plot_Q_R_trace:
             plot_Q_R_trace(exp_idx, Q_cov_est_all, R_cov_est_all)
         if do_plot_Q_diag:
