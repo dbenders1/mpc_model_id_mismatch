@@ -594,48 +594,74 @@ def plot_w_est_gt_ratios(exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_max):
     fig.legend(["Min ratios", "Max ratios"])
 
 
-def plot_w_est_gt_ratios_combined(exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_max):
+def plot_w_est_gt_ratios_combined(
+    exp_idx,
+    w_est_gt_ratios_min,
+    w_est_gt_ratios_max,
+    do_save_w_est_gt_ratios_combined=False,
+):
+    if do_save_w_est_gt_ratios_combined:
+        helpers.set_plt_properties()
+        props = helpers.set_fig_properties()
     fig, ax = plt.subplots(
+        figsize=(6.4, 3),
         num=f"Experiment {exp_idx} - Average disturbance ratios over iterations",
     )
-    fig.suptitle(f"Average disturbance ratios over iterations")
+    if not do_save_w_est_gt_ratios_combined:
+        fig.suptitle(f"Average disturbance ratios over iterations")
     n_iter = w_est_gt_ratios_min.shape[0]
     n_w = w_est_gt_ratios_min.shape[1]
     w_est_gt_ratios_avg = (w_est_gt_ratios_min + w_est_gt_ratios_max) / 2
     gt_ratios_avg = np.mean(w_est_gt_ratios_avg, axis=1)
     gt_ratios_std = np.std(w_est_gt_ratios_avg, axis=1)
+    for w_idx in range(n_w):
+        ax.plot(
+            np.arange(1, 1 + n_iter),
+            w_est_gt_ratios_avg[:, w_idx],
+            "-.",
+            linewidth=widths,
+            zorder=0,
+            label=f"{w_labels[w_idx]}",
+        )
     ax.axhline(
         1.0,
         color="green",
         linestyle="--",
         linewidth=3 * widths,
+        zorder=1,
         label="Desired ratio",
     )
     ax.errorbar(
         np.arange(1, 1 + n_iter),
         gt_ratios_avg,
+        color="tab:blue",
         yerr=gt_ratios_std,
         elinewidth=3 * widths,
-        capsize=10,
+        capsize=5,
         capthick=3 * widths,
         barsabove=True,
         linewidth=3 * widths,
-        markersize=2 * sizes,
+        zorder=2,
         label="Mean and std deviation",
     )
-    for w_idx in range(n_w):
-        ax.plot(
-            np.arange(1, 1 + n_iter),
-            w_est_gt_ratios_avg[:, w_idx],
-            "-.o",
-            linewidth=widths,
-            markersize=sizes,
-            label=f"{w_labels[w_idx]}",
-        )
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.set_yscale("log")
     ax.set_xlabel("Iteration")
     ax.set_ylabel(f"Disturbance ratio")
+    if do_save_w_est_gt_ratios_combined:
+        ax.xaxis.labelpad = props["xlabelpad"]
+        ax.yaxis.labelpad = props["ylabelpad"] + 3
+        ax.tick_params(pad=props["tickpad"])
+        ax.set_axisbelow(True)
+        ax.grid(True)
+
+        # Resize figure
+        helpers.resize_fig(fig, scale=1)
+        fig.subplots_adjust(right=0.99, top=0.99, bottom=0.14, left=0.14)
+
+        # Save figure
+        fig_path = f"{fig_dir}/w_est_gt_ratios_combined.pdf"
+        helpers.save_fig(fig, fig_path)
 
 
 def plot_eta_est_over_time(exp_idx, t, eta, eta_est, stage_idx):
@@ -896,9 +922,8 @@ def plot_likelihood(exp_idx, likelihood, likelihood_gt=None, do_save_likelihood=
         fig.subplots_adjust(right=0.99, top=0.99, bottom=0.14, left=0.14)
 
         # Save figure
-        if do_save_likelihood:
-            fig_path = f"{fig_dir}/likelihood.pdf"
-            helpers.save_fig(fig, fig_path)
+        fig_path = f"{fig_dir}/likelihood.pdf"
+        helpers.save_fig(fig, fig_path)
     else:
         ax.set_ylabel("log(likelihood)")
 
@@ -1119,6 +1144,11 @@ if __name__ == "__main__":
     do_save_likelihood = config["save_settings"]["likelihood"]
     if do_save_likelihood:
         do_plot_likelihood = True
+    do_save_w_est_gt_ratios_combined = config["save_settings"][
+        "w_est_gt_ratios_combined"
+    ]
+    if do_save_w_est_gt_ratios_combined:
+        do_plot_w_est_gt_ratios_combined = True
 
     # Read data
     with open(f"{model_mismatch_results_dir}/{mhe_json_name}.json", "r") as f:
@@ -1257,7 +1287,10 @@ if __name__ == "__main__":
                     w_min, w_max, w_est_all, stage_idx
                 )
                 plot_w_est_gt_ratios_combined(
-                    exp_idx, w_est_gt_ratios_min, w_est_gt_ratios_max
+                    exp_idx,
+                    w_est_gt_ratios_min,
+                    w_est_gt_ratios_max,
+                    do_save_w_est_gt_ratios_combined,
                 )
         if do_plot_eta_est_over_time:
             plot_eta_est_over_time(exp_idx, t, eta, eta_est_all_last_iter, stage_idx)
