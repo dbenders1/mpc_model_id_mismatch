@@ -289,10 +289,11 @@ if __name__ == "__main__":
                     x_forward_sim[t_idx, 0] = x_nom_ref[n_idx_ignore + t_idx]
                     for k_idx in range(n_forward_sim):
                         x_forward_sim[t_idx, k_idx + 1] = np.array(
-                            helpers.solve_rk4(
-                                model.state_update_ct,
+                            helpers.solve_rk4_noise(
+                                model.state_update_ct_noise,
                                 x_forward_sim[t_idx, k_idx],
                                 u_nom_ref[n_idx_ignore + t_idx + k_idx],
+                                w_bias,
                                 dt_tmpc,
                             )
                         ).flatten()
@@ -300,10 +301,11 @@ if __name__ == "__main__":
                     x_forward_sim[t_idx, 0] = x_cur_est[n_idx_ignore + t_idx]
                     for k_idx in range(n_forward_sim):
                         x_forward_sim[t_idx, k_idx + 1] = np.array(
-                            helpers.solve_rk4(
-                                model.state_update_ct,
+                            helpers.solve_rk4_noise(
+                                model.state_update_ct_noise,
                                 x_forward_sim[t_idx, k_idx],
                                 u_pred_traj[n_idx_ignore + t_idx, 0],
+                                w_bias,
                                 dt_tmpc,
                             )
                         ).flatten()

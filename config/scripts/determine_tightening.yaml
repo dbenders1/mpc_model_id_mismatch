@@ -96,19 +96,37 @@ data:
   #   [2025-08-01_18-02__ReferenceTrajectory_StaticPolyhedronConstraints_0]
   # ros_rec_json_names:
   #   [2025-08-01_gaz_meas_noise_falcon_wabs_rho_c_ref_u_sin_0dot12_rk4_x_int]
+  # runtime_json_names:
+  #   [
+  #     2025-08-01_18-48__ReferenceTrajectory_StaticPolyhedronConstraints_0,
+  #     2025-08-01_18-58__ReferenceTrajectory_StaticPolyhedronConstraints_0,
+  #     2025-08-01_19-00__ReferenceTrajectory_StaticPolyhedronConstraints_0,
+  #     2025-08-01_19-02__ReferenceTrajectory_StaticPolyhedronConstraints_0,
+  #   ]
+  # ros_rec_json_names:
+  #   [
+  #     2025-08-01_gaz_meas_noise_falcon_wabs_epsilon_w_bar_c_circle_r1_f0dot3_cw,
+  #     2025-08-01_gaz_meas_noise_falcon_wabs_epsilon_w_bar_c_circle_r1_f0dot3_ccw,
+  #     2025-08-01_gaz_meas_noise_falcon_wabs_epsilon_w_bar_c_lemniscate_r1_f0dot3_cw,
+  #     2025-08-01_gaz_meas_noise_falcon_wabs_epsilon_w_bar_c_lemniscate_r1_f0dot3_ccw,
+  #   ]
+  # runtime_json_names:
+  #   [2025-08-04_19-07__ReferenceTrajectory_StaticPolyhedronConstraints_0]
+  # ros_rec_json_names:
+  #   [2025-08-04_gaz_meas_noise_falcon_wrel_rho_c_ref_u_sin_0dot12_rk4_x_int]
   runtime_json_names:
     [
-      2025-08-01_18-48__ReferenceTrajectory_StaticPolyhedronConstraints_0,
-      2025-08-01_18-58__ReferenceTrajectory_StaticPolyhedronConstraints_0,
-      2025-08-01_19-00__ReferenceTrajectory_StaticPolyhedronConstraints_0,
-      2025-08-01_19-02__ReferenceTrajectory_StaticPolyhedronConstraints_0,
+      2025-08-05_04-50__ReferenceTrajectory_StaticPolyhedronConstraints_0,
+      2025-08-05_05-36__ReferenceTrajectory_StaticPolyhedronConstraints_0,
+      2025-08-05_05-39__ReferenceTrajectory_StaticPolyhedronConstraints_0,
+      2025-08-05_05-42__ReferenceTrajectory_StaticPolyhedronConstraints_0,
     ]
   ros_rec_json_names:
     [
-      2025-08-01_gaz_meas_noise_falcon_wabs_epsilon_w_bar_c_circle_r1_f0dot3_cw,
-      2025-08-01_gaz_meas_noise_falcon_wabs_epsilon_w_bar_c_circle_r1_f0dot3_ccw,
-      2025-08-01_gaz_meas_noise_falcon_wabs_epsilon_w_bar_c_lemniscate_r1_f0dot3_cw,
-      2025-08-01_gaz_meas_noise_falcon_wabs_epsilon_w_bar_c_lemniscate_r1_f0dot3_ccw,
+      2025-08-04_gaz_meas_noise_falcon_wrel_epsilon_w_bar_c_circle_r1_f0dot3_cw,
+      2025-08-04_gaz_meas_noise_falcon_wrel_epsilon_w_bar_c_circle_r1_f0dot3_ccw,
+      2025-08-04_gaz_meas_noise_falcon_wrel_epsilon_w_bar_c_lemniscate_r1_f0dot3_cw,
+      2025-08-04_gaz_meas_noise_falcon_wrel_epsilon_w_bar_c_lemniscate_r1_f0dot3_ccw,
     ]
   n_idx_ignore: 0
 
