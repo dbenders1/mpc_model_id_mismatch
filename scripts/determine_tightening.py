@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 import math
+import time
 import yaml
 
 import matplotlib.pyplot as plt
@@ -12,6 +13,9 @@ from pathlib import Path
 from mpc_model_id_mismatch import helpers
 
 if __name__ == "__main__":
+    # Start timing
+    start = time.time()
+
     # Log settings
     log = logging.getLogger(__name__)
     parser = argparse.ArgumentParser(description="something")
@@ -501,6 +505,10 @@ if __name__ == "__main__":
                 w_bar_c_over_files[file_idx] = files_dict[ros_rec_json_name]["w_bar_c"]
         w_bar_c = np.max(w_bar_c_over_files)
         print(f"Maximum w_bar_c over all files: {w_bar_c}")
+
+    # End timing and print
+    end = time.time()
+    print(f"Elapsed time: {end - start}")
 
     plt.show()
 
