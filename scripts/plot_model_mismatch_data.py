@@ -647,7 +647,7 @@ def plot_w_est_gt_ratios_combined(
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.set_yscale("log")
     ax.set_xlabel("Iteration")
-    ax.set_ylabel(f"Disturbance ratio")
+    ax.set_ylabel(f"Avg. dist. bounds ratio")
     if do_save_w_est_gt_ratios_combined:
         ax.xaxis.labelpad = props["xlabelpad"]
         ax.yaxis.labelpad = props["ylabelpad"] + 3
@@ -922,7 +922,7 @@ def plot_likelihood(exp_idx, likelihood, likelihood_gt=None, do_save_likelihood=
         fig.subplots_adjust(right=0.99, top=0.99, bottom=0.14, left=0.14)
 
         # Save figure
-        fig_path = f"{fig_dir}/likelihood.pdf"
+        fig_path = f"{fig_dir}/mle.pdf"
         helpers.save_fig(fig, fig_path)
     else:
         ax.set_ylabel("log(likelihood)")
