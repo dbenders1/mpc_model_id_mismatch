@@ -993,15 +993,17 @@ class ComputeModelMismatch:
         data_stat = {
             "w_min_est_abs": self.disturbances_min_est_abs.tolist(),
             "w_max_est_abs": self.disturbances_max_est_abs.tolist(),
-            "w_min_abs_rmse": self.disturbances_min_abs_rmse,
-            "w_max_abs_rmse": self.disturbances_max_abs_rmse,
-            "w_total_abs_rmse": self.disturbances_total_abs_rmse,
             "eta_min_est_abs": self.meas_noises_min_est_abs.tolist(),
             "eta_max_est_abs": self.meas_noises_max_est_abs.tolist(),
         }
+        data_rmse = {}
+        if not self.determine_w:
+            data_rmse["w_min_abs_rmse"] = self.disturbances_min_abs_rmse
+            data_rmse["w_max_abs_rmse"] = self.disturbances_max_abs_rmse
+            data_rmse["w_total_abs_rmse"] = self.disturbances_total_abs_rmse
         data = {
             k: v
-            for d in (data_general, data_gt, data_mhe, data_costs, data_stat)
+            for d in (data_general, data_gt, data_mhe, data_costs, data_stat, data_rmse)
             for k, v in d.items()
         }
         return data
