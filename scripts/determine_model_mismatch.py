@@ -1222,28 +1222,6 @@ class ComputeModelMismatch:
             11,
             None,
         ]
-        # self.plot_y_idx_at_ax_idx = [
-        #     0,
-        #     1,
-        #     2,
-        #     None,
-        #     3,
-        #     4,
-        #     5,
-        #     None,
-        #     6,
-        #     7,
-        #     8,
-        #     None,
-        #     9,
-        #     10,
-        #     11,
-        #     None,
-        #     12,
-        #     13,
-        #     14,
-        #     15,
-        # ]
         self.plot_w_idx_at_ax_idx = [
             None,
             None,
@@ -1294,36 +1272,12 @@ class ComputeModelMismatch:
             "wby (rad/s)",
             "wbz (rad/s)",
         ]
-        # self.y_labels = [
-        #     "px (m)",
-        #     "py (m)",
-        #     "pz (m)",
-        #     "$\phi$ (rad)",
-        #     "$\\theta$ (rad)",
-        #     "$\psi$ (rad)",
-        #     "vx (m/s)",
-        #     "vy (m/s)",
-        #     "vz (m/s)",
-        #     "wbx (rad/s)",
-        #     "wby (rad/s)",
-        #     "wbz (rad/s)",
-        #     "wm0 (rad/s)",
-        #     "wm1 (rad/s)",
-        #     "wm2 (rad/s)",
-        #     "wm3 (rad/s)",
-        # ]
         self.u_labels = [
             "t0c (rad/s)",
             "t1c (rad/s)",
             "t2c (rad/s)",
             "t3c (m/s^2)",
         ]
-        # self.u_labels = [
-        #     "wm0c (rad/s)",
-        #     "wm1c (rad/s)",
-        #     "wm2c (rad/s)",
-        #     "wm3c (m/s^2)",
-        # ]
         self.w_labels = [
             "$w_{vx} (m/s / s)$",
             "$w_{vy} (m/s / s)$",
