@@ -434,7 +434,6 @@ class DetermineModelCoefficients:
             ax[0].plot(self.outputs_times, self.outputs[0, :], label="x")
             ax[0].plot(self.outputs_times, self.outputs[1, :], label="y")
             ax[0].plot(self.outputs_times, self.outputs[2, :], label="z")
-            ax[0].plot(self.outputs_times, q[3, :], label="q.z")
             ax[0].legend()
             ax[0].set_ylabel("Amplitude (m)")
             ax[1].plot(self.inputs_times, self.inputs[0, :], label="t0c")
