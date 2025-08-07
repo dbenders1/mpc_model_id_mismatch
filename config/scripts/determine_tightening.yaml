@@ -3,114 +3,6 @@ constants:
 
 data:
   # runtime_json_names:
-  #   [
-  #     2025-07-22_05-47__ReferenceTrajectory_StaticPolyhedronConstraints_0,
-  #     2025-07-22_06-03__ReferenceTrajectory_StaticPolyhedronConstraints_0,
-  #     2025-07-22_06-05__ReferenceTrajectory_StaticPolyhedronConstraints_0,
-  #     2025-07-22_06-08__ReferenceTrajectory_StaticPolyhedronConstraints_0,
-  # ]
-  # ros_rec_json_names:
-  #   [
-  #     2025-07-22_sim_dist_meas_noise_falcon_determine_w_bar_c_circle_r1_f0dot1_cw,
-  #     2025-07-22_sim_dist_meas_noise_falcon_determine_w_bar_c_circle_r1_f0dot1_ccw,
-  #     2025-07-22_sim_dist_meas_noise_falcon_determine_w_bar_c_lemniscate_r1_f0dot1_cw,
-  #     2025-07-22_sim_dist_meas_noise_falcon_determine_w_bar_c_lemniscate_r1_f0dot1_ccw,
-  # ]
-  # runtime_json_names:
-  #   [2025-07-22_07-05__ReferenceTrajectory_StaticPolyhedronConstraints_0]
-  # ros_rec_json_names:
-  #   [
-  #     2025-07-22_sim_dist_meas_noise_falcon_determine_w_bar_c_circle_r1_f0dot1_cw_l100,
-  #   ]
-  # runtime_json_names:
-  #   [2025-07-22_09-11__ReferenceTrajectory_StaticPolyhedronConstraints_0]
-  # ros_rec_json_names:
-  #   [
-  #     2025-07-22_sim_dist_meas_noise_falcon_determine_w_bar_c_circle_r1_f0dot1_cw_Lopt,
-  #   ]
-  # runtime_json_names:
-  #   [2025-07-23_10-15__ReferenceTrajectory_StaticPolyhedronConstraints_0]
-  # ros_rec_json_names:
-  #   [
-  #     2025-07-23_sim_dist_meas_noise_falcon_determine_w_bar_c_circle_r1_f0dot1_cw_new_Lopt,
-  #   ]
-  # runtime_json_names:
-  #   [2025-07-27_14-32__ReferenceTrajectory_StaticPolyhedronConstraints_0]
-  # ros_rec_json_names:
-  #   [
-  #     2025-07-27_sim_dist_meas_noise_falcon_determine_w_bar_c_rho_c_ref_u_sin_0dot05_rk4_x_int,
-  #   ]
-  # runtime_json_names:
-  #   [2025-07-27_17-55__ReferenceTrajectory_StaticPolyhedronConstraints_0]
-  # ros_rec_json_names:
-  #   [
-  #     2025-07-27_sim_dist_meas_noise_falcon_determine_w_bar_c_rho_c_ref_from_xinit_u_sin_0dot05_rk4_x_int,
-  #   ]
-  # runtime_json_names:
-  #   [2025-07-28_06-38__ReferenceTrajectory_StaticPolyhedronConstraints_0]
-  # ros_rec_json_names:
-  #   [
-  #     2025-07-28_sim_dist_meas_noise_falcon_determine_w_bar_c_rho_c_ref_from_xhover_in_eps_ball_u_sin_0dot05_rk4_x_int,
-  #   ]
-  # runtime_json_names:
-  #   [2025-07-28_08-03__ReferenceTrajectory_StaticPolyhedronConstraints_0]
-  # ros_rec_json_names:
-  #   [
-  #     2025-07-28_sim_dist_meas_noise_falcon_determine_w_bar_c_epsilon_circle_r1_f0dot1_cw_new_Lopt,
-  #   ]
-  # runtime_json_names:
-  #   [2025-07-28_17-20__ReferenceTrajectory_StaticPolyhedronConstraints_0]
-  # ros_rec_json_names:
-  #   [
-  #     2025-07-28_sim_dist_not_Ew_meas_noise_falcon_determine_rho_c_w_bar_c_epsilon_ref_u_sin_0dot05_rk4_x_int,
-  #   ]
-  # runtime_json_names:
-  #   [2025-07-28_17-45__ReferenceTrajectory_StaticPolyhedronConstraints_0]
-  # ros_rec_json_names:
-  #   [
-  #     2025-07-28_sim_dist_not_Ew_meas_noise_falcon_determine_rho_c_w_bar_c_epsilon_ref_from_xhover_in_eps_ball_u_sin_0dot05_rk4_x_int,
-  #   ]
-  # runtime_json_names:
-  #   [2025-07-28_17-58__ReferenceTrajectory_StaticPolyhedronConstraints_0]
-  # ros_rec_json_names:
-  #   [
-  #     2025-07-28_sim_dist_not_Ew_meas_noise_falcon_determine_rho_c_w_bar_c_epsilon_circle_r1_f0dot1_rohmpc,
-  #   ]
-  # runtime_json_names:
-  #   [2025-07-29_13-19__ReferenceTrajectory_StaticPolyhedronConstraints_0]
-  # ros_rec_json_names:
-  #   [2025-07-29_gaz_meas_noise_falcon_determine_epsilon_circle_r1_f0dot3_rohmpc]
-  # runtime_json_names:
-  #   [2025-07-29_13-31__ReferenceTrajectory_StaticPolyhedronConstraints_0]
-  # ros_rec_json_names:
-  #   [2025-07-29_gaz_meas_noise_falcon_determine_rho_c_circle_r1_f0dot3_rohmpc]
-  # runtime_json_names:
-  #   [2025-07-29_15-39__ReferenceTrajectory_StaticPolyhedronConstraints_0]
-  # ros_rec_json_names:
-  #   [2025-07-29_gaz_meas_noise_falcon_determine_w_bar_c_circle_r1_f0dot3_rohmpc]
-  # runtime_json_names:
-  #   [2025-08-01_17-49__ReferenceTrajectory_StaticPolyhedronConstraints_0]
-  # ros_rec_json_names:
-  #   [2025-08-01_gaz_meas_noise_falcon_wrel_epsilon_ref_u_sin_0dot12_rk4_x_int]
-  # runtime_json_names:
-  #   [2025-08-01_18-02__ReferenceTrajectory_StaticPolyhedronConstraints_0]
-  # ros_rec_json_names:
-  #   [2025-08-01_gaz_meas_noise_falcon_wabs_rho_c_ref_u_sin_0dot12_rk4_x_int]
-  # runtime_json_names:
-  #   [
-  #     2025-08-01_18-48__ReferenceTrajectory_StaticPolyhedronConstraints_0,
-  #     2025-08-01_18-58__ReferenceTrajectory_StaticPolyhedronConstraints_0,
-  #     2025-08-01_19-00__ReferenceTrajectory_StaticPolyhedronConstraints_0,
-  #     2025-08-01_19-02__ReferenceTrajectory_StaticPolyhedronConstraints_0,
-  #   ]
-  # ros_rec_json_names:
-  #   [
-  #     2025-08-01_gaz_meas_noise_falcon_wabs_epsilon_w_bar_c_circle_r1_f0dot3_cw,
-  #     2025-08-01_gaz_meas_noise_falcon_wabs_epsilon_w_bar_c_circle_r1_f0dot3_ccw,
-  #     2025-08-01_gaz_meas_noise_falcon_wabs_epsilon_w_bar_c_lemniscate_r1_f0dot3_cw,
-  #     2025-08-01_gaz_meas_noise_falcon_wabs_epsilon_w_bar_c_lemniscate_r1_f0dot3_ccw,
-  #   ]
-  # runtime_json_names:
   #   [2025-08-04_19-07__ReferenceTrajectory_StaticPolyhedronConstraints_0]
   # ros_rec_json_names:
   #   [2025-08-04_gaz_meas_noise_falcon_wrel_rho_c_ref_u_sin_0dot12_rk4_x_int]
@@ -133,7 +25,6 @@ data:
 compute_settings:
   compute_x_in_eps_ball: false
   x_in_eps_ball_nom: [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-  # x_in_eps_ball_dir: [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0]
   x_in_eps_ball_dir: [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 do_plot:

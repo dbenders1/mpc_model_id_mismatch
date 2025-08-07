@@ -180,14 +180,6 @@ def get_acados_mhe_solver(
         ocp_constraints.uh = sim_eta_max
         ocp_constraints.lh_e = -sim_eta_max
         ocp_constraints.uh_e = sim_eta_max
-    # Motor velocity states equal motor velocity measurements
-    # ocp_constraints = AcadosOcpConstraints()
-    # ocp_constraints.lh_0 = np.zeros((ny - neta,))
-    # ocp_constraints.uh_0 = np.zeros((ny - neta,))
-    # ocp_constraints.lh = np.zeros((ny - neta,))
-    # ocp_constraints.uh = np.zeros((ny - neta,))
-    # ocp_constraints.lh_e = np.zeros((ny - neta,))
-    # ocp_constraints.uh_e = np.zeros((ny - neta,))
 
     # Create OCP options object
     ocp_options = AcadosOcpOptions()
@@ -533,30 +525,8 @@ class DroneAgiModel:
 
         # Set model, input, state, output and disturbance properties
         self.name = f"{self.quad_name}_t"
-        # self.name = f"{self.quad_name}_wm"
-        # self.input_names = ["wbxc", "wbyc", "wbzc", "abzc"]
         self.input_names = ["t0c", "t1c", "t2c", "t3c"]
-        # self.input_names = ["wm0c", "wm1c", "wm2c", "wm3c"]
         self.nu = len(self.input_names)
-        # self.state_names = [
-        #     "px",
-        #     "py",
-        #     "pz",
-        #     "qw",
-        #     "qx",
-        #     "qy",
-        #     "qz",
-        #     "vx",
-        #     "vy",
-        #     "vz",
-        #     "wbx",
-        #     "wbx1",
-        #     "wby",
-        #     "wby1",
-        #     "wbz",
-        #     "wbz1",
-        #     "abz",
-        # ]
         self.state_names = [
             "px",
             "py",
@@ -571,86 +541,21 @@ class DroneAgiModel:
             "wby",
             "wbz",
         ]
-        # self.state_names = [
-        #     "px",
-        #     "py",
-        #     "pz",
-        #     "phi",
-        #     "theta",
-        #     "psi",
-        #     "vx",
-        #     "vy",
-        #     "vz",
-        #     "wbx",
-        #     "wby",
-        #     "wbz",
-        #     "wm0",
-        #     "wm1",
-        #     "wm2",
-        #     "wm3",
-        # ]
         self.nx = len(self.state_names)
-        # self.disturbance_names = [
-        #     "vx",
-        #     "vy",
-        #     "vz",
-        #     "wbx",
-        #     "wbx1",
-        #     "wby",
-        #     "wby1",
-        #     "wbz",
-        #     "wbz1",
-        #     "abz",
-        # ]
-        # self.E = np.concatenate((np.zeros((7, 10)), np.eye(10)))
-        # self.disturbance_names = self.state_names
-        # self.E = np.eye(self.nx)
-        # Get disturbances by selecting from state vector the indices that correspond to row indices in E that contain a 1
-        # self.nw = 6
         self.nw = self.nx
-        # self.nw = 10
         self.E = np.concatenate(
             (np.zeros((self.nx - self.nw, self.nw)), np.eye(self.nw))
         )
         self.disturbance_idc = np.where(self.E.any(axis=1))[0]
         self.disturbance_names = [self.state_names[i] for i in self.disturbance_idc]
-        # self.output_names = [
-        #     "px",
-        #     "py",
-        #     "pz",
-        #     "qw",
-        #     "qx",
-        #     "qy",
-        #     "qz",
-        #     "vx",
-        #     "vy",
-        #     "vz",
-        #     "wbx",
-        #     "wby",
-        #     "wbz",
-        #     "abz",
-        # ]
-        # self.output_names = self.state_names
         # Get outputs by selecting from state vector the indices that correspond to column indices in C that contain a 1
         self.ny = self.nx
         self.C = np.eye(self.ny)
-        # self.ny = self.nx - 3
-        # self.C = np.concatenate(
-        #     (
-        #         np.concatenate((np.eye(6), np.zeros((6, 10))), axis=1),
-        #         np.concatenate((np.zeros((7, 9)), np.eye(7)), axis=1),
-        #     ),
-        #     axis=0,
-        # )
         self.output_idc = np.where(self.C.any(axis=0))[0]
         self.output_names = [self.state_names[i] for i in self.output_idc]
         # Get measurement noises by selecting from output vector the indices that correspond to row indices in F that contain a 1
         self.neta = self.ny
         self.F = np.eye(self.neta)
-        # self.neta = self.ny - 4
-        # self.F = np.concatenate(
-        #     (np.eye(self.neta), np.zeros((self.ny - self.neta, self.neta)))
-        # )
         self.measurement_noise_idc = np.where(self.F.any(axis=1))[0]
         self.measurment_noise_names = [
             self.output_names[i] for i in self.measurement_noise_idc
@@ -663,18 +568,12 @@ class DroneAgiModel:
         # Set system constraint bounds
         self.p_max = 4
         self.p_min = -self.p_max
-        # self.att_max = 0.05
-        # self.att_max = 0.5 # actual value for traj_circle_r1_f0dot3_cw
         self.att_max = 0.1  # tuned value for feasible sdp for traj_circle_r1_f0dot3_cw
         self.att_min = -self.att_max
-        # self.v_max = 0.7
         self.v_max = 2
         self.v_min = -self.v_max
-        # self.wb_max = 0.06
-        # self.wb_max = 1  # actual value for traj_circle_r1_f0dot3_cw
         self.wb_max = 0.3  # tuned value for feasible sdp for traj_circle_r1_f0dot3_cw
         self.wb_min = -self.wb_max
-        # self.t_var = 0.02
         self.t_var = 0.12
         self.t_hover = self.mass * self.g / 4
         self.t_min = np.max(
@@ -683,10 +582,6 @@ class DroneAgiModel:
         self.t_max = np.min(
             [self.t_hover + self.t_var, self.thrust_map[0] * self.motor_omega_max**2]
         )
-        # self.wm_var = 15
-        # self.wm_hover = np.sqrt((self.mass * self.g) / (4 * self.thrust_map[0]))
-        # self.wm_min = np.max([self.wm_hover - self.wm_var, self.motor_omega_min])
-        # self.wm_max = np.min([self.wm_hover + self.wm_var, self.motor_omega_max])
 
     def get_B_allocation(self):
         return self.B_allocation
@@ -763,31 +658,6 @@ class DroneAgiModel:
             "C": self.C.tolist(),
             "F": self.F.tolist(),
         }
-        # return {
-        #     "name": self.name,
-        #     "nx": self.nx,
-        #     "nu": self.nu,
-        #     "mass": self.mass,
-        #     "inertia": self.inertia_matrix,
-        #     "B_allocation": self.B_allocation,
-        #     "motor_tau": self.motor_tau,
-        #     "thrust_map": self.thrust_map,
-        #     "kd": self.kd,
-        #     "p_min": self.p_min,
-        #     "p_max": self.p_max,
-        #     "att_min": self.att_min,
-        #     "att_max": self.att_max,
-        #     "v_min": self.v_min,
-        #     "v_max": self.v_max,
-        #     "wb_min": self.wb_min,
-        #     "wb_max": self.wb_max,
-        #     "wm_hover": self.wm_hover,
-        #     "wm_min": self.wm_min,
-        #     "wm_max": self.wm_max,
-        #     "E": self.E,
-        #     "C": self.C,
-        #     "F": self.F,
-        # }
 
     def get_wm_sel_matrix(self):
         return self.F_complement
@@ -838,82 +708,6 @@ class DroneAgiModel:
             + self.thrust_map[2]
         )
 
-    # def state_update_ct(self, x, u):
-    #     # Extract states from states vector
-    #     x = vertcat(x)
-    #     p = x[:3]
-    #     q = x[3:7]
-    #     v = x[7:10]
-    #     wbx = x[10]
-    #     wbx1 = x[11]
-    #     wby = x[12]
-    #     wby1 = x[13]
-    #     wbz = x[14]
-    #     wbz1 = x[15]
-    #     abz = x[16]
-
-    #     # Extract inputs from inputs vector
-    #     wbxc = u[0]
-    #     wbyc = u[1]
-    #     wbzc = u[2]
-    #     abzc = u[3]
-
-    #     # Define angular velocity dynamics
-    #     A_wbx = horzcat(vertcat(0, -291.44), vertcat(1, -24.67))
-    #     B_wbx = vertcat(-0.32, 289.31)
-    #     A_wby = horzcat(vertcat(0, -267.58), vertcat(1, -20.37))
-    #     B_wby = vertcat(1.05, 225.81)
-    #     A_wbz = horzcat(vertcat(0, -204.39), vertcat(1, -24.57))
-    #     B_wbz = vertcat(0, 203.95)
-
-    #     # Define acceleration dynamics
-    #     tau_a = 0.0376
-    #     k_a = 1
-    #     A_a = -1 / tau_a
-    #     B_a = k_a / tau_a
-
-    #     # Return state derivatives
-    #     return vertcat(
-    #         v,
-    #         0.5 * quat_mult(q, vertcat(0, vertcat(wbx, wby, wbz))),
-    #         rotate_quat(q, vertcat(0, 0, abz))
-    #         + vertcat(0, 0, -self.g)
-    #         - vertcat(self.kdx, self.kdy, self.kdz) * vertcat(v),
-    #         mtimes(A_wbx, vertcat(wbx, wbx1)) + mtimes(B_wbx, wbxc),
-    #         mtimes(A_wby, vertcat(wby, wby1)) + mtimes(B_wby, wbyc),
-    #         mtimes(A_wbz, vertcat(wbz, wbz1)) + mtimes(B_wbz, wbzc),
-    #         A_a * abz + B_a * abzc,
-    #     )
-
-    # def state_update_ct(self, x, u):
-    #     # Extract states from states vector
-    #     x = vertcat(x)
-    #     p = x[:3]
-    #     q = x[3:7]
-    #     v = x[7:10]
-    #     wb = x[10:13]
-    #     wm = x[13:17]
-
-    #     # Extract inputs from inputs vector
-    #     wmc = vertcat(u)
-
-    #     # Compute thrust and torque
-    #     mot_thrusts = self.motor_speeds_to_thrusts(wm)
-    #     t = mtimes(reshape(self.B_allocation[0, :], (1, 4)), mot_thrusts)
-    #     tau = mtimes(self.B_allocation[1:, :], mot_thrusts)
-
-    #     # Return state derivatives
-    #     return vertcat(
-    #         v,
-    #         0.5 * quat_mult(q, vertcat(0, wb)),
-    #         rotate_quat(q, vertcat(0, 0, t / self.mass)) + vertcat(0, 0, -self.g),
-    #         mtimes(
-    #             inv(self.inertia_matrix),
-    #             (tau - cross(wb, mtimes(self.inertia_matrix, wb))),
-    #         ),
-    #         1 / self.motor_tau * (wmc - wm),
-    #     )
-
     def state_update_ct(self, x, u):
         # Extract states from states vector
         x = vertcat(x)
@@ -935,29 +729,6 @@ class DroneAgiModel:
                 self.state_update_ct_wb_rh_side(x, u, self.inertia_matrix),
             ),
         )
-
-    # def state_update_ct(self, x, u):
-    #     # Extract states from states vector
-    #     x = vertcat(x)
-    #     phi = x[3]
-    #     theta = x[4]
-    #     v = x[6:9]
-    #     wb = x[9:12]
-
-    #     # Compute rotation matrix to convert body rates to Euler angle rates
-    #     Rr = get_rot_matrix_rates(phi, theta)
-
-    #     # Return state derivatives
-    #     return vertcat(
-    #         v,
-    #         mtimes(Rr, wb),
-    #         self.state_update_ct_v(x, u, self.kd),
-    #         mtimes(
-    #             self.inertia_matrix_inv,
-    #             self.state_update_ct_wb_rh_side(x, u, self.inertia_matrix),
-    #         ),
-    #         self.state_update_ct_wm(x, u, self.motor_tau_inv),
-    #     )
 
     def state_update_ct_compute_thrust_t(self, x, u):
         return mtimes(reshape(self.B_allocation[0, :], (1, 4)), u)
@@ -998,24 +769,6 @@ class DroneAgiModel:
             Rc, vertcat(0, 0, t / self.mass) - mtimes(kd, mtimes(Rc.T, v))
         )
 
-    # def state_update_ct_v(self, x, u, kd):
-    #     # Extract states from states vector
-    #     x = vertcat(x)
-    #     phi = x[3]
-    #     theta = x[4]
-    #     psi = x[5]
-    #     v = x[6:9]
-
-    #     # Compute thrust
-    #     t = self.state_update_ct_compute_thrust_wm(x, u)
-
-    #     # Compute rotation matrix to convert coordinates from body to inertial frame
-    #     Rc = get_rot_matrix_coordinates(phi, theta, psi)
-
-    #     return vertcat(0, 0, -self.g) + mtimes(
-    #         Rc, vertcat(0, 0, t / self.mass) - mtimes(kd, mtimes(Rc.T, v))
-    #     )
-
     def state_update_ct_v_vec(self, x, u, kd_vec):
         return self.state_update_ct_v(x, u, get_diag_matrix_from_vec(kd_vec))
 
@@ -1032,16 +785,6 @@ class DroneAgiModel:
         tau = self.state_update_ct_compute_torque_t(x, u)
 
         return tau - cross(wb, mtimes(inertia_matrix, wb))
-
-    # def state_update_ct_wb_rh_side(self, x, u, inertia_matrix):
-    #     # Extract states from states vector
-    #     x = vertcat(x)
-    #     wb = x[9:12]
-
-    #     # Compute torque
-    #     tau = self.state_update_ct_compute_torque_wm(x, u)
-
-    #     return tau - cross(wb, mtimes(inertia_matrix, wb))
 
     def state_update_ct_wb_rh_side_vec(self, x, u, inertia_matrix_vec):
         return self.state_update_ct_wb_rh_side(

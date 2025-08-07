@@ -458,31 +458,9 @@ class ComputeModelMismatch:
             (self.mhe_n_iter + 1, self.n_measurement_noises, self.n_measurement_noises)
         )
 
-        # Initialize Q_cov
+        # Initialize Q_cov and R_cov
         self.Q_cov_est_all[0, :, :] = np.eye(self.n_disturbances)
-        # if self.disturbances_gt_known:
-        #     self.Q_cov_est_all[0, :, :] = np.cov(self.disturbances_int)
-        # self.Q_cov_est_all[0, :, :] = np.diag(
-        #     (2 * self.sim_w_max) ** 2 / 12
-        # )  # ground truth values of uniform distribution used in simulation
-        # with open("Q_est.json", "r") as openfile:
-        #     Q_est_dict = json.load(openfile)
-        #     self.Q_cov_est_all[0, :, :] = np.array(Q_est_dict["Q_cov_est_all"])[
-        #         -1, :, :
-        #     ]
-
-        # Initialize R_cov
         self.R_cov_est_all[0, :, :] = np.eye(self.n_measurement_noises)
-        # if self.measurement_noises_gt_known:
-        #     self.R_cov_est_all[0, :, :] = np.cov(self.measurement_noises_int)
-        # self.R_cov_est_all[0, :, :] = np.diag(
-        #     (2 * self.sim_eta_max) ** 2 / 12
-        # )  # ground truth values of uniform distribution used in simulation
-        # with open("R_est.json", "r") as openfile:
-        #     R_est_dict = json.load(openfile)
-        #     self.R_cov_est_all[0, :, :] = np.array(R_est_dict["R_cov_est_all"])[
-        #         -1, :, :
-        #     ]
 
         # Initialize parameters, cost and initial guess
         p = np.zeros((self.n_inputs + self.n_outputs,))
@@ -500,18 +478,6 @@ class ComputeModelMismatch:
             x_warmstart[0, 0, self.hidden_state_idc, k] = np.zeros(
                 (self.n_hidden_states,)
             )
-        # Initial states follow system dynamics from the initial measured outputs
-        # x_warmstart[0, 0, self.output_idc, 0] = self.outputs_int[:, 0]
-        # x_warmstart[0, 0, self.hidden_state_idc, 0] = np.zeros((self.n_hidden_states,))
-        # for k in range(1, self.M + 1):
-        #     x_warmstart[0, 0, :, k] = np.array(
-        #         helpers.solve_rk4(
-        #             self.model.state_update_ct,
-        #             x_warmstart[0, 0, :, k - 1],
-        #             self.inputs_int[:, k - 1],
-        #             self.ts,
-        #         )
-        #     ).flatten()
         if self.determine_w:
             u_warmstart = np.zeros(
                 (self.mhe_n_iter, self.mhe_n_times, self.n_states, self.M)
@@ -775,21 +741,6 @@ class ComputeModelMismatch:
             R_est = np.cov(
                 np.squeeze(self.eta_mhe_all[i, :, :, self.stage_est]), rowvar=False
             )
-            # Only estimate diagonal elements of Q and R
-            # Q_est = np.diag(
-            #     np.concatenate(
-            #         [
-            #             np.var(self.w_mhe_all[i, :, :, self.stage_est], axis=0),
-            #         ]
-            #     )
-            # )
-            # R_est = np.diag(
-            #     np.concatenate(
-            #         [
-            #             np.var(self.eta_mhe_all[i, :, :, self.stage_est], axis=0),
-            #         ]
-            #     )
-            # )
 
             # Update covariance matrices Q and R if desired
             if not determine_w:
@@ -821,40 +772,6 @@ class ComputeModelMismatch:
 
             # Compute and print model mismatch bounds resulting from this iteration
             self.compute_model_mismatch_bounds(i)
-
-            # # Print maximum likelihood costs before and after updating Q and R over a single horizon
-            # print(
-            #     f"MLE cost iter {i}: {float(helpers.get_cost_mle(self.M, self.w_mhe_all[i, t - self.M, :, :], self.eta_mhe_all[i, t - self.M, :, :], self.Q_mhe_all[i, :, :], self.R_mhe_all[i, :, :], self.Q_cov_est_all[i, :, :], self.R_cov_est_all[i, :, :], np.arange(self.M + 1)))}"
-            # )
-
-            # self.Q_cov_est_all[i + 1, :, :] = np.cov(
-            #     self.w_mhe_all[i, 0, :, :], rowvar=True
-            # )
-            # self.R_cov_est_all[i + 1, :, :] = np.cov(
-            #     self.eta_mhe_all[i, 0, :, :], rowvar=True
-            # )
-            # Q_mhe_updated, R_mhe_updated = helpers.get_mhe_weighting_matrices(
-            #     self.Q_cov_est_all[i + 1, :, :],
-            #     self.R_cov_est_all[i + 1, :, :],
-            #     self.eps,
-            # )
-            # print(
-            #     f"MLE cost iter {i} after update Q,R: {float(helpers.get_cost_mle(self.M, self.w_mhe_all[i, t - self.M, :, :], self.eta_mhe_all[i, t - self.M, :, :], Q_mhe_updated, R_mhe_updated, self.Q_cov_est_all[i + 1, :, :], self.R_cov_est_all[i + 1, :, :], np.arange(self.M + 1)))}"
-            # )
-
-        # Temporary: save Q and R to separate json file
-        # data_Q = {"Q_cov_est_all": self.Q_cov_est_all.tolist()}
-        # with open("Q_est.json", "w") as f:
-        #     json.dump(
-        #         data_Q,
-        #         f,
-        #     )
-        # data_R = {"R_cov_est_all": self.R_cov_est_all.tolist()}
-        # with open("R_est.json", "w") as f:
-        #     json.dump(
-        #         data_R,
-        #         f,
-        #     )
 
         # Store disturbance data in json file
         if self.determine_w:

@@ -2,11 +2,21 @@ constants:
   g: 9.8124
 
 simulation:
-  # w_max: [0.0017, 0.0017, 0.039, 0.97, 0.97, 0.00017]
-  # w_max: [0.0000084, 0.0000084, 0.00000067, 0.016, 0.016, 0.0015]
-  # w_max: [0.0000072, 0.0000072, 0.00000032, 0.014, 0.014, 0.0013]
-  # w_max: [0.0000086, 0.0000086, 0.0000034, 0.027, 0.027, 0.0014]
-  w_max: [0.00043, 0.00043, 0.000009, 0.014, 0.014, 0.0013]
+  w_max:
+    [
+      0.0036,
+      0.0036,
+      0.000018,
+      0.0013,
+      0.0013,
+      0.00025,
+      0.0068,
+      0.0068,
+      0.0012,
+      0.016,
+      0.016,
+      0.00034,
+    ]
   eta_max:
     [
       0.00005,
@@ -27,200 +37,7 @@ simulation:
 recorded_data:
   # json_names:
   #   [
-  #     2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise,
-  #   ]
-  # json_names:
-  #   [2025-05-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise]
-  # json_names:
-  #   [
-  #     2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise,
-  #   ]
-  # json_names:
-  #   [2025-05-09_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise]
-  # json_names:
-  #   [
-  #     2025-06-04_sim_falcon_mpc_model_mismatch_hovering_open_loop_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-06-04_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_sin_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-06-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_no_dist_no_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-06-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_no_meas_noise,
-  #   ]
-  # json_names:
-  #   [2025-06-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise]
-  # json_names:
-  #   [
-  #     2025-06-23_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_rand_walk_meas_noise,
-  #   ]
-  # json_names:
-  #   [2025-06-24_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_dist_meas_noise]
-  # json_names:
-  #   [
-  #     2025-06-26_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_no_dist_no_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-06-26_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-06-26_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_ccw_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-06-26_sim_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-06-26_sim_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-06-26_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-06-26_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_ccw_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-06-26_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-06-26_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-06-27_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_gaz_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-06-27_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_ccw_gaz_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-06-27_sim_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_gaz_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-06-27_sim_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_gaz_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-07-03_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-07-03_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_only_thrust_drag_torque,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-07-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_only_thrust_drag_torque,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-07-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_only_thrust_drag_torque_no_rotor_offset,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-07-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_only_thrust_drag_torque_no_rotor_offset_zero_rotor_vel,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-07-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise_only_thrust_drag_torque_no_rotor_offset_zero_rotor_vel_rotor_mass_0dot00001,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-07-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-07-07_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_ccw_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-07-08_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-07-08_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-07-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_no_dist_no_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-07-09_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-07-14_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_no_dist_no_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-07-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_no_dist_no_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-07-15_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
-  #     2025-07-15_gaz_falcon_mpc_model_mismatch_circle_r1_f0dot1_ccw_dist_meas_noise,
-  #     2025-07-15_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_cw_dist_meas_noise,
-  #     2025-07-15_gaz_falcon_mpc_model_mismatch_lemniscate_r1_f0dot1_ccw_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-07-15_sim_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw_dist_meas_noise,
-  #   ]
-  # json_names:
-  #   [2025-07-22_gaz_meas_noise_falcon_mpc_model_mismatch_circle_r1_f0dot3_cw]
-  # json_names:
-  #   [2025-07-28_gaz_meas_noise_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw]
-  # json_names:
-  #   [
-  #     2025-07-28_sim_dist_meas_noise_falcon_mpc_model_mismatch_circle_r1_f0dot1_cw,
-  #   ]
-  # json_names:
-  #   [2025-07-29_gaz_meas_noise_falcon_mpc_model_mismatch_circle_r1_f0dot3_cw]
-  # json_names:
-  #   [2025-08-01_gaz_meas_noise_falcon_mpc_model_mismatch_circle_r1_f0dot3_cw]
-  # json_names:
-  #   [
-  #     2025-08-01_gaz_meas_noise_div100_falcon_mpc_model_mismatch_circle_r1_f0dot3_cw,
-  #   ]
-  # json_names:
-  #   [
   #     2025-08-01_gaz_meas_noise_div10_falcon_mpc_model_mismatch_circle_r1_f0dot3_cw,
-  #   ]
-  # json_names:
-  #   [2025-08-01_gaz_meas_noise_falcon_mpc_model_mismatch_circle_r1_f0dot3_cw]
-  # json_names:
-  #   [
-  #     2025-08-01_gaz_meas_noise_div10_falcon_mpc_model_mismatch_circle_r1_f0dot3_cw,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-08-01_gaz_meas_noise_div10_falcon_mpc_model_mismatch_lemniscate_r1_f0dot3_cw,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-08-01_gaz_meas_noise_div10_falcon_mpc_model_mismatch_circle_r1_f0dot3_ccw,
-  #   ]
-  # json_names:
-  #   [
-  #     2025-08-01_gaz_meas_noise_div10_falcon_mpc_model_mismatch_lemniscate_r1_f0dot3_ccw,
   #   ]
   json_names:
     [

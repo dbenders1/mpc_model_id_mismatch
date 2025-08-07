@@ -1236,13 +1236,6 @@ if __name__ == "__main__":
         if w is not None and eta is not None:
             costs_total_gt = costs_total_gt[iter_idx, :].reshape((-1,))
 
-        # Print estimated disturbances and measurement noise
-        # print(f"w_est = {w_est_all_last_iter[0, :, :]}")
-        # print(f"eta_est = {eta_est_all_last_iter[0, :, :]}")
-
-        # Compute the ratios of the estimated disturbances and measurement noise compared to the min and max values
-        # if w is not None:
-
         # Create plots
         if do_plot_y_y_fs_over_horizon:
             x_fs, y_fs = get_x_y_fs(

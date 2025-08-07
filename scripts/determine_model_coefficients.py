@@ -404,104 +404,6 @@ class DetermineModelCoefficients:
     def process_recorded_data(self):
         # READ RECORDED DATA
         # -------------------------------------------------------------------------------
-        # if self.exp_type == "sim":
-        #     bag_reader_agi = bagreaders.BagReaderAgi(
-        #         self.bag_dir + self.bag_file_name, f"/{self.model_name}"
-        #     )
-        #     # self.inputs_times, self.inputs = bag_reader_agi.read_step_control_simplesim(
-        #     #     skip_first=True
-        #     # )
-        #     # self.outputs_times, p, q, v, wb, wm = (
-        #     #     bag_reader_agi.read_y_nom_q_simplesim()
-        #     # )
-        #     # eul = np.zeros((3, q.shape[1]))
-        #     # for t in range(q.shape[1]):
-        #     #     eul[:, t] = helpers.quaternion_to_zyx_euler(q[:, t])
-        #     # self.outputs = np.concatenate((p, eul, v, wb, wm), axis=0)
-
-        #     self.inputs_times, wmc = bag_reader_agi.read_step_control(skip_first=True)
-        #     n_inputs_times = len(self.inputs_times)
-        #     self.inputs = np.zeros((4, n_inputs_times))
-        #     for i in range(n_inputs_times):
-        #         self.inputs[:, i] = self.model.motor_speeds_to_thrusts(wmc[:, i])
-        #     (
-        #         self.outputs_times,
-        #         p,
-        #         q,
-        #         v,
-        #         wb,
-        #     ) = bag_reader_agi.read_odometry()
-        #     eul = np.zeros((3, q.shape[1]))
-        #     for t in range(q.shape[1]):
-        #         eul[:, t] = helpers.quaternion_to_zyx_euler(q[:, t])
-        #     self.outputs = np.concatenate((p, eul, v, wb), axis=0)
-        # elif self.exp_type == "gaz":
-        #     bag_reader_agi = bagreaders.BagReaderAgi(
-        #         self.bag_dir + self.bag_file_name, f"/{self.model_name}"
-        #     )
-        #     # self.inputs_times, self.inputs = bag_reader_agi.read_step_control(
-        #     #     skip_first=True
-        #     # )
-        #     # (
-        #     #     odometry_times,
-        #     #     p,
-        #     #     q,
-        #     #     v,
-        #     #     wb,
-        #     # ) = bag_reader_agi.read_odometry()
-        #     # wm_times, wm = bag_reader_agi.read_motor_speed()
-        #     # outputs_start_time = max(odometry_times[0], wm_times[0])
-        #     # outputs_end_time = min(odometry_times[-1], wm_times[-1])
-        #     # odometry_idc = np.where(
-        #     #     (odometry_times >= outputs_start_time)
-        #     #     & (odometry_times <= outputs_end_time)
-        #     # )[0]
-        #     # wm_idc = np.where(
-        #     #     (wm_times >= outputs_start_time) & (wm_times <= outputs_end_time)
-        #     # )[0]
-        #     # self.outputs_times = odometry_times[odometry_idc]
-        #     # p = p[:, odometry_idc]
-        #     # q = q[:, odometry_idc]
-        #     # v = v[:, odometry_idc]
-        #     # wb = wb[:, odometry_idc]
-        #     # wm_times = wm_times[wm_idc]
-        #     # wm = wm[:, wm_idc]
-        #     # eul = np.zeros((3, q.shape[1]))
-        #     # for t in range(q.shape[1]):
-        #     #     eul[:, t] = helpers.quaternion_to_zyx_euler(q[:, t])
-        #     # self.outputs = np.concatenate((p, eul, v, wb, wm), axis=0)
-
-        #     self.inputs_times, wmc = bag_reader_agi.read_step_control(skip_first=True)
-        #     n_inputs_times = len(self.inputs_times)
-        #     self.inputs = np.zeros((4, n_inputs_times))
-        #     for i in range(n_inputs_times):
-        #         self.inputs[:, i] = self.model.motor_speeds_to_thrusts(wmc[:, i])
-        #     # self.inputs_times, wmc = bag_reader_agi.read_motor_speed()
-        #     # self.inputs_times = self.inputs_times - self.ts
-        #     # n_inputs_times = len(self.inputs_times)
-        #     # self.inputs = np.zeros((4, n_inputs_times))
-        #     # for i in range(n_inputs_times):
-        #     #     self.inputs[:, i] = self.model.motor_speeds_to_thrusts(wmc[:, i])
-        #     (
-        #         self.outputs_times,
-        #         p,
-        #         q,
-        #         v,
-        #         wb,
-        #     ) = bag_reader_agi.read_odometry()
-        #     eul = np.zeros((3, q.shape[1]))
-        #     for t in range(q.shape[1]):
-        #         eul[:, t] = helpers.quaternion_to_zyx_euler(q[:, t])
-        #     self.outputs = np.concatenate((p, eul, v, wb), axis=0)
-        # elif self.exp_type == "exp":
-        #     exit("Experiment not supported yet")
-        # else:
-        #     log.fatal(
-        #         f"Inputs reading not supported for experiment type {self.exp_type}! Exiting."
-        #     )
-        #     exit(1)
-
-        # New setup using json files
         # Store data in json file in dict
         with open(f"{self.json_dir}/{self.json_name}.json", "r") as openfile:
             json_data = json.load(openfile)
@@ -540,15 +442,6 @@ class DetermineModelCoefficients:
             ax[1].plot(self.inputs_times, self.inputs[2, :], label="t2c")
             ax[1].plot(self.inputs_times, self.inputs[3, :], label="t3c")
             ax[1].set_ylabel("Amplitude (N)")
-            # ax[1].plot(self.inputs_times, self.inputs[0, :], label="wm0c")
-            # ax[1].plot(self.inputs_times, self.inputs[1, :], label="wm1c")
-            # ax[1].plot(self.inputs_times, self.inputs[2, :], label="wm2c")
-            # ax[1].plot(self.inputs_times, self.inputs[3, :], label="wm3c")
-            # ax[1].plot(self.outputs_times, self.outputs[12, :], label="wm0")
-            # ax[1].plot(self.outputs_times, self.outputs[13, :], label="wm1")
-            # ax[1].plot(self.outputs_times, self.outputs[14, :], label="wm2")
-            # ax[1].plot(self.outputs_times, self.outputs[15, :], label="wm3")
-            # ax[1].set_ylabel("Amplitude (rad/s)")
             ax[1].legend()
             ax[1].set_xlabel("Time (s)")
             sel = plt.ginput(2, show_clicks=True)
