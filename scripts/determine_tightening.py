@@ -444,7 +444,7 @@ if __name__ == "__main__":
                     zorder=1,
                     label=r"$\sqrt{V^\delta(x_{t+\tau},z_{\tau|t})}$",
                 )
-                ax.set_xlabel(f"Prediction stage k")
+                ax.set_xlabel(f"Prediction time $\\tau$")
                 ax.set_ylabel(r"$\sqrt{V^\delta(x_{t+\tau},z_{\tau|t})}$")
                 if save_lyap_err:
                     ax.xaxis.labelpad = props["xlabelpad"]
@@ -453,7 +453,7 @@ if __name__ == "__main__":
 
                     # Resize figure
                     helpers.resize_fig(fig, scale=1)
-                    fig.subplots_adjust(right=0.99, top=0.99, bottom=0.15, left=0.17)
+                    fig.subplots_adjust(right=0.99, top=0.99, bottom=0.14, left=0.17)
 
                     # Save figure
                     fig_path = f"{fig_dir}/tube_fit.pdf"
