@@ -49,6 +49,7 @@ if __name__ == "__main__":
     data_sel_dir = f"{data_dir}/selected_data"
     output_data_dir = f"{data_dir}/tightening_results"
     output_data_json_path = f"{output_data_dir}/tightening.json"
+    fig_dir = f"{data_dir}/figures/tightening"
 
     # Read configuration parameters
     with open(config_path) as file:
@@ -71,6 +72,11 @@ if __name__ == "__main__":
     do_plot_w_bar_c_sorted = do_plot["w_bar_c_sorted"]
     do_plot_epsilon_time = do_plot["epsilon_time"]
     do_plot_epsilon_sorted = do_plot["epsilon_sorted"]
+
+    save_settings = config["save_settings"]
+    save_lyap_err = save_settings["lyap_err"]
+    if save_lyap_err:
+        do_plot_lyap_err = True
 
     quad_name = config["model"]["name"]
 
@@ -404,26 +410,22 @@ if __name__ == "__main__":
         if compute_rho_c:
             # Lyapunov error and corresponding tube over prediction stages
             if do_plot_lyap_err:
-                fig, ax = plt.subplots()
-                fig.suptitle(
-                    f"{ros_rec_json_name} - Lyapunov error and tube over prediction stages"
+                if save_lyap_err:
+                    helpers.set_plt_properties()
+                    props = helpers.set_fig_properties()
+                fig, ax = plt.subplots(
+                    figsize=(6.4, 3),
+                    num=f"{ros_rec_json_name} - Lyapunov error and tube over prediction stages",
                 )
-                for t_idx in range(n_times):
-                    ax.plot(
-                        np.arange(1 + n_forward_sim),
-                        lyap_err[t_idx],
-                        linewidth=linewidth,
+                if not save_lyap_err:
+                    fig.suptitle(
+                        f"{ros_rec_json_name} - Lyapunov error and tube over prediction stages"
                     )
-                ax.plot(
-                    np.arange(1 + n_forward_sim),
-                    np.max(lyap_err, axis=0),
-                    linewidth=linewidth,
-                    label=r"$\sqrt{V^\delta(x_{t+\tau},z_{\tau|t})}$",
-                )
                 ax.plot(
                     np.arange(1 + n_forward_sim),
                     s,
                     linewidth=linewidth,
+                    zorder=3,
                     label=r"$s$",
                 )
                 ax.axhline(
@@ -431,11 +433,33 @@ if __name__ == "__main__":
                     color="red",
                     linestyle="--",
                     linewidth=linewidth,
+                    zorder=2,
                     label=r"$\frac{\bar{w}^\mathrm{c}}{\rho^\mathrm{c}}$",
+                )
+                ax.plot(
+                    np.arange(1 + n_forward_sim),
+                    np.max(lyap_err, axis=0),
+                    "-.",
+                    linewidth=linewidth,
+                    zorder=1,
+                    label=r"$\sqrt{V^\delta(x_{t+\tau},z_{\tau|t})}$",
                 )
                 ax.set_xlabel(f"Prediction stage k")
                 ax.set_ylabel(r"$\sqrt{V^\delta(x_{t+\tau},z_{\tau|t})}$")
-                ax.legend()
+                if save_lyap_err:
+                    ax.xaxis.labelpad = props["xlabelpad"]
+                    ax.yaxis.labelpad = props["ylabelpad"]
+                    ax.tick_params(pad=props["tickpad"])
+
+                    # Resize figure
+                    helpers.resize_fig(fig, scale=1)
+                    fig.subplots_adjust(right=0.99, top=0.99, bottom=0.15, left=0.17)
+
+                    # Save figure
+                    fig_path = f"{fig_dir}/tube_fit.pdf"
+                    helpers.save_fig(fig, fig_path)
+                else:
+                    ax.legend()
 
             # RPI tightening over rho_c
             if do_plot_rpi_tightening_over_rho_c:
