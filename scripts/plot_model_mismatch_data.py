@@ -909,8 +909,8 @@ def plot_likelihood(exp_idx, likelihood, likelihood_gt=None, do_save_likelihood=
         )
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.set_xlabel("Iteration")
+    ax.set_ylabel("log likelihood")
     if do_save_likelihood:
-        ax.set_ylabel("log(MLE)")
         ax.xaxis.labelpad = props["xlabelpad"]
         ax.yaxis.labelpad = props["ylabelpad"]
         ax.tick_params(pad=props["tickpad"])
@@ -924,8 +924,6 @@ def plot_likelihood(exp_idx, likelihood, likelihood_gt=None, do_save_likelihood=
         # Save figure
         fig_path = f"{fig_dir}/mle.pdf"
         helpers.save_fig(fig, fig_path)
-    else:
-        ax.set_ylabel("log(likelihood)")
 
 
 def plot_Q_R_trace(exp_idx, Q_cov_est_all, R_cov_est_all):
