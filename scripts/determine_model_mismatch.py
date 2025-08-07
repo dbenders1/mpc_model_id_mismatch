@@ -921,11 +921,11 @@ class ComputeModelMismatch:
                         print(
                             f"Bias GT: {self.disturbances_bias_gt[-self.n_disturbances :]}"
                         )
-            if self.do_print_disturbances_min_rmse:
+            if not self.determine_w and self.do_print_disturbances_min_rmse:
                 print(f"Min RMSE: {self.disturbances_min_abs_rmse}")
-            if self.do_print_disturbances_max_rmse:
+            if not self.determine_w and self.do_print_disturbances_max_rmse:
                 print(f"Max RMSE: {self.disturbances_max_abs_rmse}")
-            if self.do_print_disturbances_total_rmse:
+            if not self.determine_w and self.do_print_disturbances_total_rmse:
                 print(f"Total RMSE: {self.disturbances_total_abs_rmse}")
 
         do_print_meas_noises = (
@@ -1444,11 +1444,11 @@ def compute_absolute_w_eta_bounds(data, determine_w, sim_eta_max, do_print_w_eta
                     )
         # if do_print_disturbances_bias:
         #     print(f'Bias:    {data["common"]["w_bias"]}')
-        if do_print_disturbances_min_rmse:
+        if not determine_w and do_print_disturbances_min_rmse:
             print(f'Min RMSE: {data["common"]["w_min_abs_rmse"]}')
-        if do_print_disturbances_max_rmse:
+        if not determine_w and do_print_disturbances_max_rmse:
             print(f'Max RMSE: {data["common"]["w_max_abs_rmse"]}')
-        if do_print_disturbances_total_rmse:
+        if not determine_w and do_print_disturbances_total_rmse:
             print(f'Total RMSE: {data["common"]["w_total_abs_rmse"]}')
     if do_print_meas_noises:
         print(f"\nOverall measurement noise bounds:")
