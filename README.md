@@ -11,7 +11,7 @@ This repository provides a package with the following scripts:
 
 To run [determine_model_mismatch.py](scripts/determine_model_mismatch.py), you need to have the following additional packages installed:
 
-- [ACADOS release v0.3.5](https://github.com/acados/acados/releases/tag/v0.3.5). Install this package at a convenient location on your system.
+- [ACADOS release v0.3.5](https://github.com/acados/acados/releases/tag/v0.3.5). See [this page](https://docs.acados.org/installation/index.html) for installation instructions. Install this package at a convenient location on your system.
 
 ## Run
 
