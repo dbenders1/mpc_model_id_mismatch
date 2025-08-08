@@ -59,6 +59,8 @@ if __name__ == "__main__":
     runtime_json_names = config["data"]["runtime_json_names"]
     ros_rec_json_names = config["data"]["ros_rec_json_names"]
     n_idx_ignore = config["data"]["n_idx_ignore"]
+    t_cut_circle = config["data"]["t_cut_circle"]
+    t_cut_lemniscate = config["data"]["t_cut_lemniscate"]
 
     compute_settings = config["compute_settings"]
     compute_x_in_eps_ball = compute_settings["compute_x_in_eps_ball"]
@@ -227,6 +229,23 @@ if __name__ == "__main__":
             u_pred_traj = np.array(data_pred_traj["u_pred"])
             x_pred_traj = np.array(data_pred_traj["x_pred"])
 
+            # Cut data after a specified amount of time
+            if "circle" in ros_rec_json_name:
+                t_cut = t_cut_circle
+            elif "lemniscate" in ros_rec_json_name:
+                t_cut = t_cut_lemniscate
+            else:
+                t_cut = np.inf
+            pred_traj_idc = np.where(t_pred_traj <= t_cut)[0]
+            if len(pred_traj_idc) == 0:
+                log.warning(
+                    f"No predicted trajectory data found before time {t_cut} in {ros_rec_json_name}! Skipping this file."
+                )
+                continue
+            t_pred_traj = t_pred_traj[pred_traj_idc]
+            u_pred_traj = u_pred_traj[pred_traj_idc]
+            x_pred_traj = x_pred_traj[pred_traj_idc]
+
         # Set times to a specific precision
         t_x_cur_est = np.round(t_x_cur_est, time_precision)
         if use_nom_ref:
@@ -245,16 +264,16 @@ if __name__ == "__main__":
 
         # Align all data recorded in mpc
         t_x_cur_est = t_x_cur_est[:n_tmpc]
-        x_cur_est = x_cur_est[:n_tmpc, :]
-        x_cur_est = x_cur_est[:n_tmpc, :]
+        x_cur_est = x_cur_est[:n_tmpc]
+        x_cur_est = x_cur_est[:n_tmpc]
         if use_nom_ref:
             t_nom_ref = t_nom_ref[:n_tmpc]
             x_nom_ref = x_nom_ref[:n_tmpc]
             u_nom_ref = u_nom_ref[:n_tmpc]
         if use_pred_traj:
             t_pred_traj = t_pred_traj[:n_tmpc]
-            u_pred_traj = u_pred_traj[:n_tmpc, :, :]
-            x_pred_traj = x_pred_traj[:n_tmpc, :, :]
+            u_pred_traj = u_pred_traj[:n_tmpc]
+            x_pred_traj = x_pred_traj[:n_tmpc]
 
         # Ensure that all times are aligned
         if t_x_cur_est[-1] > t_x_cur[-1]:

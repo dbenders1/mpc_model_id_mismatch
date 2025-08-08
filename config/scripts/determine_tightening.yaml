@@ -21,6 +21,8 @@ data:
       2025-08-04_gaz_meas_noise_falcon_wrel_epsilon_w_bar_c_lemniscate_r1_f0dot3_ccw,
     ]
   n_idx_ignore: 0
+  t_cut_circle: 29
+  t_cut_lemniscate: 43
 
 compute_settings:
   compute_x_in_eps_ball: false
