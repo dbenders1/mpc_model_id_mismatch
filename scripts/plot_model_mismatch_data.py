@@ -922,7 +922,7 @@ def plot_likelihood(exp_idx, likelihood, likelihood_gt=None, do_save_likelihood=
         fig.subplots_adjust(right=0.99, top=0.99, bottom=0.14, left=0.14)
 
         # Save figure
-        fig_path = f"{fig_dir}/mle.pdf"
+        fig_path = f"{fig_dir}/likelihood.pdf"
         helpers.save_fig(fig, fig_path)
 
 
@@ -1139,14 +1139,14 @@ if __name__ == "__main__":
     eta_labels = config["plot_settings"]["eta_labels"]
     eta_unit_labels = config["plot_settings"]["eta_unit_labels"]
 
-    do_save_likelihood = config["save_settings"]["likelihood"]
-    if do_save_likelihood:
-        do_plot_likelihood = True
     do_save_w_est_gt_ratios_combined = config["save_settings"][
         "w_est_gt_ratios_combined"
     ]
     if do_save_w_est_gt_ratios_combined:
         do_plot_w_est_gt_ratios_combined = True
+    do_save_likelihood = config["save_settings"]["likelihood"]
+    if do_save_likelihood:
+        do_plot_likelihood = True
 
     # Read data
     with open(f"{model_mismatch_results_dir}/{mhe_json_name}.json", "r") as f:
