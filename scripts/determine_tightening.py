@@ -79,6 +79,7 @@ if __name__ == "__main__":
     save_lyap_err = save_settings["lyap_err"]
     if save_lyap_err:
         do_plot_lyap_err = True
+    fig_extension = save_settings["fig_extension"]
 
     quad_name = config["model"]["name"]
 
@@ -475,7 +476,7 @@ if __name__ == "__main__":
                     fig.subplots_adjust(right=0.99, top=0.99, bottom=0.14, left=0.17)
 
                     # Save figure
-                    fig_path = f"{fig_dir}/tube_fit.pdf"
+                    fig_path = f"{fig_dir}/tube_fit.{fig_extension}"
                     helpers.save_fig(fig, fig_path)
                 else:
                     ax.legend()

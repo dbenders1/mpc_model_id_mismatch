@@ -48,3 +48,4 @@ plot_settings:
 
 save_settings:
   lyap_err: true
+  fig_extension: pdf
