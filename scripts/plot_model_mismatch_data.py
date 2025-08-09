@@ -660,7 +660,7 @@ def plot_w_est_gt_ratios_combined(
         fig.subplots_adjust(right=0.99, top=0.99, bottom=0.14, left=0.14)
 
         # Save figure
-        fig_path = f"{fig_dir}/w_est_gt_ratios_combined.pdf"
+        fig_path = f"{fig_dir}/w_est_gt_ratios_combined.{fig_extension}"
         helpers.save_fig(fig, fig_path)
 
 
@@ -922,7 +922,7 @@ def plot_likelihood(exp_idx, likelihood, likelihood_gt=None, do_save_likelihood=
         fig.subplots_adjust(right=0.99, top=0.99, bottom=0.14, left=0.14)
 
         # Save figure
-        fig_path = f"{fig_dir}/likelihood.pdf"
+        fig_path = f"{fig_dir}/likelihood.{fig_extension}"
         helpers.save_fig(fig, fig_path)
 
 
@@ -1147,6 +1147,7 @@ if __name__ == "__main__":
     do_save_likelihood = config["save_settings"]["likelihood"]
     if do_save_likelihood:
         do_plot_likelihood = True
+    fig_extension = config["save_settings"]["fig_extension"]
 
     # Read data
     with open(f"{model_mismatch_results_dir}/{mhe_json_name}.json", "r") as f:

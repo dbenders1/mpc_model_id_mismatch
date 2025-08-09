@@ -146,3 +146,4 @@ plot_settings:
 save_settings:
   w_est_gt_ratios_combined: true
   likelihood: true
+  fig_extension: pdf
